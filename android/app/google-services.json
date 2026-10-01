@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "210294542486",
+    "project_id": "jewelora-af085",
+    "storage_bucket": "jewelora-af085.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:210294542486:android:620fb1ebeb70c67a36f2b7",
+        "android_client_info": {
+          "package_name": "com.example.jewel_ora"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWMajqxnrgUCWp5bSrB-z-Hj08pQKd2vQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
