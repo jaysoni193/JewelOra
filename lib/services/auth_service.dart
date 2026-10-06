@@ -97,6 +97,46 @@ class AuthService {
     }
   }
 
+  // ---------- UPDATE PROFILE ----------
+  Future<AppUser> updateProfile({
+    required String uid,
+    required String name,
+    required String phone,
+  }) async {
+    try {
+      await _users.doc(uid).update({'name': name, 'phone': phone});
+      await _auth.currentUser?.updateDisplayName(name);
+      return await getUserProfile(uid);
+    } catch (_) {
+      throw const AuthException(AppStrings.somethingWentWrong);
+    }
+  }
+
+  // ---------- CHANGE PASSWORD ----------
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final user = _auth.currentUser;
+    final email = user?.email;
+    if (user == null || email == null) {
+      throw const AuthException('Please login again.');
+    }
+
+    try {
+      final credential = EmailAuthProvider.credential(
+        email: email,
+        password: currentPassword,
+      );
+      await user.reauthenticateWithCredential(credential);
+      await user.updatePassword(newPassword);
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
+        throw const AuthException('Current password is incorrect.');
+      }
+      throw AuthException(_mapError(e));
+    }
+  }
   // ---------- LOGOUT ----------
   Future<void> logout() => _auth.signOut();
 
@@ -119,6 +159,8 @@ class AuthService {
         return 'Too many attempts. Please try again later.';
       case 'network-request-failed':
         return 'No internet connection.';
+      case 'requires-recent-login':
+        return 'Please logout and login again, then retry.';
       default:
         return AppStrings.somethingWentWrong;
     }

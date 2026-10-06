@@ -3,10 +3,16 @@ import 'package:jewel_ora/core/constants/app_colors.dart';
 import 'package:jewel_ora/core/constants/app_strings.dart';
 import 'package:jewel_ora/core/utils/ui_helpers.dart';
 import 'package:jewel_ora/providers/auth_provider.dart';
+import 'package:jewel_ora/screens/user/change_password_screen.dart';
+import 'package:jewel_ora/screens/user/edit_profile_screen.dart';
 import 'package:provider/provider.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
+
+  void _open(BuildContext context, Widget screen) {
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
+  }
 
   Future<void> _logout(BuildContext context) async {
     final ok = await showConfirmDialog(
@@ -49,7 +55,8 @@ class ProfileScreen extends StatelessWidget {
           Center(
             child: Text(
               user?.name ?? '',
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+              style:
+              const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
             ),
           ),
           const SizedBox(height: 24),
@@ -66,8 +73,30 @@ class ProfileScreen extends StatelessWidget {
                   leading: const Icon(Icons.phone_outlined),
                   title: const Text('Phone'),
                   subtitle: Text(
-                    (user?.phone.isNotEmpty ?? false) ? user!.phone : 'Not added',
+                    (user?.phone.isNotEmpty ?? false)
+                        ? user!.phone
+                        : 'Not added',
                   ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Card(
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.edit_outlined),
+                  title: const Text('Edit profile'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _open(context, const EditProfileScreen()),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.lock_outline),
+                  title: const Text('Change password'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _open(context, const ChangePasswordScreen()),
                 ),
               ],
             ),

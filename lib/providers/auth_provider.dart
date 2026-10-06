@@ -17,6 +17,7 @@ class AuthProvider extends ChangeNotifier {
   AppUser? _user;
   bool _isLoading = false;
   bool _isRegistering = false;
+  bool _isSaving = false;
   String? _errorMessage;
 
   AuthProvider(this._service) {
@@ -28,7 +29,7 @@ class AuthProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get isAdmin => _user?.isAdmin ?? false;
-
+  bool get isSaving => _isSaving;
   // Runs at app start and whenever login state changes.
   Future<void> _onAuthChanged(User? firebaseUser) async {
     // During registration, register() sets the user itself.
@@ -110,7 +111,56 @@ class AuthProvider extends ChangeNotifier {
       return false;
     }
   }
+  Future<bool> updateProfile({
+    required String name,
+    required String phone,
+  }) async {
+    final uid = _user?.uid;
+    if (uid == null) return false;
 
+    _errorMessage = null;
+    _setSaving(true);
+    try {
+      _user = await _service.updateProfile(uid: uid, name: name, phone: phone);
+      return true;
+    } on AuthException catch (e) {
+      _errorMessage = e.message;
+      return false;
+    } catch (_) {
+      _errorMessage = AppStrings.somethingWentWrong;
+      return false;
+    } finally {
+      _setSaving(false);
+    }
+  }
+
+  Future<bool> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    _errorMessage = null;
+    _setSaving(true);
+    try {
+      await _service.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+      return true;
+    } on AuthException catch (e) {
+      _errorMessage = e.message;
+      return false;
+    } catch (_) {
+      _errorMessage = AppStrings.somethingWentWrong;
+      return false;
+    } finally {
+      _setSaving(false);
+    }
+  }
+
+  void _setSaving(bool value) {
+    _isSaving = value;
+    notifyListeners();
+  }
   Future<void> logout() => _service.logout();
 
   void _setLoading(bool value) {

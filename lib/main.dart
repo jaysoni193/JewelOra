@@ -4,12 +4,14 @@ import 'package:jewel_ora/core/constants/app_strings.dart';
 import 'package:jewel_ora/core/theme/app_theme.dart';
 import 'package:jewel_ora/providers/auth_provider.dart';
 import 'package:jewel_ora/providers/banner_provider.dart';
+import 'package:jewel_ora/providers/cart_provider.dart';
 import 'package:jewel_ora/providers/category_provider.dart';
 import 'package:jewel_ora/providers/product_provider.dart';
 import 'package:jewel_ora/providers/settings_provider.dart';
 import 'package:jewel_ora/screens/auth/auth_gate.dart';
 import 'package:jewel_ora/services/auth_service.dart';
 import 'package:jewel_ora/services/banner_service.dart';
+import 'package:jewel_ora/services/cart_service.dart';
 import 'package:jewel_ora/services/category_service.dart';
 import 'package:jewel_ora/services/product_service.dart';
 import 'package:jewel_ora/services/settings_service.dart';
@@ -36,6 +38,12 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ProductProvider(ProductService())),
         ChangeNotifierProvider(create: (_) => BannerProvider(BannerService())),
         ChangeNotifierProvider(create: (_) => SettingsProvider(SettingsService())),
+        ChangeNotifierProxyProvider<AuthProvider, CartProvider>(
+          create: (_) => CartProvider(CartService()),
+          // Admins do not have a cart, so we skip loading one for them.
+          update: (_, auth, cart) =>
+          cart!..updateUser(auth.isAdmin ? null : auth.user?.uid),
+        ),
       ],
       child: MaterialApp(
         title: AppStrings.appName,
