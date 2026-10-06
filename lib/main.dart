@@ -3,8 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:jewel_ora/core/constants/app_strings.dart';
 import 'package:jewel_ora/core/theme/app_theme.dart';
 import 'package:jewel_ora/providers/auth_provider.dart';
+import 'package:jewel_ora/providers/banner_provider.dart';
+import 'package:jewel_ora/providers/category_provider.dart';
+import 'package:jewel_ora/providers/product_provider.dart';
+import 'package:jewel_ora/providers/settings_provider.dart';
 import 'package:jewel_ora/screens/auth/auth_gate.dart';
 import 'package:jewel_ora/services/auth_service.dart';
+import 'package:jewel_ora/services/banner_service.dart';
+import 'package:jewel_ora/services/category_service.dart';
+import 'package:jewel_ora/services/product_service.dart';
+import 'package:jewel_ora/services/settings_service.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 
@@ -24,7 +32,10 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider(AuthService())),
-        // More providers will be added in later steps
+        ChangeNotifierProvider(create: (_) => CategoryProvider(CategoryService())),
+        ChangeNotifierProvider(create: (_) => ProductProvider(ProductService())),
+        ChangeNotifierProvider(create: (_) => BannerProvider(BannerService())),
+        ChangeNotifierProvider(create: (_) => SettingsProvider(SettingsService())),
       ],
       child: MaterialApp(
         title: AppStrings.appName,
