@@ -5,6 +5,8 @@ import 'package:jewel_ora/core/utils/formatters.dart';
 import 'package:jewel_ora/core/utils/image_url.dart';
 import 'package:jewel_ora/models/product_model.dart';
 
+import 'favorite_button.dart';
+
 class ProductCard extends StatelessWidget {
   final ProductModel product;
   final VoidCallback onTap;
@@ -60,6 +62,12 @@ class ProductCard extends StatelessWidget {
                         ),
                       ),
                     ),
+
+                  Positioned(
+                    top: 6,
+                    right: 6,
+                    child: FavoriteButton(productId: p.id),
+                  ),
                 ],
               ),
             ),

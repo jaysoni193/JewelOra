@@ -6,10 +6,10 @@ import 'package:jewel_ora/core/widgets/coming_soon_screen.dart';
 import 'package:jewel_ora/providers/auth_provider.dart';
 import 'package:jewel_ora/screens/admin/product_list_screen.dart';
 import 'package:provider/provider.dart';
-
 import 'app_settings_screen.dart';
 import 'banner_list_screen.dart';
 import 'category_list_screen.dart';
+import 'insights_screen.dart';
 
 class AdminDashboard extends StatelessWidget {
   const AdminDashboard({super.key});
@@ -28,6 +28,9 @@ class AdminDashboard extends StatelessWidget {
         break;
       case 'App Settings':
         screen = const AppSettingsScreen();
+        break;
+      case 'Insights':
+        screen = const InsightsScreen();
         break;
       default:
         screen = ComingSoonScreen(title: title);
@@ -56,6 +59,7 @@ class AdminDashboard extends StatelessWidget {
       _AdminMenuItem('Categories', Icons.category_outlined),
       _AdminMenuItem('Banners', Icons.image_outlined),
       _AdminMenuItem('App Settings', Icons.settings_outlined),
+      _AdminMenuItem('Insights', Icons.insights_outlined),
     ];
 
     return Scaffold(

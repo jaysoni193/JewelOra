@@ -6,7 +6,6 @@ import 'package:jewel_ora/screens/user/home_screen.dart';
 import 'package:jewel_ora/screens/user/profile_screen.dart';
 import 'package:jewel_ora/screens/user/shop_screen.dart';
 import 'package:provider/provider.dart';
-
 import '../../providers/cart_provider.dart';
 
 class UserShell extends StatelessWidget {

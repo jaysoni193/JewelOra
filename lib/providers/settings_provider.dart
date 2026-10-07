@@ -5,6 +5,8 @@ import 'package:jewel_ora/core/constants/app_strings.dart';
 import 'package:jewel_ora/models/app_settings_model.dart';
 import 'package:jewel_ora/services/settings_service.dart';
 
+import '../services/app_icon_service.dart';
+
 class SettingsProvider extends ChangeNotifier {
   final SettingsService _service;
   StreamSubscription<AppSettingsModel>? _sub;
@@ -19,6 +21,7 @@ class SettingsProvider extends ChangeNotifier {
           (data) {
         _settings = data;
         _isLoading = false;
+        AppIconService.instance.update(data.appIcon);
         notifyListeners();
       },
       onError: (_) {

@@ -5,7 +5,10 @@ import 'package:jewel_ora/core/utils/ui_helpers.dart';
 import 'package:jewel_ora/providers/auth_provider.dart';
 import 'package:jewel_ora/screens/user/change_password_screen.dart';
 import 'package:jewel_ora/screens/user/edit_profile_screen.dart';
+import 'package:jewel_ora/screens/user/wishlist_screen.dart';
 import 'package:provider/provider.dart';
+
+import '../../providers/wishlist_provider.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -29,6 +32,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().user;
+    final wishlistCount = context.watch<WishlistProvider>().count;
     final initial =
     (user?.name.isNotEmpty ?? false) ? user!.name[0].toUpperCase() : '?';
 
@@ -86,6 +90,18 @@ class ProfileScreen extends StatelessWidget {
             child: Column(
               children: [
                 ListTile(
+                  leading: const Icon(Icons.favorite_border),
+                  title: const Text('My wishlist'),
+                  subtitle: Text(
+                    wishlistCount == 0
+                        ? 'Nothing saved yet'
+                        : '$wishlistCount saved',
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _open(context, const WishlistScreen()),
+                ),
+                const Divider(height: 1),
+                ListTile(
                   leading: const Icon(Icons.edit_outlined),
                   title: const Text('Edit profile'),
                   trailing: const Icon(Icons.chevron_right),
@@ -98,6 +114,7 @@ class ProfileScreen extends StatelessWidget {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => _open(context, const ChangePasswordScreen()),
                 ),
+
               ],
             ),
           ),

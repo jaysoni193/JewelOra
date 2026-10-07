@@ -5,12 +5,14 @@ class AppSettingsModel {
   final String appName;
   final String whatsappNumber; // with country code, e.g. 919876543210
   final String welcomeMessage;
+  final String appIcon; // key from AppIconOptions
 
   const AppSettingsModel({
     this.logoUrl = '',
     this.appName = AppStrings.appName,
     this.whatsappNumber = '',
     this.welcomeMessage = 'Welcome to our jewellery store',
+    this.appIcon = 'default',
   });
 
   factory AppSettingsModel.fromMap(Map<String, dynamic> map) {
@@ -19,6 +21,7 @@ class AppSettingsModel {
       appName: map['appName'] ?? AppStrings.appName,
       whatsappNumber: map['whatsappNumber'] ?? '',
       welcomeMessage: map['welcomeMessage'] ?? 'Welcome to our jewellery store',
+      appIcon: map['appIcon'] ?? 'default',
     );
   }
 
@@ -27,5 +30,6 @@ class AppSettingsModel {
     'appName': appName,
     'whatsappNumber': whatsappNumber,
     'welcomeMessage': welcomeMessage,
+    'appIcon': appIcon,
   };
 }

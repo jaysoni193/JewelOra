@@ -19,6 +19,8 @@ import 'package:jewel_ora/screens/user/product_detail_screen.dart';
 import 'package:jewel_ora/services/whatsapp_service.dart';
 import 'package:provider/provider.dart';
 
+import '../../services/stats_service.dart';
+
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
 
@@ -86,6 +88,7 @@ class CartScreen extends StatelessWidget {
         phone: phone,
         message: WhatsAppService.buildCartMessage(lines, customerName: name),
       );
+      StatsService.recordEnquiries(lines.map((l) => l.product.id));
     } on AppException catch (e) {
       if (context.mounted) showAppSnackBar(context, e.message, isError: true);
     }
