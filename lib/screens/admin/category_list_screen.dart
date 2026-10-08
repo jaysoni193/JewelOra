@@ -1,11 +1,14 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:jewel_ora/core/constants/app_colors.dart';
+import 'package:jewel_ora/core/constants/app_sizes.dart';
 import 'package:jewel_ora/core/constants/app_strings.dart';
-import 'package:jewel_ora/core/utils/image_url.dart';
-import 'package:jewel_ora/core/utils/ui_helpers.dart';
-import 'package:jewel_ora/core/widgets/empty_view.dart';
-import 'package:jewel_ora/core/widgets/loading_view.dart';
+import 'package:jewel_ora/core/theme/app_text_styles.dart';
+import 'package:jewel_ora/core/widgets/app_card.dart';
+import 'package:jewel_ora/core/widgets/app_dialog.dart';
+import 'package:jewel_ora/core/widgets/app_image.dart';
+import 'package:jewel_ora/core/widgets/app_loader.dart';
+import 'package:jewel_ora/core/widgets/app_snackbar.dart';
+import 'package:jewel_ora/core/widgets/empty_state.dart';
 import 'package:jewel_ora/models/category_model.dart';
 import 'package:jewel_ora/providers/category_provider.dart';
 import 'package:jewel_ora/screens/admin/category_form_screen.dart';
@@ -17,31 +20,32 @@ class CategoryListScreen extends StatelessWidget {
   void _openForm(BuildContext context, [CategoryModel? category]) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => CategoryFormScreen(category: category),
+        builder: (context) => CategoryFormScreen(category: category),
       ),
     );
   }
 
   Future<void> _delete(BuildContext context, CategoryModel category) async {
-    final ok = await showConfirmDialog(
+    final confirmed = await AppDialog.delete(
       context,
-      title: 'Delete category',
-      message: 'Delete "${category.name}"? This cannot be undone.',
-      confirmText: 'Delete',
+      title: 'Delete Category',
+      message: 'Delete "${category.name}"? This action cannot be undone.',
+      deleteText: 'Delete',
     );
-    if (!ok || !context.mounted) return;
+    if (!confirmed || !context.mounted) return;
 
     final provider = context.read<CategoryProvider>();
     final success = await provider.delete(category.id);
     if (!context.mounted) return;
 
-    showAppSnackBar(
-      context,
-      success
-          ? 'Category deleted'
-          : (provider.errorMessage ?? AppStrings.somethingWentWrong),
-      isError: !success,
-    );
+    if (success) {
+      AppSnackbar.showSuccess(context, 'Category deleted successfully');
+    } else {
+      AppSnackbar.showError(
+        context,
+        provider.errorMessage ?? AppStrings.somethingWentWrong,
+      );
+    }
   }
 
   @override
@@ -49,27 +53,34 @@ class CategoryListScreen extends StatelessWidget {
     final provider = context.watch<CategoryProvider>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Categories')),
+      appBar: AppBar(
+        title: const Text('Categories'),
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openForm(context),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
-        label: const Text('Add'),
+        label: const Text('Add Category', style: TextStyle(fontWeight: FontWeight.w600)),
       ),
       body: Builder(
-        builder: (_) {
-          if (provider.isLoading) return const LoadingView();
+        builder: (context) {
+          if (provider.isLoading) {
+            return const Center(child: AppLoader());
+          }
           if (provider.categories.isEmpty) {
-            return const EmptyView(
-              message: 'No categories yet. Tap Add to create one.',
+            return EmptyState(
+              title: 'No Categories',
+              message: 'No categories created yet. Tap Add Category to get started.',
               icon: Icons.category_outlined,
+              buttonTitle: 'Add Category',
+              onButtonPressed: () => _openForm(context),
             );
           }
           return ListView.separated(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 90),
+            padding: const EdgeInsets.fromLTRB(AppSizes.p16, AppSizes.p16, AppSizes.p16, 90),
             itemCount: provider.categories.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            separatorBuilder: (context, index) => const SizedBox(height: AppSizes.p12),
             itemBuilder: (context, i) {
               final c = provider.categories[i];
               return _CategoryTile(
@@ -101,67 +112,84 @@ class _CategoryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: SizedBox(
-                width: 64,
-                height: 64,
-                child: category.imageUrl.isEmpty
-                    ? Container(
-                  color: AppColors.primaryLight,
-                  child: const Icon(Icons.image_outlined),
-                )
-                    : CachedNetworkImage(
-                  imageUrl:
-                  ImageUrl.optimized(category.imageUrl, width: 200),
-                  fit: BoxFit.cover,
-                  errorWidget: (_, __, ___) =>
-                  const Icon(Icons.broken_image_outlined),
+    return AppCard(
+      padding: const EdgeInsets.all(AppSizes.p12),
+      child: Row(
+        children: [
+          AppImage(
+            imageUrl: category.imageUrl,
+            width: 64,
+            height: 64,
+            borderRadius: BorderRadius.circular(AppSizes.r12),
+          ),
+          const SizedBox(width: AppSizes.p16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  category.name,
+                  style: AppTextStyles.h4,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    category.name,
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    category.isActive ? 'Visible to customers' : 'Hidden',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: category.isActive
-                          ? AppColors.success
-                          : AppColors.textGrey,
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: category.isActive ? AppColors.success : AppColors.textLight,
+                        shape: BoxShape.circle,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            Switch(
-              value: category.isActive,
-              activeColor: AppColors.primary,
-              onChanged: (_) => onToggle(),
-            ),
-            PopupMenuButton<String>(
-              onSelected: (v) => v == 'edit' ? onEdit() : onDelete(),
-              itemBuilder: (_) => const [
-                PopupMenuItem(value: 'edit', child: Text('Edit')),
-                PopupMenuItem(value: 'delete', child: Text('Delete')),
+                    const SizedBox(width: 6),
+                    Text(
+                      category.isActive ? 'Visible to customers' : 'Hidden',
+                      style: AppTextStyles.caption.copyWith(
+                        color: category.isActive ? AppColors.success : AppColors.textGrey,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
-          ],
-        ),
+          ),
+          Switch(
+            value: category.isActive,
+            activeThumbColor: AppColors.primary,
+            activeTrackColor: AppColors.primaryLight,
+            onChanged: (value) => onToggle(),
+          ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, color: AppColors.textGrey),
+            onSelected: (v) => v == 'edit' ? onEdit() : onDelete(),
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                value: 'edit',
+                child: Row(
+                  children: [
+                    Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
+                    SizedBox(width: 8),
+                    Text('Edit'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'delete',
+                child: Row(
+                  children: [
+                    Icon(Icons.delete_outline, size: 18, color: AppColors.error),
+                    SizedBox(width: 8),
+                    Text('Delete', style: TextStyle(color: AppColors.error)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

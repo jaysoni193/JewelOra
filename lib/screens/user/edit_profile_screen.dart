@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:jewel_ora/core/constants/app_colors.dart';
 import 'package:jewel_ora/core/constants/app_strings.dart';
 import 'package:jewel_ora/core/utils/ui_helpers.dart';
 import 'package:jewel_ora/core/utils/validators.dart';
+import 'package:jewel_ora/core/widgets/app_button.dart';
+import 'package:jewel_ora/core/widgets/app_card.dart';
 import 'package:jewel_ora/core/widgets/app_text_field.dart';
-import 'package:jewel_ora/core/widgets/primary_button.dart';
 import 'package:jewel_ora/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -46,7 +48,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     if (!mounted) return;
     if (ok) {
-      showAppSnackBar(context, 'Profile updated');
+      showAppSnackBar(context, 'Profile updated successfully');
       Navigator.of(context).pop();
     } else {
       showAppSnackBar(
@@ -62,41 +64,55 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final auth = context.watch<AuthProvider>();
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(title: const Text('Edit Profile')),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(20),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                AppTextField(
-                  controller: _nameCtrl,
-                  label: 'Full name',
-                  prefixIcon: Icons.person_outline,
-                  validator: Validators.name,
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  initialValue: auth.user?.email ?? '',
-                  enabled: false,
-                  decoration: const InputDecoration(
-                    labelText: 'Email (cannot be changed)',
-                    prefixIcon: Icon(Icons.email_outlined),
+                AppCard(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Personal Information',
+                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                      ),
+                      const SizedBox(height: 16),
+                      AppTextField(
+                        controller: _nameCtrl,
+                        label: 'Full Name',
+                        prefixIcon: Icons.person_outline_rounded,
+                        validator: Validators.name,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        initialValue: auth.user?.email ?? '',
+                        enabled: false,
+                        decoration: const InputDecoration(
+                          labelText: 'Email (cannot be changed)',
+                          prefixIcon: Icon(Icons.email_outlined, color: AppColors.textLight),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      AppTextField(
+                        controller: _phoneCtrl,
+                        label: 'Phone Number (optional)',
+                        prefixIcon: Icons.phone_outlined,
+                        keyboardType: TextInputType.phone,
+                        validator: Validators.optionalPhone,
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 16),
-                AppTextField(
-                  controller: _phoneCtrl,
-                  label: 'Phone (optional)',
-                  prefixIcon: Icons.phone_outlined,
-                  keyboardType: TextInputType.phone,
-                  validator: Validators.optionalPhone,
-                ),
                 const SizedBox(height: 28),
-                PrimaryButton(
-                  text: 'Save Changes',
+                AppButton(
+                  title: 'Save Changes',
                   isLoading: auth.isSaving,
                   onPressed: _submit,
                 ),

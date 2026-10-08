@@ -17,42 +17,64 @@ class HomeCategoryList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 104,
+      height: 108,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 16),
-        itemBuilder: (_, i) {
+        separatorBuilder: (context, index) => const SizedBox(width: 14),
+        itemBuilder: (context, i) {
           final c = categories[i];
           return InkWell(
             borderRadius: BorderRadius.circular(40),
             onTap: () => onTap(c),
             child: SizedBox(
-              width: 72,
+              width: 76,
               child: Column(
                 children: [
                   Container(
-                    width: 68,
-                    height: 68,
+                    width: 70,
+                    height: 70,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.primary, width: 1.5),
+                      border: Border.all(
+                        color: AppColors.borderAccent,
+                        width: 1.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.08),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
-                    padding: const EdgeInsets.all(2),
+                    padding: const EdgeInsets.all(2.5),
                     child: ClipOval(
                       child: c.imageUrl.isEmpty
                           ? Container(
-                        color: AppColors.primaryLight,
-                        child: const Icon(Icons.diamond_outlined),
-                      )
+                              color: AppColors.primaryLight,
+                              child: const Icon(
+                                Icons.diamond_outlined,
+                                color: AppColors.primary,
+                                size: 26,
+                              ),
+                            )
                           : CachedNetworkImage(
-                        imageUrl:
-                        ImageUrl.optimized(c.imageUrl, width: 200),
-                        fit: BoxFit.cover,
-                        errorWidget: (_, __, ___) =>
-                        const Icon(Icons.broken_image_outlined),
-                      ),
+                              imageUrl: ImageUrl.optimized(c.imageUrl, width: 200),
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => Container(
+                                color: AppColors.surfaceVariant,
+                              ),
+                              errorWidget: (context, url, error) => Container(
+                                color: AppColors.primaryLight,
+                                child: const Icon(
+                                  Icons.diamond_outlined,
+                                  color: AppColors.primaryDark,
+                                  size: 26,
+                                ),
+                              ),
+                            ),
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -60,8 +82,12 @@ class HomeCategoryList extends StatelessWidget {
                     c.name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
                     style: const TextStyle(
-                        fontSize: 12, fontWeight: FontWeight.w500),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textDark,
+                    ),
                   ),
                 ],
               ),

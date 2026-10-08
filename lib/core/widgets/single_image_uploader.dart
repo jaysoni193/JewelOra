@@ -1,9 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:jewel_ora/core/constants/app_colors.dart';
+import 'package:jewel_ora/core/constants/app_sizes.dart';
 import 'package:jewel_ora/core/errors/upload_exception.dart';
 import 'package:jewel_ora/core/utils/image_url.dart';
 import 'package:jewel_ora/core/utils/ui_helpers.dart';
+import 'package:jewel_ora/core/widgets/app_loader.dart';
 import 'package:jewel_ora/services/cloudinary_service.dart';
 import 'package:jewel_ora/services/image_picker_service.dart';
 
@@ -58,49 +60,66 @@ class _SingleImageUploaderState extends State<SingleImageUploader> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(widget.label,
-            style: const TextStyle(fontWeight: FontWeight.w600)),
+        Text(
+          widget.label,
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+        ),
         const SizedBox(height: 8),
         InkWell(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
           onTap: _uploading ? null : _pickAndUpload,
           child: Container(
             height: widget.height,
             width: double.infinity,
             decoration: BoxDecoration(
               color: AppColors.surface,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.border),
+              borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+              border: Border.all(
+                color: _url.isNotEmpty ? AppColors.borderGold : AppColors.border,
+                width: 1.2,
+              ),
             ),
             clipBehavior: Clip.antiAlias,
             child: _uploading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(child: AppLoader(size: 40))
                 : _url.isEmpty
-                ? const Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.add_photo_alternate_outlined,
-                    size: 40, color: AppColors.textGrey),
-                SizedBox(height: 6),
-                Text('Tap to choose image',
-                    style: TextStyle(color: AppColors.textGrey)),
-              ],
-            )
-                : CachedNetworkImage(
-              imageUrl: ImageUrl.optimized(_url, width: 800),
-              fit: BoxFit.cover,
-              placeholder: (_, __) =>
-              const Center(child: CircularProgressIndicator()),
-              errorWidget: (_, __, ___) =>
-              const Icon(Icons.broken_image_outlined),
-            ),
+                    ? const Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.add_photo_alternate_outlined,
+                            size: 40,
+                            color: AppColors.primary,
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            'Tap to choose image',
+                            style: TextStyle(
+                              color: AppColors.textGrey,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      )
+                    : CachedNetworkImage(
+                        imageUrl: ImageUrl.optimized(_url, width: 800),
+                        fit: widget.fit,
+                        placeholder: (context, url) =>
+                            const Center(child: AppLoader(size: 36)),
+                        errorWidget: (context, url, error) =>
+                            const Icon(Icons.broken_image_outlined),
+                      ),
           ),
         ),
         if (_url.isNotEmpty && !_uploading)
-          TextButton.icon(
-            onPressed: _pickAndUpload,
-            icon: const Icon(Icons.swap_horiz),
-            label: const Text('Change image'),
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: TextButton.icon(
+              onPressed: _pickAndUpload,
+              icon: const Icon(Icons.swap_horiz_rounded, size: 18),
+              label: const Text('Change Image'),
+            ),
           ),
       ],
     );

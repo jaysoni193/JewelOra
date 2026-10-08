@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:jewel_ora/core/constants/app_colors.dart';
-import 'package:jewel_ora/core/widgets/coming_soon_screen.dart';
-import 'package:jewel_ora/core/widgets/empty_view.dart';
-import 'package:jewel_ora/core/widgets/loading_view.dart';
+import 'package:jewel_ora/core/constants/app_sizes.dart';
+import 'package:jewel_ora/core/constants/app_strings.dart';
+import 'package:jewel_ora/core/widgets/app_loader.dart';
+import 'package:jewel_ora/core/widgets/empty_state.dart';
 import 'package:jewel_ora/core/widgets/product_card.dart';
 import 'package:jewel_ora/providers/category_provider.dart';
 import 'package:jewel_ora/providers/product_provider.dart';
@@ -68,19 +69,45 @@ class _ShopScreenState extends State<ShopScreen> {
     final picked = await showModalBottomSheet<ShopSort>(
       context: context,
       showDragHandle: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (final s in ShopSort.values)
-              ListTile(
-                title: Text(s.label),
-                trailing: s == current
-                    ? const Icon(Icons.check, color: AppColors.primary)
-                    : null,
-                onTap: () => Navigator.pop(ctx, s),
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.fromLTRB(20, 8, 20, 12),
+                child: Text(
+                  'Sort Collection',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textDark,
+                  ),
+                ),
               ),
-          ],
+              const Divider(height: 1),
+              for (final s in ShopSort.values)
+                ListTile(
+                  title: Text(
+                    s.label,
+                    style: TextStyle(
+                      fontWeight: s == current ? FontWeight.w700 : FontWeight.w500,
+                      color: s == current ? AppColors.primary : AppColors.textDark,
+                    ),
+                  ),
+                  trailing: s == current
+                      ? const Icon(Icons.check_rounded, color: AppColors.primary)
+                      : null,
+                  onTap: () => Navigator.pop(ctx, s),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -110,32 +137,35 @@ class _ShopScreenState extends State<ShopScreen> {
     final visible = filtered.take(filter.visibleCount).toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Shop')),
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: const Text('Jewellery Collection'),
+      ),
       body: Column(
         children: [
-          // ---------- Search ----------
+          // ---------- Search Field ----------
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
             child: TextField(
               controller: _searchCtrl,
               onChanged: filter.setQuery,
               textInputAction: TextInputAction.search,
               decoration: InputDecoration(
-                hintText: 'Search name, category or material',
-                prefixIcon: const Icon(Icons.search),
+                hintText: AppStrings.searchProducts,
+                prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textGrey, size: 22),
                 suffixIcon: filter.query.isEmpty
                     ? null
                     : IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => filter.setQuery(''),
-                ),
+                        icon: const Icon(Icons.close_rounded, size: 20),
+                        onPressed: () => filter.setQuery(''),
+                      ),
               ),
             ),
           ),
 
-          // ---------- Category chips ----------
+          // ---------- Category Choice Chips ----------
           SizedBox(
-            height: 44,
+            height: 42,
             child: ListView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -155,59 +185,65 @@ class _ShopScreenState extends State<ShopScreen> {
             ),
           ),
 
-          // ---------- Result count and sort ----------
+          // ---------- Result count and Sort action ----------
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 8, 0),
+            padding: const EdgeInsets.fromLTRB(18, 6, 12, 4),
             child: Row(
               children: [
                 Expanded(
                   child: Text(
-                    '${filtered.length} ${filtered.length == 1 ? 'item' : 'items'}',
-                    style: const TextStyle(color: AppColors.textGrey),
+                    '${filtered.length} ${filtered.length == 1 ? 'item' : 'items'} found',
+                    style: const TextStyle(
+                      color: AppColors.textGrey,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
                 TextButton.icon(
                   onPressed: _showSortSheet,
-                  icon: const Icon(Icons.swap_vert, size: 20),
+                  icon: const Icon(Icons.swap_vert_rounded, size: 18),
                   label: Text(filter.sort.label),
                 ),
               ],
             ),
           ),
 
-          // ---------- Grid ----------
+          // ---------- Responsive Product Grid ----------
           Expanded(
             child: Builder(
-              builder: (_) {
+              builder: (context) {
                 if (productsP.isLoading || categoriesP.isLoading) {
-                  return const LoadingView();
+                  return const Center(child: AppLoader(size: 50));
                 }
                 if (productsP.products.isEmpty) {
-                  return const EmptyView(
-                    message: 'No products yet. Please check back soon.',
+                  return const EmptyState(
+                    title: 'Collection is empty',
+                    subtitle: 'Please check back soon for our latest arrivals.',
                     icon: Icons.diamond_outlined,
                   );
                 }
                 if (filtered.isEmpty) {
-                  return EmptyView(
-                    message: 'No products found',
-                    icon: Icons.search_off,
+                  return EmptyState(
+                    title: 'No jewellery found',
+                    subtitle: 'Try adjusting your search or category filters.',
+                    icon: Icons.search_off_rounded,
                     actionLabel: 'Clear filters',
                     onAction: filter.clearFilters,
                   );
                 }
                 return GridView.builder(
                   controller: _scrollCtrl,
+                  physics: const BouncingScrollPhysics(),
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
                   itemCount: visible.length,
-                  gridDelegate:
-                  const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                    childAspectRatio: 0.68,
+                    crossAxisSpacing: 14,
+                    mainAxisSpacing: 14,
+                    childAspectRatio: 0.65,
                   ),
-                  itemBuilder: (_, i) => ProductCard(
+                  itemBuilder: (context, i) => ProductCard(
                     product: visible[i],
                     onTap: () => _openProduct(visible[i].id),
                   ),
@@ -240,6 +276,20 @@ class _CategoryChip extends StatelessWidget {
         label: Text(label),
         selected: selected,
         onSelected: (_) => onTap(),
+        selectedColor: AppColors.primaryLight,
+        backgroundColor: AppColors.surface,
+        labelStyle: TextStyle(
+          fontSize: 13,
+          fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+          color: selected ? AppColors.primaryDark : AppColors.textDark,
+        ),
+        side: BorderSide(
+          color: selected ? AppColors.primary : AppColors.border,
+          width: selected ? 1.2 : 1.0,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSizes.radiusCircular),
+        ),
       ),
     );
   }

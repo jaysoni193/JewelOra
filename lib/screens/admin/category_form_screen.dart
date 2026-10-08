@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:jewel_ora/core/constants/app_colors.dart';
+import 'package:jewel_ora/core/constants/app_sizes.dart';
 import 'package:jewel_ora/core/constants/app_strings.dart';
-import 'package:jewel_ora/core/utils/ui_helpers.dart';
+import 'package:jewel_ora/core/theme/app_text_styles.dart';
 import 'package:jewel_ora/core/utils/validators.dart';
+import 'package:jewel_ora/core/widgets/app_button.dart';
+import 'package:jewel_ora/core/widgets/app_card.dart';
+import 'package:jewel_ora/core/widgets/app_snackbar.dart';
 import 'package:jewel_ora/core/widgets/app_text_field.dart';
-import 'package:jewel_ora/core/widgets/primary_button.dart';
 import 'package:jewel_ora/core/widgets/single_image_uploader.dart';
 import 'package:jewel_ora/models/category_model.dart';
 import 'package:jewel_ora/providers/category_provider.dart';
@@ -45,8 +49,7 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_imageUrl.isEmpty) {
-      showAppSnackBar(context, 'Please choose a category image',
-          isError: true);
+      AppSnackbar.showWarning(context, 'Please upload a category image');
       return;
     }
 
@@ -54,8 +57,7 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
     final name = _nameCtrl.text.trim();
 
     if (provider.nameExists(name, excludeId: widget.category?.id)) {
-      showAppSnackBar(context, 'A category with this name already exists',
-          isError: true);
+      AppSnackbar.showError(context, 'A category with this name already exists');
       return;
     }
 
@@ -68,14 +70,15 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
 
     if (!mounted) return;
     if (ok) {
-      showAppSnackBar(
-          context, _isEdit ? 'Category updated' : 'Category added');
+      AppSnackbar.showSuccess(
+        context,
+        _isEdit ? 'Category updated successfully' : 'Category created successfully',
+      );
       Navigator.of(context).pop();
     } else {
-      showAppSnackBar(
+      AppSnackbar.showError(
         context,
         provider.errorMessage ?? AppStrings.somethingWentWrong,
-        isError: true,
       );
     }
   }
@@ -90,36 +93,68 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(AppSizes.p20),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                SingleImageUploader(
-                  label: 'Category image',
-                  initialUrl: _imageUrl,
-                  folder: 'jewel_ora/categories',
-                  onUploaded: (url) => _imageUrl = url,
+                AppCard(
+                  padding: const EdgeInsets.all(AppSizes.p16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Category Media & Details',
+                        style: AppTextStyles.h4,
+                      ),
+                      const SizedBox(height: AppSizes.p4),
+                      Text(
+                        'Upload a high quality thumbnail and enter category name.',
+                        style: AppTextStyles.caption.copyWith(color: AppColors.textGrey),
+                      ),
+                      const SizedBox(height: AppSizes.p16),
+                      SingleImageUploader(
+                        label: 'Category Thumbnail',
+                        initialUrl: _imageUrl,
+                        folder: 'jewel_ora/categories',
+                        onUploaded: (url) => setState(() => _imageUrl = url),
+                      ),
+                      const SizedBox(height: AppSizes.p20),
+                      AppTextField(
+                        controller: _nameCtrl,
+                        label: 'Category Name',
+                        hintText: 'e.g. Diamond Rings, Necklaces',
+                        prefixIcon: Icons.category_outlined,
+                        validator: (v) => Validators.required(v, 'Name'),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 20),
-                AppTextField(
-                  controller: _nameCtrl,
-                  label: 'Category name (e.g. Ring)',
-                  prefixIcon: Icons.category_outlined,
-                  validator: (v) => Validators.required(v, 'Name'),
+                const SizedBox(height: AppSizes.p16),
+                AppCard(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSizes.p16, vertical: AppSizes.p8),
+                  child: SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    activeThumbColor: AppColors.primary,
+                    activeTrackColor: AppColors.primaryLight,
+                    title: const Text(
+                      'Visible to Customers',
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                    ),
+                    subtitle: const Text(
+                      'Turn off to hide from boutique navigation and shop filters',
+                      style: TextStyle(fontSize: 12, color: AppColors.textGrey),
+                    ),
+                    value: _isActive,
+                    onChanged: (v) => setState(() => _isActive = v),
+                  ),
                 ),
-                const SizedBox(height: 8),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Visible to customers'),
-                  value: _isActive,
-                  onChanged: (v) => setState(() => _isActive = v),
-                ),
-                const SizedBox(height: 20),
-                PrimaryButton(
-                  text: _isEdit ? 'Save Changes' : 'Add Category',
+                const SizedBox(height: AppSizes.p24),
+                AppButton(
+                  title: _isEdit ? 'Save Changes' : 'Create Category',
                   isLoading: isSaving,
+                  icon: _isEdit ? Icons.check : Icons.add,
                   onPressed: _submit,
                 ),
               ],

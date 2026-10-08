@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:jewel_ora/core/constants/app_strings.dart';
 import 'package:jewel_ora/core/constants/firestore_paths.dart';
 import 'package:jewel_ora/core/errors/auth_exception.dart';
+import 'package:jewel_ora/core/firebase/firebase_logger.dart';
 import 'package:jewel_ora/models/app_user.dart';
 
 class AuthService {
@@ -21,13 +22,26 @@ class AuthService {
     required String password,
     String phone = '',
   }) async {
+    final startTime = DateTime.now();
+    FirebaseLogger.request(
+      collection: FirestorePaths.users,
+      operation: 'register',
+      parameters: {'name': name, 'email': email, 'phone': phone},
+    );
+
     UserCredential cred;
     try {
       cred = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
-    } on FirebaseAuthException catch (e) {
+    } on FirebaseAuthException catch (e, st) {
+      FirebaseLogger.error(
+        collection: FirestorePaths.users,
+        operation: 'register (auth)',
+        error: e,
+        stackTrace: st,
+      );
       throw AuthException(_mapError(e));
     }
 
@@ -43,7 +57,19 @@ class AuthService {
     try {
       await _users.doc(firebaseUser.uid).set(appUser.toMap());
       await firebaseUser.updateDisplayName(name);
-    } catch (_) {
+      FirebaseLogger.response(
+        collection: FirestorePaths.users,
+        operation: 'register',
+        duration: DateTime.now().difference(startTime),
+        data: {'uid': firebaseUser.uid, 'email': email},
+      );
+    } catch (e, st) {
+      FirebaseLogger.error(
+        collection: FirestorePaths.users,
+        operation: 'register (rollback)',
+        error: e,
+        stackTrace: st,
+      );
       // Roll back, so we never keep an account without a profile document.
       await firebaseUser.delete();
       throw const AuthException(
@@ -57,13 +83,33 @@ class AuthService {
     required String email,
     required String password,
   }) async {
+    final startTime = DateTime.now();
+    FirebaseLogger.request(
+      collection: FirestorePaths.users,
+      operation: 'login',
+      parameters: {'email': email},
+    );
+
     try {
       final cred = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
-      return await getUserProfile(cred.user!.uid);
-    } on FirebaseAuthException catch (e) {
+      final profile = await getUserProfile(cred.user!.uid);
+      FirebaseLogger.response(
+        collection: FirestorePaths.users,
+        operation: 'login',
+        duration: DateTime.now().difference(startTime),
+        data: {'uid': cred.user!.uid, 'email': email},
+      );
+      return profile;
+    } on FirebaseAuthException catch (e, st) {
+      FirebaseLogger.error(
+        collection: FirestorePaths.users,
+        operation: 'login',
+        error: e,
+        stackTrace: st,
+      );
       throw AuthException(_mapError(e));
     }
   }
@@ -72,27 +118,74 @@ class AuthService {
   /// Reads users/{uid}. If the document is missing (for example an account
   /// created manually in the console), a default profile is created.
   Future<AppUser> getUserProfile(String uid) async {
-    final doc = await _users.doc(uid).get();
-    if (doc.exists && doc.data() != null) {
-      return AppUser.fromMap(doc.data()!, uid);
-    }
-
-    final fbUser = _auth.currentUser;
-    final fallback = AppUser(
-      uid: uid,
-      name: fbUser?.displayName ?? 'User',
-      email: fbUser?.email ?? '',
-      role: AppStrings.roleUser,
+    final startTime = DateTime.now();
+    FirebaseLogger.request(
+      collection: FirestorePaths.users,
+      operation: 'getUserProfile',
+      documentId: uid,
     );
-    await _users.doc(uid).set(fallback.toMap());
-    return fallback;
+
+    try {
+      final doc = await _users.doc(uid).get();
+      if (doc.exists && doc.data() != null) {
+        FirebaseLogger.response(
+          collection: FirestorePaths.users,
+          operation: 'getUserProfile',
+          documentId: uid,
+          duration: DateTime.now().difference(startTime),
+        );
+        return AppUser.fromMap(doc.data()!, uid);
+      }
+
+      final fbUser = _auth.currentUser;
+      final fallback = AppUser(
+        uid: uid,
+        name: fbUser?.displayName ?? 'User',
+        email: fbUser?.email ?? '',
+        role: AppStrings.roleUser,
+      );
+      await _users.doc(uid).set(fallback.toMap());
+      FirebaseLogger.response(
+        collection: FirestorePaths.users,
+        operation: 'getUserProfile (fallback created)',
+        documentId: uid,
+        duration: DateTime.now().difference(startTime),
+      );
+      return fallback;
+    } catch (e, st) {
+      FirebaseLogger.error(
+        collection: FirestorePaths.users,
+        operation: 'getUserProfile',
+        error: e,
+        stackTrace: st,
+      );
+      rethrow;
+    }
   }
 
   // ---------- PASSWORD RESET ----------
   Future<void> sendPasswordReset(String email) async {
+    final startTime = DateTime.now();
+    FirebaseLogger.request(
+      collection: FirestorePaths.users,
+      operation: 'sendPasswordReset',
+      parameters: {'email': email},
+    );
+
     try {
       await _auth.sendPasswordResetEmail(email: email);
-    } on FirebaseAuthException catch (e) {
+      FirebaseLogger.response(
+        collection: FirestorePaths.users,
+        operation: 'sendPasswordReset',
+        duration: DateTime.now().difference(startTime),
+      );
+    } on FirebaseAuthException catch (e, st) {
+      FirebaseLogger.error(
+        collection: FirestorePaths.users,
+        operation: 'sendPasswordReset',
+        error: e,
+        stackTrace: st,
+      );
       throw AuthException(_mapError(e));
     }
   }
@@ -103,11 +196,32 @@ class AuthService {
     required String name,
     required String phone,
   }) async {
+    final startTime = DateTime.now();
+    FirebaseLogger.request(
+      collection: FirestorePaths.users,
+      operation: 'updateProfile',
+      documentId: uid,
+      parameters: {'name': name, 'phone': phone},
+    );
+
     try {
       await _users.doc(uid).update({'name': name, 'phone': phone});
       await _auth.currentUser?.updateDisplayName(name);
-      return await getUserProfile(uid);
-    } catch (_) {
+      final profile = await getUserProfile(uid);
+      FirebaseLogger.response(
+        collection: FirestorePaths.users,
+        operation: 'updateProfile',
+        documentId: uid,
+        duration: DateTime.now().difference(startTime),
+      );
+      return profile;
+    } catch (e, st) {
+      FirebaseLogger.error(
+        collection: FirestorePaths.users,
+        operation: 'updateProfile',
+        error: e,
+        stackTrace: st,
+      );
       throw const AuthException(AppStrings.somethingWentWrong);
     }
   }
@@ -123,6 +237,13 @@ class AuthService {
       throw const AuthException('Please login again.');
     }
 
+    final startTime = DateTime.now();
+    FirebaseLogger.request(
+      collection: FirestorePaths.users,
+      operation: 'changePassword',
+      documentId: user.uid,
+    );
+
     try {
       final credential = EmailAuthProvider.credential(
         email: email,
@@ -130,15 +251,33 @@ class AuthService {
       );
       await user.reauthenticateWithCredential(credential);
       await user.updatePassword(newPassword);
-    } on FirebaseAuthException catch (e) {
+      FirebaseLogger.response(
+        collection: FirestorePaths.users,
+        operation: 'changePassword',
+        duration: DateTime.now().difference(startTime),
+      );
+    } on FirebaseAuthException catch (e, st) {
+      FirebaseLogger.error(
+        collection: FirestorePaths.users,
+        operation: 'changePassword',
+        error: e,
+        stackTrace: st,
+      );
       if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
         throw const AuthException('Current password is incorrect.');
       }
       throw AuthException(_mapError(e));
     }
   }
+
   // ---------- LOGOUT ----------
-  Future<void> logout() => _auth.signOut();
+  Future<void> logout() {
+    FirebaseLogger.request(
+      collection: FirestorePaths.users,
+      operation: 'logout',
+    );
+    return _auth.signOut();
+  }
 
   // ---------- ERROR MESSAGES ----------
   String _mapError(FirebaseAuthException e) {

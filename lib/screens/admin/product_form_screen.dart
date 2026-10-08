@@ -4,9 +4,11 @@ import 'package:jewel_ora/core/constants/app_strings.dart';
 import 'package:jewel_ora/core/constants/product_options.dart';
 import 'package:jewel_ora/core/utils/ui_helpers.dart';
 import 'package:jewel_ora/core/utils/validators.dart';
+import 'package:jewel_ora/core/widgets/app_button.dart';
+import 'package:jewel_ora/core/widgets/app_card.dart';
+import 'package:jewel_ora/core/widgets/app_dropdown.dart';
 import 'package:jewel_ora/core/widgets/app_text_field.dart';
 import 'package:jewel_ora/core/widgets/multi_image_uploader.dart';
-import 'package:jewel_ora/core/widgets/primary_button.dart';
 import 'package:jewel_ora/models/product_model.dart';
 import 'package:jewel_ora/providers/category_provider.dart';
 import 'package:jewel_ora/providers/product_provider.dart';
@@ -46,8 +48,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       text: p == null
           ? ''
           : (p.price == p.price.roundToDouble()
-          ? p.price.toInt().toString()
-          : p.price.toString()),
+              ? p.price.toInt().toString()
+              : p.price.toString()),
     );
     _weightCtrl = TextEditingController(text: p?.weight ?? '');
     _images = List.of(p?.images ?? []);
@@ -71,7 +73,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_images.isEmpty) {
-      showAppSnackBar(context, 'Please add at least one image', isError: true);
+      showAppSnackBar(context, 'Please add at least one product image', isError: true);
       return;
     }
 
@@ -99,7 +101,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
 
     if (!mounted) return;
     if (ok) {
-      showAppSnackBar(context, _isEdit ? 'Product updated' : 'Product added');
+      showAppSnackBar(context, _isEdit ? 'Piece updated successfully' : 'Piece added successfully');
       Navigator.of(context).pop();
     } else {
       showAppSnackBar(
@@ -123,122 +125,166 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     ];
 
     return Scaffold(
-      appBar: AppBar(title: Text(_isEdit ? 'Edit Product' : 'Add Product')),
+      backgroundColor: AppColors.background,
+      appBar: AppBar(title: Text(_isEdit ? 'Edit Piece' : 'Add New Piece')),
       body: SafeArea(
         child: categories.isEmpty
             ? const Padding(
-          padding: EdgeInsets.all(24),
-          child: Center(
-            child: Text(
-              'Please create at least one category first '
-                  '(Admin Panel → Categories).',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textGrey),
-            ),
-          ),
-        )
+                padding: EdgeInsets.all(24),
+                child: Center(
+                  child: Text(
+                    'Please create at least one category first\n(Admin Console → Categories).',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: AppColors.textGrey, height: 1.4),
+                  ),
+                ),
+              )
             : SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                MultiImageUploader(
-                  label: 'Product images',
-                  initialUrls: _images,
-                  maxImages: ProductOptions.maxImages,
-                  onChanged: (urls) => _images = urls,
-                ),
-                const SizedBox(height: 20),
-                AppTextField(
-                  controller: _nameCtrl,
-                  label: 'Product name',
-                  prefixIcon: Icons.diamond_outlined,
-                  validator: (v) => Validators.required(v, 'Name'),
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  initialValue: _categoryId,
-                  decoration: const InputDecoration(
-                    labelText: 'Category',
-                    prefixIcon: Icon(Icons.category_outlined),
-                  ),
-                  items: [
-                    for (final c in categories)
-                      DropdownMenuItem(
-                        value: c.id,
-                        child: Text(
-                            c.isActive ? c.name : '${c.name} (hidden)'),
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.all(20),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Product Gallery Card
+                      AppCard(
+                        padding: const EdgeInsets.all(16),
+                        child: MultiImageUploader(
+                          label: 'Product Images',
+                          initialUrls: _images,
+                          maxImages: ProductOptions.maxImages,
+                          onChanged: (urls) => _images = urls,
+                        ),
                       ),
-                  ],
-                  onChanged: (v) => setState(() => _categoryId = v),
-                  validator: (v) =>
-                  v == null ? 'Select a category' : null,
-                ),
-                const SizedBox(height: 16),
-                AppTextField(
-                  controller: _priceCtrl,
-                  label: 'Price (₹)',
-                  prefixIcon: Icons.currency_rupee,
-                  keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true),
-                  validator: Validators.price,
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  initialValue: _material,
-                  decoration: const InputDecoration(
-                    labelText: 'Material',
-                    prefixIcon: Icon(Icons.auto_awesome_outlined),
+                      const SizedBox(height: 18),
+
+                      // Piece Details Card
+                      AppCard(
+                        padding: const EdgeInsets.all(18),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Product Details',
+                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                            ),
+                            const SizedBox(height: 16),
+                            AppTextField(
+                              controller: _nameCtrl,
+                              label: 'Product Name',
+                              prefixIcon: Icons.diamond_outlined,
+                              validator: (v) => Validators.required(v, 'Name'),
+                            ),
+                            const SizedBox(height: 16),
+                            AppDropdown<String>(
+                              label: 'Category',
+                              value: _categoryId,
+                              prefixIcon: Icons.category_outlined,
+                              items: [
+                                for (final c in categories)
+                                  DropdownMenuItem(
+                                    value: c.id,
+                                    child: Text(
+                                      c.isActive ? c.name : '${c.name} (hidden)',
+                                    ),
+                                  ),
+                              ],
+                              onChanged: (v) => setState(() => _categoryId = v),
+                              validator: (v) =>
+                                  v == null ? 'Select a category' : null,
+                            ),
+                            const SizedBox(height: 16),
+                            AppTextField(
+                              controller: _priceCtrl,
+                              label: 'Price (₹)',
+                              prefixIcon: Icons.currency_rupee_rounded,
+                              keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true,
+                              ),
+                              validator: Validators.price,
+                            ),
+                            const SizedBox(height: 16),
+                            AppDropdown<String>(
+                              label: 'Material',
+                              value: _material,
+                              prefixIcon: Icons.auto_awesome_outlined,
+                              items: [
+                                for (final m in materials)
+                                  DropdownMenuItem(value: m, child: Text(m)),
+                              ],
+                              onChanged: (v) => setState(() => _material = v),
+                              validator: (v) =>
+                                  v == null ? 'Select a material' : null,
+                            ),
+                            const SizedBox(height: 16),
+                            AppTextField(
+                              controller: _weightCtrl,
+                              label: 'Weight (e.g. 5.2 g, 18 Karat)',
+                              prefixIcon: Icons.scale_outlined,
+                            ),
+                            const SizedBox(height: 16),
+                            AppTextField(
+                              controller: _descCtrl,
+                              label: 'Description',
+                              prefixIcon: Icons.notes_outlined,
+                              maxLines: 4,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+
+                      // Availability & Display settings
+                      AppCard(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        child: Column(
+                          children: [
+                            SwitchListTile(
+                              contentPadding: EdgeInsets.zero,
+                              activeThumbColor: AppColors.primary,
+                              activeTrackColor: AppColors.primaryLight,
+                              title: const Text(
+                                'Available in Stock',
+                                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                              ),
+                              subtitle: const Text(
+                                'Turn off to mark as out of stock',
+                                style: TextStyle(fontSize: 12, color: AppColors.textGrey),
+                              ),
+                              value: _isAvailable,
+                              onChanged: (v) => setState(() => _isAvailable = v),
+                            ),
+                            const Divider(height: 1),
+                            SwitchListTile(
+                              contentPadding: EdgeInsets.zero,
+                              activeThumbColor: AppColors.primary,
+                              activeTrackColor: AppColors.primaryLight,
+                              title: const Text(
+                                'Featured in Boutique Showcase',
+                                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                              ),
+                              subtitle: const Text(
+                                'Prominently highlighted on customer home screen',
+                                style: TextStyle(fontSize: 12, color: AppColors.textGrey),
+                              ),
+                              value: _isFeatured,
+                              onChanged: (v) => setState(() => _isFeatured = v),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+
+                      AppButton(
+                        title: _isEdit ? 'Save Changes' : 'Add to Collection',
+                        isLoading: isSaving,
+                        onPressed: _submit,
+                      ),
+                    ],
                   ),
-                  items: [
-                    for (final m in materials)
-                      DropdownMenuItem(value: m, child: Text(m)),
-                  ],
-                  onChanged: (v) => setState(() => _material = v),
-                  validator: (v) =>
-                  v == null ? 'Select a material' : null,
                 ),
-                const SizedBox(height: 16),
-                AppTextField(
-                  controller: _weightCtrl,
-                  label: 'Weight (e.g. 5.2 g)',
-                  prefixIcon: Icons.scale_outlined,
-                ),
-                const SizedBox(height: 16),
-                AppTextField(
-                  controller: _descCtrl,
-                  label: 'Description',
-                  prefixIcon: Icons.notes_outlined,
-                  maxLines: 4,
-                ),
-                const SizedBox(height: 8),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Available'),
-                  subtitle:
-                  const Text('Turn off to show as out of stock'),
-                  value: _isAvailable,
-                  onChanged: (v) => setState(() => _isAvailable = v),
-                ),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Featured'),
-                  subtitle: const Text('Shown on the home screen'),
-                  value: _isFeatured,
-                  onChanged: (v) => setState(() => _isFeatured = v),
-                ),
-                const SizedBox(height: 20),
-                PrimaryButton(
-                  text: _isEdit ? 'Save Changes' : 'Add Product',
-                  isLoading: isSaving,
-                  onPressed: _submit,
-                ),
-              ],
-            ),
-          ),
-        ),
+              ),
       ),
     );
   }

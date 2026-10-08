@@ -1,9 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:jewel_ora/core/constants/app_colors.dart';
+import 'package:jewel_ora/core/constants/app_sizes.dart';
 import 'package:jewel_ora/core/errors/upload_exception.dart';
 import 'package:jewel_ora/core/utils/image_url.dart';
 import 'package:jewel_ora/core/utils/ui_helpers.dart';
+import 'package:jewel_ora/core/widgets/app_loader.dart';
 import 'package:jewel_ora/services/cloudinary_service.dart';
 import 'package:jewel_ora/services/image_picker_service.dart';
 
@@ -51,8 +53,6 @@ class _MultiImageUploaderState extends State<MultiImageUploader> {
     }
 
     setState(() => _uploading = true);
-    // One by one, so images that uploaded successfully are kept
-    // even if a later one fails.
     for (final file in selected) {
       try {
         final url = await _cloudinary.uploadImage(file, folder: widget.folder);
@@ -88,9 +88,22 @@ class _MultiImageUploaderState extends State<MultiImageUploader> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '${widget.label} (${_urls.length}/${widget.maxImages})',
-          style: const TextStyle(fontWeight: FontWeight.w600),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              widget.label,
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+            ),
+            Text(
+              '${_urls.length}/${widget.maxImages}',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primaryDark,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 4),
         const Text(
@@ -99,7 +112,7 @@ class _MultiImageUploaderState extends State<MultiImageUploader> {
         ),
         const SizedBox(height: 10),
         SizedBox(
-          height: 96,
+          height: 100,
           child: ListView(
             scrollDirection: Axis.horizontal,
             children: [
@@ -113,20 +126,29 @@ class _MultiImageUploaderState extends State<MultiImageUploader> {
               if (_uploading)
                 const _BoxShell(
                   child: Center(
-                    child: SizedBox(
-                      height: 24,
-                      width: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2.5),
-                    ),
+                    child: AppLoader(size: 32),
                   ),
                 ),
               if (canAdd)
                 InkWell(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
                   onTap: _addImages,
                   child: const _BoxShell(
-                    child: Icon(Icons.add_photo_alternate_outlined,
-                        size: 32, color: AppColors.textGrey),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.add_photo_alternate_outlined,
+                          size: 28,
+                          color: AppColors.primary,
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          'Add Photo',
+                          style: TextStyle(fontSize: 11, color: AppColors.textGrey),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
             ],
@@ -144,13 +166,13 @@ class _BoxShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 96,
-      height: 96,
-      margin: const EdgeInsets.only(right: 10),
+      width: 100,
+      height: 100,
+      margin: const EdgeInsets.only(right: 12),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+        border: Border.all(color: AppColors.border, width: 1.2),
       ),
       child: child,
     );
@@ -173,9 +195,9 @@ class _Thumb extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 96,
-      height: 96,
-      margin: const EdgeInsets.only(right: 10),
+      width: 100,
+      height: 100,
+      margin: const EdgeInsets.only(right: 12),
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -183,7 +205,7 @@ class _Thumb extends StatelessWidget {
             onTap: onTap,
             child: Container(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
                 border: Border.all(
                   color: isCover ? AppColors.primary : AppColors.border,
                   width: isCover ? 2 : 1,
@@ -193,35 +215,44 @@ class _Thumb extends StatelessWidget {
               child: CachedNetworkImage(
                 imageUrl: ImageUrl.optimized(url, width: 250),
                 fit: BoxFit.cover,
-                errorWidget: (_, __, ___) =>
-                const Icon(Icons.broken_image_outlined),
+                errorWidget: (context, imageUrl, error) =>
+                    const Icon(Icons.broken_image_outlined),
               ),
             ),
           ),
           if (isCover)
             Positioned(
-              left: 4,
-              bottom: 4,
+              left: 6,
+              bottom: 6,
               child: Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(4),
                 ),
-                child: const Text('Cover',
-                    style: TextStyle(color: Colors.white, fontSize: 10)),
+                child: const Text(
+                  'COVER',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                  ),
+                ),
               ),
             ),
           Positioned(
-            right: 2,
-            top: 2,
+            right: 4,
+            top: 4,
             child: InkWell(
               onTap: onRemove,
-              child: const CircleAvatar(
-                radius: 11,
-                backgroundColor: Colors.black54,
-                child: Icon(Icons.close, size: 14, color: Colors.white),
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(
+                  color: Colors.black54,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.close, size: 12, color: Colors.white),
               ),
             ),
           ),

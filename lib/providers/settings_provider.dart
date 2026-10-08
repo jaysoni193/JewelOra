@@ -17,8 +17,24 @@ class SettingsProvider extends ChangeNotifier {
   String? _errorMessage;
 
   SettingsProvider(this._service) {
+    _initFromCache();
+    _listen();
+  }
+
+  /// Instant local cache hydration for zero-flicker startup
+  Future<void> _initFromCache() async {
+    try {
+      final cached = await _service.getCachedSettings();
+      if (_isLoading) {
+        _settings = cached;
+        notifyListeners();
+      }
+    } catch (_) {}
+  }
+
+  void _listen() {
     _sub = _service.watchSettings().listen(
-          (data) {
+      (data) {
         _settings = data;
         _isLoading = false;
         AppIconService.instance.update(data.appIcon);
@@ -43,6 +59,7 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
     try {
       await _service.save(updated);
+      _settings = updated;
       return true;
     } catch (_) {
       _errorMessage = AppStrings.somethingWentWrong;

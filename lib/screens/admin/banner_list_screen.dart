@@ -1,11 +1,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:jewel_ora/core/constants/app_colors.dart';
+import 'package:jewel_ora/core/constants/app_sizes.dart';
 import 'package:jewel_ora/core/constants/app_strings.dart';
+import 'package:jewel_ora/core/theme/app_text_styles.dart';
 import 'package:jewel_ora/core/utils/image_url.dart';
-import 'package:jewel_ora/core/utils/ui_helpers.dart';
-import 'package:jewel_ora/core/widgets/empty_view.dart';
-import 'package:jewel_ora/core/widgets/loading_view.dart';
+import 'package:jewel_ora/core/widgets/app_card.dart';
+import 'package:jewel_ora/core/widgets/app_dialog.dart';
+import 'package:jewel_ora/core/widgets/app_loader.dart';
+import 'package:jewel_ora/core/widgets/app_snackbar.dart';
+import 'package:jewel_ora/core/widgets/empty_state.dart';
 import 'package:jewel_ora/models/banner_model.dart';
 import 'package:jewel_ora/providers/banner_provider.dart';
 import 'package:jewel_ora/screens/admin/banner_form_screen.dart';
@@ -16,29 +20,33 @@ class BannerListScreen extends StatelessWidget {
 
   void _openForm(BuildContext context, [BannerModel? banner]) {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => BannerFormScreen(banner: banner)),
+      MaterialPageRoute(
+        builder: (context) => BannerFormScreen(banner: banner),
+      ),
     );
   }
 
   Future<void> _delete(BuildContext context, BannerModel banner) async {
-    final ok = await showConfirmDialog(
+    final ok = await AppDialog.delete(
       context,
-      title: 'Delete banner',
-      message: 'Delete this banner? This cannot be undone.',
-      confirmText: 'Delete',
+      title: 'Delete Banner',
+      message: 'Delete this promotional banner? This action cannot be undone.',
+      deleteText: 'Delete',
     );
     if (!ok || !context.mounted) return;
 
     final provider = context.read<BannerProvider>();
     final success = await provider.delete(banner.id);
     if (!context.mounted) return;
-    showAppSnackBar(
-      context,
-      success
-          ? 'Banner deleted'
-          : (provider.errorMessage ?? AppStrings.somethingWentWrong),
-      isError: !success,
-    );
+
+    if (success) {
+      AppSnackbar.showSuccess(context, 'Banner deleted successfully');
+    } else {
+      AppSnackbar.showError(
+        context,
+        provider.errorMessage ?? AppStrings.somethingWentWrong,
+      );
+    }
   }
 
   @override
@@ -46,37 +54,42 @@ class BannerListScreen extends StatelessWidget {
     final provider = context.watch<BannerProvider>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Banners')),
+      appBar: AppBar(
+        title: const Text('Promotional Banners'),
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openForm(context),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
-        label: const Text('Add'),
+        label: const Text('Add Banner', style: TextStyle(fontWeight: FontWeight.w600)),
       ),
       body: Builder(
-        builder: (_) {
-          if (provider.isLoading) return const LoadingView();
+        builder: (context) {
+          if (provider.isLoading) {
+            return const Center(child: AppLoader());
+          }
           if (provider.banners.isEmpty) {
-            return const EmptyView(
-              message: 'No banners yet. Tap Add to create one.',
-              icon: Icons.image_outlined,
+            return EmptyState(
+              title: 'No Banners Yet',
+              message: 'Add showcase banners to highlight collections and seasonal offers.',
+              icon: Icons.view_carousel_outlined,
+              buttonTitle: 'Add Banner',
+              onButtonPressed: () => _openForm(context),
             );
           }
           return Column(
             children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(16, 4, 16, 8),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(AppSizes.p16, AppSizes.p12, AppSizes.p16, AppSizes.p8),
                 child: Row(
                   children: [
-                    Icon(Icons.drag_indicator,
-                        size: 18, color: AppColors.textGrey),
-                    SizedBox(width: 6),
+                    const Icon(Icons.drag_indicator, size: 18, color: AppColors.primary),
+                    const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        'Long press a banner and drag to change its order.',
-                        style: TextStyle(
-                            fontSize: 12, color: AppColors.textGrey),
+                        'Long press and drag any banner to reorder the carousel display.',
+                        style: AppTextStyles.caption.copyWith(color: AppColors.textGrey),
                       ),
                     ),
                   ],
@@ -84,14 +97,14 @@ class BannerListScreen extends StatelessWidget {
               ),
               Expanded(
                 child: ReorderableListView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 90),
+                  padding: const EdgeInsets.fromLTRB(AppSizes.p16, AppSizes.p4, AppSizes.p16, 90),
                   itemCount: provider.banners.length,
                   onReorder: provider.reorder,
                   itemBuilder: (context, i) {
                     final b = provider.banners[i];
                     return Padding(
                       key: ValueKey(b.id),
-                      padding: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.only(bottom: AppSizes.p12),
                       child: _BannerTile(
                         banner: b,
                         position: i + 1,
@@ -128,27 +141,45 @@ class _BannerTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
+    return AppCard(
+      padding: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          AspectRatio(
-            aspectRatio: 16 / 7,
-            child: Opacity(
-              opacity: banner.isActive ? 1 : 0.4,
-              child: CachedNetworkImage(
-                imageUrl: ImageUrl.optimized(banner.imageUrl, width: 800),
-                fit: BoxFit.cover,
-                placeholder: (_, __) =>
-                const Center(child: CircularProgressIndicator()),
-                errorWidget: (_, __, ___) =>
-                const Icon(Icons.broken_image_outlined),
+          ClipRRect(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(AppSizes.r12)),
+            child: AspectRatio(
+              aspectRatio: 16 / 7,
+              child: Opacity(
+                opacity: banner.isActive ? 1.0 : 0.45,
+                child: CachedNetworkImage(
+                  imageUrl: ImageUrl.optimized(banner.imageUrl, width: 800),
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    color: AppColors.surfaceVariant,
+                    child: const Center(
+                      child: SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    color: AppColors.surfaceVariant,
+                    child: const Center(
+                      child: Icon(Icons.broken_image_outlined, color: AppColors.textLight, size: 36),
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 4, 4, 4),
+            padding: const EdgeInsets.fromLTRB(AppSizes.p12, AppSizes.p8, AppSizes.p8, AppSizes.p8),
             child: Row(
               children: [
                 CircleAvatar(
@@ -157,9 +188,10 @@ class _BannerTile extends StatelessWidget {
                   child: Text(
                     '$position',
                     style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primaryDark),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primaryDark,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -168,33 +200,66 @@ class _BannerTile extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        banner.title.isEmpty ? 'Untitled banner' : banner.title,
+                        banner.title.isEmpty ? 'Untitled Banner' : banner.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontWeight: FontWeight.w600),
+                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                       ),
-                      Text(
-                        banner.isActive ? 'Visible to customers' : 'Hidden',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: banner.isActive
-                              ? AppColors.success
-                              : AppColors.textGrey,
-                        ),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Container(
+                            width: 7,
+                            height: 7,
+                            decoration: BoxDecoration(
+                              color: banner.isActive ? AppColors.success : AppColors.textLight,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            banner.isActive ? 'Active on Home' : 'Hidden',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: banner.isActive ? AppColors.success : AppColors.textGrey,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
                 Switch(
                   value: banner.isActive,
-                  activeColor: AppColors.primary,
-                  onChanged: (_) => onToggle(),
+                  activeThumbColor: AppColors.primary,
+                  activeTrackColor: AppColors.primaryLight,
+                  onChanged: (value) => onToggle(),
                 ),
                 PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert, color: AppColors.textGrey),
                   onSelected: (v) => v == 'edit' ? onEdit() : onDelete(),
-                  itemBuilder: (_) => const [
-                    PopupMenuItem(value: 'edit', child: Text('Edit')),
-                    PopupMenuItem(value: 'delete', child: Text('Delete')),
+                  itemBuilder: (context) => const [
+                    PopupMenuItem(
+                      value: 'edit',
+                      child: Row(
+                        children: [
+                          Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
+                          SizedBox(width: 8),
+                          Text('Edit'),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete_outline, size: 18, color: AppColors.error),
+                          SizedBox(width: 8),
+                          Text('Delete', style: TextStyle(color: AppColors.error)),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ],

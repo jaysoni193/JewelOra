@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:jewel_ora/core/widgets/empty_view.dart';
-import 'package:jewel_ora/core/widgets/loading_view.dart';
+import 'package:jewel_ora/core/constants/app_colors.dart';
+import 'package:jewel_ora/core/widgets/app_loader.dart';
+import 'package:jewel_ora/core/widgets/empty_state.dart';
 import 'package:jewel_ora/core/widgets/product_card.dart';
 import 'package:jewel_ora/models/product_model.dart';
 import 'package:jewel_ora/providers/category_provider.dart';
@@ -29,32 +30,35 @@ class WishlistScreen extends StatelessWidget {
     }
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(title: const Text('My Wishlist')),
       body: Builder(
-        builder: (_) {
+        builder: (context) {
           if (wishlist.isLoading ||
               productsP.isLoading ||
               categoriesP.isLoading) {
-            return const LoadingView();
+            return const Center(child: AppLoader(size: 50));
           }
           if (products.isEmpty) {
-            return EmptyView(
-              message: 'No favourites yet.\nTap the heart on any product.',
-              icon: Icons.favorite_border,
-              actionLabel: 'Go back',
+            return EmptyState(
+              title: 'No favourites yet',
+              subtitle: 'Tap the heart icon on any piece you love to save it to your wishlist.',
+              icon: Icons.favorite_border_rounded,
+              actionLabel: 'Browse Collection',
               onAction: () => Navigator.of(context).pop(),
             );
           }
           return GridView.builder(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
             itemCount: products.length,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 0.68,
+              crossAxisSpacing: 14,
+              mainAxisSpacing: 14,
+              childAspectRatio: 0.65,
             ),
-            itemBuilder: (_, i) => ProductCard(
+            itemBuilder: (context, i) => ProductCard(
               product: products[i],
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(

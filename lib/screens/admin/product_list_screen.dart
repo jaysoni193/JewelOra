@@ -1,12 +1,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:jewel_ora/core/constants/app_colors.dart';
+import 'package:jewel_ora/core/constants/app_sizes.dart';
 import 'package:jewel_ora/core/constants/app_strings.dart';
 import 'package:jewel_ora/core/utils/formatters.dart';
 import 'package:jewel_ora/core/utils/image_url.dart';
 import 'package:jewel_ora/core/utils/ui_helpers.dart';
-import 'package:jewel_ora/core/widgets/empty_view.dart';
-import 'package:jewel_ora/core/widgets/loading_view.dart';
+import 'package:jewel_ora/core/widgets/app_card.dart';
+import 'package:jewel_ora/core/widgets/app_dialog.dart';
+import 'package:jewel_ora/core/widgets/app_loader.dart';
+import 'package:jewel_ora/core/widgets/empty_state.dart';
 import 'package:jewel_ora/models/product_model.dart';
 import 'package:jewel_ora/providers/category_provider.dart';
 import 'package:jewel_ora/providers/product_provider.dart';
@@ -31,11 +34,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
   }
 
   Future<void> _delete(ProductModel p) async {
-    final ok = await showConfirmDialog(
+    final ok = await AppDialog.delete(
       context,
-      title: 'Delete product',
-      message: 'Delete "${p.name}"? This cannot be undone.',
-      confirmText: 'Delete',
+      title: 'Delete Piece',
+      message: 'Are you sure you want to delete "${p.name}"? This action cannot be undone.',
+      confirmText: 'Delete Piece',
     );
     if (!ok || !mounted) return;
 
@@ -45,7 +48,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
     showAppSnackBar(
       context,
       success
-          ? 'Product deleted'
+          ? 'Product deleted successfully'
           : (provider.errorMessage ?? AppStrings.somethingWentWrong),
       isError: !success,
     );
@@ -71,28 +74,37 @@ class _ProductListScreenState extends State<ProductListScreen> {
     }).toList();
 
     return Scaffold(
-      appBar: AppBar(title: Text('Products (${provider.products.length})')),
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: Text('Jewellery Pieces (${provider.products.length})'),
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openForm(),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: const Text('Add'),
+        icon: const Icon(Icons.add_rounded),
+        label: const Text('Add Piece'),
       ),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            padding: const EdgeInsets.fromLTRB(16, 6, 16, 10),
             child: TextField(
               onChanged: (v) => setState(() => _query = v),
-              decoration: const InputDecoration(
-                hintText: 'Search products',
-                prefixIcon: Icon(Icons.search),
+              decoration: InputDecoration(
+                hintText: 'Search products by name',
+                prefixIcon: const Icon(Icons.search_rounded, size: 22, color: AppColors.textGrey),
+                suffixIcon: _query.isEmpty
+                    ? null
+                    : IconButton(
+                        icon: const Icon(Icons.close_rounded, size: 20),
+                        onPressed: () => setState(() => _query = ''),
+                      ),
               ),
             ),
           ),
           SizedBox(
-            height: 44,
+            height: 42,
             child: ListView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -113,25 +125,30 @@ class _ProductListScreenState extends State<ProductListScreen> {
           ),
           Expanded(
             child: Builder(
-              builder: (_) {
-                if (provider.isLoading) return const LoadingView();
+              builder: (context) {
+                if (provider.isLoading) {
+                  return const Center(child: AppLoader(size: 50));
+                }
                 if (provider.products.isEmpty) {
-                  return const EmptyView(
-                    message: 'No products yet. Tap Add to create one.',
+                  return const EmptyState(
+                    title: 'No products in store',
+                    subtitle: 'Tap the button below to add your first jewellery piece.',
                     icon: Icons.diamond_outlined,
                   );
                 }
                 if (items.isEmpty) {
-                  return const EmptyView(
-                    message: 'No products match your search',
-                    icon: Icons.search_off,
+                  return const EmptyState(
+                    title: 'No pieces match your search',
+                    subtitle: 'Try searching with a different keyword or category.',
+                    icon: Icons.search_off_rounded,
                   );
                 }
                 return ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 90),
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 90),
                   itemCount: items.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
-                  itemBuilder: (_, i) {
+                  separatorBuilder: (context, index) => const SizedBox(height: 12),
+                  itemBuilder: (context, i) {
                     final p = items[i];
                     return _ProductTile(
                       product: p,
@@ -172,6 +189,20 @@ class _FilterChip extends StatelessWidget {
         label: Text(label),
         selected: selected,
         onSelected: (_) => onTap(),
+        selectedColor: AppColors.primaryLight,
+        backgroundColor: AppColors.surface,
+        labelStyle: TextStyle(
+          fontSize: 13,
+          fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+          color: selected ? AppColors.primaryDark : AppColors.textDark,
+        ),
+        side: BorderSide(
+          color: selected ? AppColors.primary : AppColors.border,
+          width: selected ? 1.2 : 1.0,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSizes.radiusCircular),
+        ),
       ),
     );
   }
@@ -195,107 +226,145 @@ class _ProductTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = product;
-    return Card(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onEdit,
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: SizedBox(
-                  width: 72,
-                  height: 72,
-                  child: p.firstImage.isEmpty
-                      ? Container(
-                    color: AppColors.primaryLight,
-                    child: const Icon(Icons.image_outlined),
-                  )
-                      : CachedNetworkImage(
-                    imageUrl: ImageUrl.optimized(p.firstImage, width: 220),
-                    fit: BoxFit.cover,
-                    errorWidget: (_, __, ___) =>
-                    const Icon(Icons.broken_image_outlined),
+    return AppCard(
+      onTap: onEdit,
+      padding: const EdgeInsets.all(12),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: SizedBox(
+              width: 76,
+              height: 76,
+              child: p.firstImage.isEmpty
+                  ? Container(
+                      color: AppColors.primaryLight,
+                      child: const Icon(Icons.diamond_outlined, color: AppColors.primary),
+                    )
+                  : CachedNetworkImage(
+                      imageUrl: ImageUrl.optimized(p.firstImage, width: 220),
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                        color: AppColors.surfaceVariant,
+                      ),
+                      errorWidget: (context, url, error) =>
+                          const Icon(Icons.broken_image_outlined),
+                    ),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  p.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textDark,
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                const SizedBox(height: 2),
+                Text(
+                  [p.categoryName, p.material]
+                      .where((e) => e.isNotEmpty)
+                      .join(' • '),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textGrey,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  Formatters.price(p.price),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14,
+                    color: AppColors.primaryDark,
+                  ),
+                ),
+                if (p.isFeatured || !p.isAvailable)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Wrap(
+                      spacing: 6,
+                      children: [
+                        if (p.isFeatured)
+                          const _Badge('Featured', AppColors.primaryDark, AppColors.primaryLight),
+                        if (!p.isAvailable)
+                          const _Badge('Hidden / Out of Stock', AppColors.error, AppColors.errorLight),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert_rounded, color: AppColors.textGrey),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            onSelected: (v) {
+              switch (v) {
+                case 'edit':
+                  onEdit();
+                  break;
+                case 'featured':
+                  onToggleFeatured();
+                  break;
+                case 'available':
+                  onToggleAvailable();
+                  break;
+                case 'delete':
+                  onDelete();
+                  break;
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'edit',
+                child: Row(
                   children: [
-                    Text(
-                      p.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.w600),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      [p.categoryName, p.material]
-                          .where((e) => e.isNotEmpty)
-                          .join(' • '),
-                      style: const TextStyle(
-                          fontSize: 12, color: AppColors.textGrey),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      Formatters.price(p.price),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primaryDark,
-                      ),
-                    ),
-                    if (p.isFeatured || !p.isAvailable)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Wrap(
-                          spacing: 6,
-                          children: [
-                            if (p.isFeatured)
-                              const _Badge('Featured', AppColors.primary),
-                            if (!p.isAvailable)
-                              const _Badge('Hidden', AppColors.error),
-                          ],
-                        ),
-                      ),
+                    Icon(Icons.edit_outlined, size: 18),
+                    SizedBox(width: 8),
+                    Text('Edit Details'),
                   ],
                 ),
               ),
-              PopupMenuButton<String>(
-                onSelected: (v) {
-                  switch (v) {
-                    case 'edit':
-                      onEdit();
-                    case 'featured':
-                      onToggleFeatured();
-                    case 'available':
-                      onToggleAvailable();
-                    case 'delete':
-                      onDelete();
-                  }
-                },
-                itemBuilder: (_) => [
-                  const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                  PopupMenuItem(
-                    value: 'featured',
-                    child: Text(
-                        p.isFeatured ? 'Remove featured' : 'Mark featured'),
-                  ),
-                  PopupMenuItem(
-                    value: 'available',
-                    child: Text(
-                        p.isAvailable ? 'Mark unavailable' : 'Mark available'),
-                  ),
-                  const PopupMenuItem(value: 'delete', child: Text('Delete')),
-                ],
+              PopupMenuItem(
+                value: 'featured',
+                child: Row(
+                  children: [
+                    Icon(p.isFeatured ? Icons.star_border_rounded : Icons.star_rounded, size: 18),
+                    SizedBox(width: 8),
+                    Text(p.isFeatured ? 'Remove from Featured' : 'Mark as Featured'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'available',
+                child: Row(
+                  children: [
+                    Icon(p.isAvailable ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 18),
+                    SizedBox(width: 8),
+                    Text(p.isAvailable ? 'Mark Unavailable' : 'Mark Available'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'delete',
+                child: Row(
+                  children: [
+                    Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.error),
+                    SizedBox(width: 8),
+                    Text('Delete Piece', style: TextStyle(color: AppColors.error)),
+                  ],
+                ),
               ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }
@@ -303,20 +372,26 @@ class _ProductTile extends StatelessWidget {
 
 class _Badge extends StatelessWidget {
   final String text;
-  final Color color;
-  const _Badge(this.text, this.color);
+  final Color textColor;
+  final Color bgColor;
+  const _Badge(this.text, this.textColor, this.bgColor);
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(6),
+        color: bgColor,
+        borderRadius: BorderRadius.circular(4),
       ),
-      child: Text(text,
-          style: TextStyle(
-              fontSize: 11, color: color, fontWeight: FontWeight.w600)),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 10,
+          color: textColor,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
     );
   }
 }

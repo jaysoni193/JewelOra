@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jewel_ora/core/widgets/app_button.dart';
 
 class PrimaryButton extends StatelessWidget {
   final String text;
@@ -16,27 +17,12 @@ class PrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: isLoading ? null : onPressed,
-      child: isLoading
-          ? const SizedBox(
-        height: 22,
-        width: 22,
-        child: CircularProgressIndicator(
-          strokeWidth: 2.5,
-          color: Colors.white,
-        ),
-      )
-          : Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            Icon(icon, size: 20),
-            const SizedBox(width: 8),
-          ],
-          Text(text),
-        ],
-      ),
+    return AppButton(
+      title: text,
+      onPressed: onPressed,
+      isLoading: isLoading,
+      icon: icon,
+      type: AppButtonType.primary,
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:jewel_ora/core/utils/image_url.dart';
+import 'package:jewel_ora/core/widgets/app_loader.dart';
 
 class ImageViewerScreen extends StatefulWidget {
   final List<String> images;
@@ -18,7 +19,7 @@ class ImageViewerScreen extends StatefulWidget {
 
 class _ImageViewerScreenState extends State<ImageViewerScreen> {
   late final PageController _ctrl =
-  PageController(initialPage: widget.initialIndex);
+      PageController(initialPage: widget.initialIndex);
   late int _current = widget.initialIndex;
   bool _zoomed = false;
 
@@ -47,7 +48,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
             : const PageScrollPhysics(),
         itemCount: widget.images.length,
         onPageChanged: (i) => setState(() => _current = i),
-        itemBuilder: (_, i) => _ZoomableImage(
+        itemBuilder: (context, i) => _ZoomableImage(
           url: widget.images[i],
           onZoomChanged: (z) {
             if (z != _zoomed) setState(() => _zoomed = z);
@@ -85,7 +86,7 @@ class _ZoomableImageState extends State<_ZoomableImage> {
     widget.onZoomChanged(value);
   }
 
-  void _onInteractionEnd(ScaleEndDetails _) {
+  void _onInteractionEnd(ScaleEndDetails details) {
     _setZoomed(_controller.value.getMaxScaleOnAxis() > 1.01);
   }
 
@@ -123,9 +124,9 @@ class _ZoomableImageState extends State<_ZoomableImage> {
           child: CachedNetworkImage(
             imageUrl: ImageUrl.optimized(widget.url, width: 1400),
             fit: BoxFit.contain,
-            placeholder: (_, __) =>
-            const Center(child: CircularProgressIndicator()),
-            errorWidget: (_, __, ___) => const Icon(
+            placeholder: (context, url) =>
+                const Center(child: AppLoader(size: 40)),
+            errorWidget: (context, url, error) => const Icon(
               Icons.broken_image_outlined,
               color: Colors.white54,
               size: 48,

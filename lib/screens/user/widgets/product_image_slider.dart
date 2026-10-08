@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:jewel_ora/core/constants/app_colors.dart';
 import 'package:jewel_ora/core/utils/image_url.dart';
+import 'package:jewel_ora/core/widgets/app_loader.dart';
 import 'package:jewel_ora/screens/user/image_viewer_screen.dart';
 
 class ProductImageSlider extends StatefulWidget {
@@ -39,8 +40,10 @@ class _ProductImageSliderState extends State<ProductImageSlider> {
       return AspectRatio(
         aspectRatio: 1,
         child: Container(
-          color: AppColors.primaryLight,
-          child: const Icon(Icons.image_outlined, size: 56),
+          color: AppColors.primaryLight.withValues(alpha: 0.3),
+          child: const Center(
+            child: Icon(Icons.diamond_outlined, size: 56, color: AppColors.primary),
+          ),
         ),
       );
     }
@@ -57,17 +60,20 @@ class _ProductImageSliderState extends State<ProductImageSlider> {
             controller: _pageCtrl,
             itemCount: images.length,
             onPageChanged: (i) => setState(() => _current = i),
-            itemBuilder: (_, i) => GestureDetector(
+            itemBuilder: (context, i) => GestureDetector(
               onTap: () => _openViewer(i),
-              child: CachedNetworkImage(
-                imageUrl: ImageUrl.optimized(images[i], width: 900),
-                fit: BoxFit.cover,
-                placeholder: (_, __) => Container(
-                  color: AppColors.primaryLight.withValues(alpha: 0.4),
-                  child: const Center(child: CircularProgressIndicator()),
+              child: Container(
+                color: const Color(0xFFFBF9F5),
+                child: CachedNetworkImage(
+                  imageUrl: ImageUrl.optimized(images[i], width: 900),
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    color: AppColors.surfaceVariant.withValues(alpha: 0.5),
+                    child: const Center(child: AppLoader(size: 40)),
+                  ),
+                  errorWidget: (context, url, error) =>
+                      const Center(child: Icon(Icons.broken_image_outlined, size: 40)),
                 ),
-                errorWidget: (_, __, ___) =>
-                const Icon(Icons.broken_image_outlined),
               ),
             ),
           ),
@@ -75,34 +81,40 @@ class _ProductImageSliderState extends State<ProductImageSlider> {
           // Counter, top right
           if (images.length > 1)
             Positioned(
-              top: 12,
-              right: 12,
+              top: 14,
+              right: 14,
               child: Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.black54,
+                  color: Colors.black.withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   '${active + 1}/${images.length}',
-                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
 
           // Zoom hint, bottom right
           Positioned(
-            bottom: 12,
-            right: 12,
+            bottom: 14,
+            right: 14,
             child: Container(
-              padding: const EdgeInsets.all(6),
-              decoration: const BoxDecoration(
-                color: Colors.black54,
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.6),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.zoom_out_map,
-                  size: 16, color: Colors.white),
+              child: const Icon(
+                Icons.zoom_out_map_rounded,
+                size: 16,
+                color: Colors.white,
+              ),
             ),
           ),
 
@@ -119,11 +131,11 @@ class _ProductImageSliderState extends State<ProductImageSlider> {
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 250),
                       margin: const EdgeInsets.symmetric(horizontal: 3),
-                      height: 6,
-                      width: i == active ? 18 : 6,
+                      height: 5,
+                      width: i == active ? 22 : 6,
                       decoration: BoxDecoration(
-                        color: i == active ? AppColors.primary : Colors.white70,
-                        borderRadius: BorderRadius.circular(3),
+                        color: i == active ? AppColors.primary : Colors.white.withValues(alpha: 0.8),
+                        borderRadius: BorderRadius.circular(4),
                       ),
                     ),
                 ],

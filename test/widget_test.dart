@@ -1,30 +1,71 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:jewel_ora/main.dart';
+import 'package:jewel_ora/core/widgets/app_button.dart';
+import 'package:jewel_ora/core/widgets/app_card.dart';
+import 'package:jewel_ora/core/widgets/app_loader.dart';
+import 'package:jewel_ora/core/widgets/empty_state.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('AppButton renders and triggers onPressed callback', (tester) async {
+    var wasTapped = false;
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: AppButton(
+            title: 'Test Button',
+            onPressed: () => wasTapped = true,
+          ),
+        ),
+      ),
+    );
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
+    expect(find.text('Test Button'), findsOneWidget);
+    await tester.tap(find.text('Test Button'));
     await tester.pump();
+    expect(wasTapped, isTrue);
+  });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+  testWidgets('AppLoader renders luxury custom painter', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: AppLoader(),
+        ),
+      ),
+    );
+
+    expect(find.byType(AppLoader), findsOneWidget);
+  });
+
+  testWidgets('EmptyState displays title and message correctly', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: EmptyState(
+            title: 'No Items',
+            message: 'Nothing here yet',
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('No Items'), findsOneWidget);
+    expect(find.text('Nothing here yet'), findsOneWidget);
+  });
+
+  testWidgets('AppCard renders child with decoration', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: AppCard(
+            child: Text('Card Content'),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Card Content'), findsOneWidget);
+    expect(find.byType(AppCard), findsOneWidget);
   });
 }

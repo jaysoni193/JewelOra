@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:jewel_ora/core/constants/app_colors.dart';
+import 'package:jewel_ora/core/constants/app_sizes.dart';
 import 'package:jewel_ora/core/utils/image_url.dart';
 import 'package:jewel_ora/models/banner_model.dart';
 
@@ -28,18 +29,18 @@ class _HomeBannerCarouselState extends State<HomeBannerCarousel> {
       children: [
         CarouselSlider(
           options: CarouselOptions(
-            aspectRatio: 16 / 7,
+            aspectRatio: 16 / 7.5,
             viewportFraction: 0.92,
             enlargeCenterPage: true,
             enlargeFactor: 0.15,
             autoPlay: banners.length > 1,
             autoPlayInterval: const Duration(seconds: 4),
-            onPageChanged: (i, _) => setState(() => _current = i),
+            onPageChanged: (i, reason) => setState(() => _current = i),
           ),
           items: [for (final b in banners) _BannerItem(banner: b)],
         ),
         if (banners.length > 1) ...[
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -47,11 +48,11 @@ class _HomeBannerCarouselState extends State<HomeBannerCarousel> {
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 250),
                   margin: const EdgeInsets.symmetric(horizontal: 3),
-                  height: 6,
-                  width: i == active ? 18 : 6,
+                  height: 5,
+                  width: i == active ? 22 : 6,
                   decoration: BoxDecoration(
-                    color: i == active ? AppColors.primary : AppColors.border,
-                    borderRadius: BorderRadius.circular(3),
+                    color: i == active ? AppColors.primary : AppColors.borderAccent.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(4),
                   ),
                 ),
             ],
@@ -71,18 +72,29 @@ class _BannerItem extends StatelessWidget {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
+        border: Border.all(color: AppColors.border, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
         child: Stack(
           fit: StackFit.expand,
           children: [
             CachedNetworkImage(
               imageUrl: ImageUrl.optimized(banner.imageUrl, width: 900),
               fit: BoxFit.cover,
-              placeholder: (_, __) =>
+              placeholder: (context, url) =>
                   Container(color: AppColors.primaryLight.withValues(alpha: 0.5)),
-              errorWidget: (_, __, ___) =>
-              const Icon(Icons.broken_image_outlined),
+              errorWidget: (context, url, error) =>
+                  const Center(child: Icon(Icons.broken_image_outlined)),
             ),
             if (banner.title.isNotEmpty)
               Positioned(
@@ -90,12 +102,12 @@ class _BannerItem extends StatelessWidget {
                 right: 0,
                 bottom: 0,
                 child: Container(
-                  padding: const EdgeInsets.fromLTRB(14, 24, 14, 12),
+                  padding: const EdgeInsets.fromLTRB(14, 28, 14, 12),
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Colors.transparent, Colors.black54],
+                      colors: [Colors.transparent, Colors.black87],
                     ),
                   ),
                   child: Text(
@@ -104,8 +116,9 @@ class _BannerItem extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.3,
                     ),
                   ),
                 ),

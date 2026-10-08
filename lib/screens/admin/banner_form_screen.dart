@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:jewel_ora/core/constants/app_colors.dart';
+import 'package:jewel_ora/core/constants/app_sizes.dart';
 import 'package:jewel_ora/core/constants/app_strings.dart';
-import 'package:jewel_ora/core/utils/ui_helpers.dart';
+import 'package:jewel_ora/core/theme/app_text_styles.dart';
+import 'package:jewel_ora/core/widgets/app_button.dart';
+import 'package:jewel_ora/core/widgets/app_card.dart';
+import 'package:jewel_ora/core/widgets/app_snackbar.dart';
 import 'package:jewel_ora/core/widgets/app_text_field.dart';
-import 'package:jewel_ora/core/widgets/primary_button.dart';
 import 'package:jewel_ora/core/widgets/single_image_uploader.dart';
 import 'package:jewel_ora/models/banner_model.dart';
 import 'package:jewel_ora/providers/banner_provider.dart';
@@ -44,7 +47,7 @@ class _BannerFormScreenState extends State<BannerFormScreen> {
     FocusScope.of(context).unfocus();
 
     if (_imageUrl.isEmpty) {
-      showAppSnackBar(context, 'Please choose a banner image', isError: true);
+      AppSnackbar.showWarning(context, 'Please upload a banner image');
       return;
     }
 
@@ -58,13 +61,15 @@ class _BannerFormScreenState extends State<BannerFormScreen> {
 
     if (!mounted) return;
     if (ok) {
-      showAppSnackBar(context, _isEdit ? 'Banner updated' : 'Banner added');
+      AppSnackbar.showSuccess(
+        context,
+        _isEdit ? 'Banner updated successfully' : 'Banner published successfully',
+      );
       Navigator.of(context).pop();
     } else {
-      showAppSnackBar(
+      AppSnackbar.showError(
         context,
         provider.errorMessage ?? AppStrings.somethingWentWrong,
-        isError: true,
       );
     }
   }
@@ -74,44 +79,73 @@ class _BannerFormScreenState extends State<BannerFormScreen> {
     final isSaving = context.watch<BannerProvider>().isSaving;
 
     return Scaffold(
-      appBar: AppBar(title: Text(_isEdit ? 'Edit Banner' : 'Add Banner')),
+      appBar: AppBar(
+        title: Text(_isEdit ? 'Edit Banner' : 'Add Banner'),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(AppSizes.p20),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                SingleImageUploader(
-                  label: 'Banner image',
-                  initialUrl: _imageUrl,
-                  folder: 'jewel_ora/banners',
-                  height: 170,
-                  onUploaded: (url) => _imageUrl = url,
+                AppCard(
+                  padding: const EdgeInsets.all(AppSizes.p16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Banner Media',
+                        style: AppTextStyles.h4,
+                      ),
+                      const SizedBox(height: AppSizes.p4),
+                      Text(
+                        'Recommended ratio 16:7 (e.g. 1600 × 700 px) for optimal boutique display.',
+                        style: AppTextStyles.caption.copyWith(color: AppColors.textGrey),
+                      ),
+                      const SizedBox(height: AppSizes.p16),
+                      SingleImageUploader(
+                        label: 'Banner Image',
+                        initialUrl: _imageUrl,
+                        folder: 'jewel_ora/banners',
+                        height: 180,
+                        onUploaded: (url) => setState(() => _imageUrl = url),
+                      ),
+                      const SizedBox(height: AppSizes.p20),
+                      AppTextField(
+                        controller: _titleCtrl,
+                        label: 'Promotional Title (optional)',
+                        hintText: 'e.g. Festive Gold Collection 2026',
+                        prefixIcon: Icons.title,
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Tip: a wide image (about 1600 x 700 px) looks best.',
-                  style: TextStyle(fontSize: 12, color: AppColors.textGrey),
+                const SizedBox(height: AppSizes.p16),
+                AppCard(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSizes.p16, vertical: AppSizes.p8),
+                  child: SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    activeThumbColor: AppColors.primary,
+                    activeTrackColor: AppColors.primaryLight,
+                    title: const Text(
+                      'Visible on Customer Home',
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                    ),
+                    subtitle: const Text(
+                      'Turn off to archive banner without deleting it',
+                      style: TextStyle(fontSize: 12, color: AppColors.textGrey),
+                    ),
+                    value: _isActive,
+                    onChanged: (v) => setState(() => _isActive = v),
+                  ),
                 ),
-                const SizedBox(height: 20),
-                AppTextField(
-                  controller: _titleCtrl,
-                  label: 'Title (optional)',
-                  prefixIcon: Icons.title,
-                ),
-                const SizedBox(height: 8),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Visible to customers'),
-                  value: _isActive,
-                  onChanged: (v) => setState(() => _isActive = v),
-                ),
-                const SizedBox(height: 20),
-                PrimaryButton(
-                  text: _isEdit ? 'Save Changes' : 'Add Banner',
+                const SizedBox(height: AppSizes.p24),
+                AppButton(
+                  title: _isEdit ? 'Save Changes' : 'Publish Banner',
                   isLoading: isSaving,
+                  icon: _isEdit ? Icons.check : Icons.add,
                   onPressed: _submit,
                 ),
               ],
