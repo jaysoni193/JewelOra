@@ -5,6 +5,7 @@ import 'package:jewel_ora/core/utils/ui_helpers.dart';
 import 'package:jewel_ora/core/utils/validators.dart';
 import 'package:jewel_ora/core/widgets/app_button.dart';
 import 'package:jewel_ora/core/widgets/app_text_field.dart';
+import 'package:jewel_ora/core/widgets/brand_logo.dart';
 import 'package:jewel_ora/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -75,6 +76,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                const Center(child: BrandLogo(size: 72)),
+                const SizedBox(height: 16),
                 const Text(
                   AppStrings.joinExclusivity,
                   style: TextStyle(

@@ -41,7 +41,10 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CategoryProvider(CategoryService())),
         ChangeNotifierProvider(create: (_) => ProductProvider(ProductService())),
         ChangeNotifierProvider(create: (_) => BannerProvider(BannerService())),
-        ChangeNotifierProvider(create: (_) => SettingsProvider(SettingsService())),
+        ChangeNotifierProvider(
+          lazy: false, // start immediately so the app icon is always applied
+          create: (_) => SettingsProvider(SettingsService()),
+        ),
         ChangeNotifierProxyProvider<AuthProvider, CartProvider>(
           create: (_) => CartProvider(CartService()),
           // Admins do not have a cart, so we skip loading one for them.

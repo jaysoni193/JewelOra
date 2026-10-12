@@ -33,7 +33,7 @@ class SettingsService {
         collection: FirestorePaths.appSettings,
         operation: 'watchSettings (snapshot)',
         documentId: FirestorePaths.settingsDocId,
-        data: {'appName': settings.appName, 'hasLogo': settings.logoUrl.isNotEmpty},
+        data: {'appName': settings.appName, 'appIcon': settings.appIcon},
       );
 
       // Cache locally for offline and quick startup
@@ -52,7 +52,6 @@ class SettingsService {
       documentId: FirestorePaths.settingsDocId,
       parameters: {
         'appName': settings.appName,
-        'hasLogo': settings.logoUrl.isNotEmpty,
         'appIcon': settings.appIcon,
       },
     );

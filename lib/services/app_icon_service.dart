@@ -3,6 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:jewel_ora/core/constants/app_icon_options.dart';
 
+/// Switches the phone's home-screen icon to the one chosen in the Admin panel.
+///
+/// Android only allows this for icons that are already declared in
+/// AndroidManifest.xml (the <activity-alias> blocks), so the admin picks from
+/// the bundled festival icons. It only works in a RELEASE build: debug builds
+/// keep the default icon so that "flutter run" can start the app.
 class AppIconService with WidgetsBindingObserver {
   AppIconService._();
   static final AppIconService instance = AppIconService._();
@@ -14,7 +20,9 @@ class AppIconService with WidgetsBindingObserver {
   bool _started = false;
 
   bool get _supported =>
-      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+      !kIsWeb &&
+          kReleaseMode &&
+          defaultTargetPlatform == TargetPlatform.android;
 
   /// Call every time the settings change. Starts listening on first call.
   void update(String key) {
@@ -30,7 +38,8 @@ class AppIconService with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive) {
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.hidden) {
       _apply();
     }
   }
@@ -41,6 +50,7 @@ class AppIconService with WidgetsBindingObserver {
     try {
       await _channel.invokeMethod('set', {
         'alias': AppIconOptions.byKey(_wanted).alias,
+        'all': AppIconOptions.all.map((o) => o.alias).toList(),
       });
     } catch (e) {
       _applied = null; // try again next time

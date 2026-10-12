@@ -1,10 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:jewel_ora/core/constants/app_colors.dart';
-import 'package:jewel_ora/core/constants/app_images.dart';
 import 'package:jewel_ora/core/constants/app_strings.dart';
-import 'package:jewel_ora/core/utils/image_url.dart';
 import 'package:jewel_ora/core/widgets/app_loader.dart';
+import 'package:jewel_ora/core/widgets/brand_logo.dart';
 import 'package:jewel_ora/core/widgets/empty_state.dart';
 import 'package:jewel_ora/core/widgets/product_card.dart';
 import 'package:jewel_ora/providers/banner_provider.dart';
@@ -32,8 +30,8 @@ class HomeScreen extends StatelessWidget {
     final activeIds = categories.activeCategories.map((c) => c.id).toSet();
     final featured = products.products
         .where((p) =>
-            p.isFeatured &&
-            (categories.isLoading || activeIds.contains(p.categoryId)))
+    p.isFeatured &&
+        (categories.isLoading || activeIds.contains(p.categoryId)))
         .take(10)
         .toList();
 
@@ -49,43 +47,8 @@ class HomeScreen extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(18, 14, 18, 8),
                 child: Row(
                   children: [
-                    // Dynamic In-App Logo with Cached Image + Fallback
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.surface,
-                        border: Border.all(
-                          color: AppColors.borderGold.withValues(alpha: 0.6),
-                          width: 1.2,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.1),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: Padding(
-                        padding: const EdgeInsets.all(6),
-                        child: settings.logoUrl.isNotEmpty
-                            ? CachedNetworkImage(
-                                imageUrl: ImageUrl.optimized(settings.logoUrl, width: 140),
-                                fit: BoxFit.contain,
-                                errorWidget: (context, url, error) => Image.asset(
-                                  AppImages.logo,
-                                  fit: BoxFit.contain,
-                                ),
-                              )
-                            : Image.asset(
-                                AppImages.logo,
-                                fit: BoxFit.contain,
-                              ),
-                      ),
-                    ),
+                    // Logo = the icon chosen in the Admin panel
+                    const BrandLogo(size: 44),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -200,7 +163,7 @@ class HomeScreen extends StatelessWidget {
                     childAspectRatio: 0.65,
                   ),
                   delegate: SliverChildBuilderDelegate(
-                    (context, i) => ProductCard(
+                        (context, i) => ProductCard(
                       product: featured[i],
                       onTap: () => Navigator.of(context).push(
                         MaterialPageRoute(

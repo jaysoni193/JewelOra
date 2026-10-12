@@ -1,12 +1,10 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:jewel_ora/core/constants/app_colors.dart';
-import 'package:jewel_ora/core/constants/app_images.dart';
 import 'package:jewel_ora/core/constants/app_strings.dart';
-import 'package:jewel_ora/core/utils/image_url.dart';
 import 'package:jewel_ora/core/utils/ui_helpers.dart';
 import 'package:jewel_ora/core/utils/validators.dart';
 import 'package:jewel_ora/core/widgets/app_button.dart';
+import 'package:jewel_ora/core/widgets/brand_logo.dart';
 import 'package:jewel_ora/core/widgets/app_text_field.dart';
 import 'package:jewel_ora/providers/auth_provider.dart';
 import 'package:jewel_ora/providers/settings_provider.dart';
@@ -85,45 +83,8 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Brand Logo / Icon with Halo
-                  Center(
-                    child: Container(
-                      width: 96,
-                      height: 96,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.surface,
-                        border: Border.all(
-                          color: AppColors.borderAccent.withValues(alpha: 0.8),
-                          width: 1.5,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.15),
-                            blurRadius: 18,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: settings.logoUrl.isNotEmpty
-                            ? CachedNetworkImage(
-                                imageUrl: ImageUrl.optimized(settings.logoUrl, width: 250),
-                                fit: BoxFit.contain,
-                                errorWidget: (context, url, error) => Image.asset(
-                                  AppImages.logo,
-                                  fit: BoxFit.contain,
-                                ),
-                              )
-                            : Image.asset(
-                                AppImages.logo,
-                                fit: BoxFit.contain,
-                              ),
-                      ),
-                    ),
-                  ),
+                  // Logo = the icon chosen in the Admin panel
+                  const Center(child: BrandLogo(size: 96)),
                   const SizedBox(height: 20),
 
                   // App Title & Tagline
@@ -209,10 +170,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: isLoading
                             ? null
                             : () => Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => const RegisterScreen(),
-                                  ),
-                                ),
+                          MaterialPageRoute(
+                            builder: (_) => const RegisterScreen(),
+                          ),
+                        ),
                         child: const Text(
                           AppStrings.register,
                           style: TextStyle(

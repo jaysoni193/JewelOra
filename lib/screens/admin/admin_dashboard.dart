@@ -5,6 +5,7 @@ import 'package:jewel_ora/core/constants/app_sizes.dart';
 import 'package:jewel_ora/core/constants/app_strings.dart';
 import 'package:jewel_ora/core/theme/app_decoration.dart';
 import 'package:jewel_ora/core/widgets/app_card.dart';
+import 'package:jewel_ora/core/widgets/brand_logo.dart';
 import 'package:jewel_ora/core/widgets/app_dialog.dart';
 import 'package:jewel_ora/core/widgets/coming_soon_screen.dart';
 import 'package:jewel_ora/providers/auth_provider.dart';
@@ -86,7 +87,7 @@ class AdminDashboard extends StatelessWidget {
       _AdminMenuItem(
         'App Branding',
         AppIcons.branding,
-        'Logo & Appearance',
+        'App icon & store name',
       ),
       _AdminMenuItem(
         'Store Settings',
@@ -124,25 +125,7 @@ class AdminDashboard extends StatelessWidget {
               border: Border.all(color: AppColors.borderAccent.withValues(alpha: 0.8)),
               child: Row(
                 children: [
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: AppColors.primaryGradient,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.25),
-                          blurRadius: 10,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: const Center(
-                      child: Icon(Icons.admin_panel_settings_rounded,
-                          color: Colors.white, size: 28),
-                    ),
-                  ),
+                  const BrandLogo(size: 52),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(

@@ -22,7 +22,6 @@ class LocalStorage {
   Future<void> cacheAppSettings(AppSettingsModel settings) async {
     final prefs = await _safePrefs;
     await Future.wait([
-      prefs.setString(AppKeys.cachedLogoUrl, settings.logoUrl),
       prefs.setString(AppKeys.cachedAppName, settings.appName),
       prefs.setString(AppKeys.cachedWelcomeMessage, settings.welcomeMessage),
       prefs.setString(AppKeys.cachedWhatsappNumber, settings.whatsappNumber),
@@ -36,19 +35,17 @@ class LocalStorage {
 
   Future<AppSettingsModel> getCachedAppSettings() async {
     final prefs = await _safePrefs;
-    final logoUrl = prefs.getString(AppKeys.cachedLogoUrl) ?? '';
     final appName = prefs.getString(AppKeys.cachedAppName);
     final welcome = prefs.getString(AppKeys.cachedWelcomeMessage);
     final whatsapp = prefs.getString(AppKeys.cachedWhatsappNumber);
     final icon = prefs.getString(AppKeys.cachedAppIcon);
 
     // If never cached before, return defaults
-    if (logoUrl.isEmpty && appName == null) {
+    if (appName == null) {
       return const AppSettingsModel();
     }
 
     return AppSettingsModel(
-      logoUrl: logoUrl,
       appName: appName ?? 'Jewel Ora',
       welcomeMessage: welcome ?? 'Welcome to our jewellery store',
       whatsappNumber: whatsapp ?? '',
@@ -59,7 +56,6 @@ class LocalStorage {
   Future<void> clearBrandingCache() async {
     final prefs = await _safePrefs;
     await Future.wait([
-      prefs.remove(AppKeys.cachedLogoUrl),
       prefs.remove(AppKeys.cachedAppName),
       prefs.remove(AppKeys.cachedWelcomeMessage),
       prefs.remove(AppKeys.cachedWhatsappNumber),
