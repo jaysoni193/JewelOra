@@ -59,6 +59,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
+  Future<void> _loginWithGoogle() async {
+    final auth = context.read<AuthProvider>();
+    final ok = await auth.signInWithGoogle();
+    if (!mounted) return;
+    if (ok) {
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    } else {
+      if (auth.errorMessage != null &&
+          !auth.errorMessage!.contains('canceled')) {
+        showAppSnackBar(
+          context,
+          auth.errorMessage ?? AppStrings.somethingWentWrong,
+          isError: true,
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isLoading = context.watch<AuthProvider>().isLoading;
@@ -130,13 +148,73 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   isPassword: true,
                   validator: Validators.confirmPassword(() => _passwordCtrl.text),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
                 AppButton(
                   title: AppStrings.createAccount,
                   isLoading: isLoading,
                   onPressed: _submit,
                 ),
+                const SizedBox(height: 18),
+
+                // Divider OR
+                Row(
+                  children: [
+                    const Expanded(child: Divider()),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      child: Text(
+                        'OR',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textGrey.withValues(alpha: 0.8),
+                        ),
+                      ),
+                    ),
+                    const Expanded(child: Divider()),
+                  ],
+                ),
+                const SizedBox(height: 18),
+
+                // Google Button
+                OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.textDark,
+                    side: const BorderSide(color: AppColors.borderLight, width: 1.2),
+                    backgroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  onPressed: isLoading ? null : _loginWithGoogle,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.network(
+                        'https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png',
+                        height: 20,
+                        width: 20,
+                        errorBuilder: (_, error, stack) => const Icon(
+                          Icons.g_mobiledata_rounded,
+                          size: 24,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Text(
+                        AppStrings.continueWithGoogle,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textDark,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 const SizedBox(height: 20),
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -150,7 +228,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         AppStrings.login,
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
-                          color: AppColors.primaryDark,
+                          color: AppColors.primary,
                         ),
                       ),
                     ),

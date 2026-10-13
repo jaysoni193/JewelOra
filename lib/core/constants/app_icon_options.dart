@@ -10,9 +10,9 @@ class AppIconOption {
 }
 
 /// THE one list of icons. To add a festival:
-///  1. add the 5 launcher PNGs  (android/.../res/mipmap-*/ic_launcher_<name>.png)
-///  2. add one <activity-alias> block in AndroidManifest.xml
-///  3. add the picture assets/app_icons/<name>.png
+///  1. add the 5 launcher PNGs (android/.../res/mipmap-*/ic_launcher_name.png)
+///  2. add one `activity-alias` block in AndroidManifest.xml
+///  3. add the picture assets/app_icons/name.png
 ///  4. add one line below
 class AppIconOptions {
   AppIconOptions._();

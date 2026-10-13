@@ -23,6 +23,14 @@ class ProductProvider extends ChangeNotifier {
   bool get isSaving => _isSaving;
   String? get errorMessage => _errorMessage;
 
+  ProductModel? findById(String id) {
+    try {
+      return _products.firstWhere((p) => p.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+
   void _listen() {
     _sub = _service.watchProducts().listen(
           (data) {
@@ -47,6 +55,12 @@ class ProductProvider extends ChangeNotifier {
     required String categoryId,
     required String categoryName,
     required List<String> images,
+    double? mrp,
+    String? offerTag,
+    String? metalType,
+    double? metalWeight,
+    double? makingCharges,
+    bool useDynamicRate = false,
     required String material,
     required String weight,
     required bool isAvailable,
@@ -62,11 +76,17 @@ class ProductProvider extends ChangeNotifier {
         name: name,
         description: description,
         price: price,
+        mrp: mrp,
+        offerTag: offerTag,
         categoryId: categoryId,
         categoryName: categoryName,
         images: images,
         material: material,
         weight: weight,
+        metalType: metalType,
+        metalWeight: metalWeight,
+        makingCharges: makingCharges,
+        useDynamicRate: useDynamicRate,
         isAvailable: isAvailable,
         isFeatured: isFeatured,
         createdAt: existing?.createdAt,

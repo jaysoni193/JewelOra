@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:jewel_ora/core/constants/app_strings.dart';
 import 'package:jewel_ora/core/constants/firestore_paths.dart';
 import 'package:jewel_ora/core/errors/auth_exception.dart';
@@ -9,6 +10,7 @@ import 'package:jewel_ora/models/app_user.dart';
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   CollectionReference<Map<String, dynamic>> get _users =>
       _db.collection(FirestorePaths.users);
@@ -111,6 +113,81 @@ class AuthService {
         stackTrace: st,
       );
       throw AuthException(_mapError(e));
+    }
+  }
+
+  // ---------- GOOGLE SIGN-IN ----------
+  Future<AppUser> signInWithGoogle() async {
+    final startTime = DateTime.now();
+    FirebaseLogger.request(
+      collection: FirestorePaths.users,
+      operation: 'signInWithGoogle',
+    );
+
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        throw const AuthException('Google sign-in was canceled.');
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final UserCredential cred =
+          await _auth.signInWithCredential(credential);
+      final User? firebaseUser = cred.user;
+      if (firebaseUser == null) {
+        throw const AuthException('Could not authenticate with Google.');
+      }
+
+      // Check if user profile already exists, if not create new
+      final doc = await _users.doc(firebaseUser.uid).get();
+      AppUser appUser;
+      if (doc.exists && doc.data() != null) {
+        appUser = AppUser.fromMap(doc.data()!, firebaseUser.uid);
+      } else {
+        appUser = AppUser(
+          uid: firebaseUser.uid,
+          name: firebaseUser.displayName ??
+              googleUser.displayName ??
+              'Valued Customer',
+          email: firebaseUser.email ?? googleUser.email,
+          phone: firebaseUser.phoneNumber ?? '',
+          role: AppStrings.roleUser,
+        );
+        await _users.doc(firebaseUser.uid).set(appUser.toMap());
+      }
+
+      FirebaseLogger.response(
+        collection: FirestorePaths.users,
+        operation: 'signInWithGoogle',
+        duration: DateTime.now().difference(startTime),
+        data: {'uid': firebaseUser.uid, 'email': firebaseUser.email},
+      );
+      return appUser;
+    } on FirebaseAuthException catch (e, st) {
+      FirebaseLogger.error(
+        collection: FirestorePaths.users,
+        operation: 'signInWithGoogle (auth)',
+        error: e,
+        stackTrace: st,
+      );
+      throw AuthException(_mapError(e));
+    } on AuthException {
+      rethrow;
+    } catch (e, st) {
+      FirebaseLogger.error(
+        collection: FirestorePaths.users,
+        operation: 'signInWithGoogle',
+        error: e,
+        stackTrace: st,
+      );
+      throw const AuthException(
+          'Could not complete Google sign-in. Please try again.');
     }
   }
 
@@ -271,11 +348,14 @@ class AuthService {
   }
 
   // ---------- LOGOUT ----------
-  Future<void> logout() {
+  Future<void> logout() async {
     FirebaseLogger.request(
       collection: FirestorePaths.users,
       operation: 'logout',
     );
+    try {
+      await _googleSignIn.signOut();
+    } catch (_) {}
     return _auth.signOut();
   }
 

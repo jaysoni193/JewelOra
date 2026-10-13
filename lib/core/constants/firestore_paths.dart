@@ -8,9 +8,12 @@ class FirestorePaths {
   static const String products = 'products';
   static const String banners = 'banners';
   static const String appSettings = 'app_settings';
+  static const String metalRates = 'metal_rates';
+  static const String enquiries = 'enquiries';
   static const String cart = 'cart'; // subcollection of users/{uid}
   static const String wishlist = 'wishlist'; // subcollection of users/{uid}
   // The single settings document ID
   static const String settingsDocId = 'config';
+  static const String metalRatesDocId = 'today';
   static const String productStats = 'product_stats';
 }

@@ -7,6 +7,8 @@ import 'package:jewel_ora/core/widgets/app_dialog.dart';
 import 'package:jewel_ora/providers/auth_provider.dart';
 import 'package:jewel_ora/screens/user/change_password_screen.dart';
 import 'package:jewel_ora/screens/user/edit_profile_screen.dart';
+import 'package:jewel_ora/screens/user/enquiry_history_screen.dart';
+import 'package:jewel_ora/screens/user/store_info_screen.dart';
 import 'package:jewel_ora/screens/user/wishlist_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -40,7 +42,7 @@ class ProfileScreen extends StatelessWidget {
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         children: [
-          // User Avatar with Gold Halo
+          // User Avatar with CaratLane / GIVA Plum Halo
           Center(
             child: Container(
               width: 88,
@@ -48,14 +50,17 @@ class ProfileScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: const LinearGradient(
-                  colors: [Color(0xFFF9EFCF), Color(0xFFE4D1A4)],
+                  colors: [AppColors.primaryLight, AppColors.cardBackground],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                border: Border.all(color: AppColors.borderGold, width: 2.0),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.35),
+                  width: 2.0,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.15),
+                    color: AppColors.primary.withValues(alpha: 0.12),
                     blurRadius: 14,
                     offset: const Offset(0, 4),
                   ),
@@ -67,7 +72,7 @@ class ProfileScreen extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 34,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.primaryDark,
+                    color: AppColors.primary,
                   ),
                 ),
               ),
@@ -98,13 +103,13 @@ class ProfileScreen extends StatelessWidget {
             child: Column(
               children: [
                 ListTile(
-                  leading: const Icon(Icons.email_outlined, color: AppColors.primaryDark),
+                  leading: const Icon(Icons.email_outlined, color: AppColors.primary),
                   title: const Text('Email Address', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                   subtitle: Text(user?.email ?? '', style: const TextStyle(fontSize: 13, color: AppColors.textGrey)),
                 ),
                 const Divider(height: 1),
                 ListTile(
-                  leading: const Icon(Icons.phone_outlined, color: AppColors.primaryDark),
+                  leading: const Icon(Icons.phone_outlined, color: AppColors.primary),
                   title: const Text('Phone Number', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                   subtitle: Text(
                     (user?.phone.isNotEmpty ?? false) ? user!.phone : 'Not provided',
@@ -122,7 +127,29 @@ class ProfileScreen extends StatelessWidget {
             child: Column(
               children: [
                 ListTile(
-                  leading: const Icon(Icons.favorite_border_rounded, color: AppColors.primaryDark),
+                  leading: const Icon(Icons.chat_bubble_outline_rounded, color: AppColors.primary),
+                  title: const Text('My Enquiries & Quotes', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                  subtitle: const Text(
+                    'Track requested jewellery and WhatsApp quotes',
+                    style: TextStyle(fontSize: 12, color: AppColors.textGrey),
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textGrey),
+                  onTap: () => _open(context, const EnquiryHistoryScreen()),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.storefront_outlined, color: AppColors.primary),
+                  title: const Text('Store Location & Contact', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                  subtitle: const Text(
+                    'Directions, store timings, and calling info',
+                    style: TextStyle(fontSize: 12, color: AppColors.textGrey),
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textGrey),
+                  onTap: () => _open(context, const StoreInfoScreen()),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.favorite_border_rounded, color: AppColors.primary),
                   title: const Text('My Wishlist', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                   subtitle: Text(
                     wishlistCount == 0 ? 'No items saved yet' : '$wishlistCount saved jewellery pieces',
@@ -133,14 +160,14 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const Divider(height: 1),
                 ListTile(
-                  leading: const Icon(Icons.person_outline_rounded, color: AppColors.primaryDark),
+                  leading: const Icon(Icons.person_outline_rounded, color: AppColors.primary),
                   title: const Text('Edit Profile', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                   trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textGrey),
                   onTap: () => _open(context, const EditProfileScreen()),
                 ),
                 const Divider(height: 1),
                 ListTile(
-                  leading: const Icon(Icons.lock_outline_rounded, color: AppColors.primaryDark),
+                  leading: const Icon(Icons.lock_outline_rounded, color: AppColors.primary),
                   title: const Text('Change Password', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                   trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textGrey),
                   onTap: () => _open(context, const ChangePasswordScreen()),

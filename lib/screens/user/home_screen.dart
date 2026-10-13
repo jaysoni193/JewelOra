@@ -12,6 +12,7 @@ import 'package:jewel_ora/providers/settings_provider.dart';
 import 'package:jewel_ora/screens/user/product_detail_screen.dart';
 import 'package:jewel_ora/screens/user/widgets/home_banner_carousel.dart';
 import 'package:jewel_ora/screens/user/widgets/home_category_list.dart';
+import 'package:jewel_ora/screens/user/widgets/today_rates_strip.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/shop_filter_provider.dart';
@@ -99,6 +100,11 @@ class HomeScreen extends StatelessWidget {
               child: banners.isLoading
                   ? const SizedBox(height: 160, child: Center(child: AppLoader(size: 44)))
                   : HomeBannerCarousel(banners: banners.activeBanners),
+            ),
+
+            // ---------- Live Metal Rates Strip (CaratLane & GIVA style) ----------
+            const SliverToBoxAdapter(
+              child: TodayRatesStrip(),
             ),
 
             // ---------- Categories ----------

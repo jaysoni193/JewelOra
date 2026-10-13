@@ -6,6 +6,8 @@ import 'package:jewel_ora/core/theme/app_decoration.dart';
 import 'package:jewel_ora/core/utils/formatters.dart';
 import 'package:jewel_ora/core/utils/image_url.dart';
 import 'package:jewel_ora/models/product_model.dart';
+import 'package:jewel_ora/providers/metal_rate_provider.dart';
+import 'package:provider/provider.dart';
 import 'favorite_button.dart';
 
 class ProductCard extends StatelessWidget {
@@ -21,6 +23,8 @@ class ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = product;
+    final rates = context.watch<MetalRateProvider?>()?.rates;
+    final effectivePrice = p.getEffectivePrice(rates);
 
     return Container(
       decoration: BoxDecoration(
@@ -29,23 +33,24 @@ class ProductCard extends StatelessWidget {
         border: Border.all(color: AppColors.border, width: 1.0),
         boxShadow: AppDecoration.luxuryShadow,
       ),
-      clipBehavior: Clip.antiAlias,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
           onTap: onTap,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Product Image with Overlays
+              // Product Image Container
               AspectRatio(
                 aspectRatio: 1.05,
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    Container(
-                      color: const Color(0xFFFBF9F5),
+                    ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(AppSizes.radiusLarge),
+                      ),
                       child: p.firstImage.isEmpty
                           ? Center(
                               child: Icon(
@@ -80,39 +85,93 @@ class ProductCard extends StatelessWidget {
                             ),
                     ),
 
-                    // Top Left: Featured Badge
-                    if (p.isFeatured && p.isAvailable)
-                      Positioned(
-                        top: 8,
-                        left: 8,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryLight,
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: AppColors.primary.withValues(alpha: 0.2),
-                              width: 0.8,
-                            ),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.auto_awesome, size: 11, color: AppColors.primary),
-                              SizedBox(width: 3),
-                              Text(
-                                'FEATURED',
-                                style: TextStyle(
-                                  color: AppColors.primary,
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.5,
+                    // Top Left Badges: Offer Tag / Discount / Featured
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (p.offerTag != null && p.offerTag!.isNotEmpty && p.isAvailable)
+                            Container(
+                              margin: const EdgeInsets.only(bottom: 4),
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3.5),
+                              decoration: BoxDecoration(
+                                color: AppColors.accent,
+                                borderRadius: BorderRadius.circular(6),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.accent.withValues(alpha: 0.3),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.local_fire_department_rounded, size: 10, color: Colors.white),
+                                  const SizedBox(width: 3),
+                                  Text(
+                                    p.offerTag!.toUpperCase(),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.4,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          else if (p.isFeatured && p.isAvailable)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryLight,
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: AppColors.primary.withValues(alpha: 0.2),
+                                  width: 0.8,
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.auto_awesome, size: 10, color: AppColors.primary),
+                                  SizedBox(width: 3),
+                                  Text(
+                                    'FEATURED',
+                                    style: TextStyle(
+                                      color: AppColors.primary,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          if (p.hasDiscount && p.isAvailable && (p.offerTag == null || p.offerTag!.isEmpty))
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
+                              decoration: BoxDecoration(
+                                color: AppColors.accentLight,
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(color: AppColors.accent.withValues(alpha: 0.4)),
+                              ),
+                              child: Text(
+                                '${p.discountPercent}% OFF',
+                                style: const TextStyle(
+                                  color: AppColors.accent,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
+                    ),
 
                     // Out of Stock Overlay
                     if (!p.isAvailable)
@@ -168,7 +227,7 @@ class ProductCard extends StatelessWidget {
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: 0.8,
-                                color: AppColors.primaryDark,
+                                color: AppColors.primary,
                               ),
                             ),
                           const SizedBox(height: 2),
@@ -185,31 +244,58 @@ class ProductCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            Formatters.price(p.price),
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.primaryDark,
-                              letterSpacing: -0.2,
-                            ),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.baseline,
+                            textBaseline: TextBaseline.alphabetic,
+                            children: [
+                              Text(
+                                Formatters.price(effectivePrice),
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.primary,
+                                  letterSpacing: -0.2,
+                                ),
+                              ),
+                              if (p.hasDiscount) ...[
+                                const SizedBox(width: 5),
+                                Text(
+                                  Formatters.price(p.mrp!),
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.textLight,
+                                    decoration: TextDecoration.lineThrough,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '${p.discountPercent}% off',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.success,
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
-                          if (p.material.isNotEmpty)
+                          if (p.material.isNotEmpty) ...[
+                            const SizedBox(height: 2),
                             Text(
                               p.material,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
-                                fontSize: 11,
+                                fontSize: 10,
                                 color: AppColors.textGrey,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
+                          ],
                         ],
                       ),
                     ],

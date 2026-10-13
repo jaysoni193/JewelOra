@@ -31,10 +31,15 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // Default launcher icon alias: OFF in debug/profile (MainActivity is the
+        // launcher there), ON in release (set again in buildTypes below).
+        manifestPlaceholders["iconDefaultEnabled"] = "false"
     }
 
     buildTypes {
         release {
+            manifestPlaceholders["iconDefaultEnabled"] = "true"
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")

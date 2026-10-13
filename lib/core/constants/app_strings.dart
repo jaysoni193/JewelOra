@@ -81,4 +81,30 @@ class AppStrings {
   static const String appSettings = 'App Settings';
   static const String appBranding = 'App Branding';
   static const String insights = 'Insights';
+  static const String metalRates = 'Daily Metal Rates';
+  static const String customerEnquiries = 'Customer Enquiries';
+
+  // Metal Rates & Offers
+  static const String liveRates = 'Live Metal Rates';
+  static const String todayRates = "Today's Rates";
+  static const String ratePerGram = 'per gram';
+  static const String rateCalculator = 'Gold & Silver Rate Calculator';
+  static const String diwaliSale = 'Diwali Sale';
+  static const String festiveOffer = 'Festive Offer';
+
+  // Store Info
+  static const String storeInfo = 'Store Information';
+  static const String visitOurStore = 'Visit Our Experience Store';
+  static const String getDirections = 'Get Directions';
+  static const String callStore = 'Call Store';
+  static const String storeTimings = 'Store Timings';
+  static const String followInstagram = 'Follow on Instagram';
+
+  // Enquiries
+  static const String enquiryHistory = 'My Enquiries & Quotes';
+  static const String followUpWhatsApp = 'Follow Up on WhatsApp';
+  static const String enquiryDetails = 'Enquiry Details';
+
+  // Auth Extras
+  static const String continueWithGoogle = 'Continue with Google';
 }

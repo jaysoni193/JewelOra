@@ -28,15 +28,30 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   late final TextEditingController _nameCtrl;
   late final TextEditingController _descCtrl;
   late final TextEditingController _priceCtrl;
+  late final TextEditingController _mrpCtrl;
+  late final TextEditingController _offerTagCtrl;
   late final TextEditingController _weightCtrl;
+  late final TextEditingController _metalWeightCtrl;
+  late final TextEditingController _makingChargesCtrl;
 
   late List<String> _images;
   String? _categoryId;
   String? _material;
+  String? _metalType;
+  late bool _useDynamicRate;
   late bool _isAvailable;
   late bool _isFeatured;
 
   bool get _isEdit => widget.product != null;
+
+  static const _suggestedOfferTags = [
+    'Diwali Sale',
+    'Festive Offer',
+    'Flat 15% Off',
+    'Akshaya Tritiya',
+    'Wedding Special',
+    'Limited Edition',
+  ];
 
   @override
   void initState() {
@@ -51,10 +66,27 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
               ? p.price.toInt().toString()
               : p.price.toString()),
     );
+    _mrpCtrl = TextEditingController(
+      text: p?.mrp == null
+          ? ''
+          : (p!.mrp == p.mrp!.roundToDouble()
+              ? p.mrp!.toInt().toString()
+              : p.mrp.toString()),
+    );
+    _offerTagCtrl = TextEditingController(text: p?.offerTag ?? '');
     _weightCtrl = TextEditingController(text: p?.weight ?? '');
+    _metalWeightCtrl = TextEditingController(
+      text: p?.metalWeight != null ? p!.metalWeight.toString() : '',
+    );
+    _makingChargesCtrl = TextEditingController(
+      text: p?.makingCharges != null ? p!.makingCharges.toString() : '',
+    );
+
     _images = List.of(p?.images ?? []);
     _categoryId = p?.categoryId;
     _material = (p?.material.isNotEmpty ?? false) ? p!.material : null;
+    _metalType = p?.metalType;
+    _useDynamicRate = p?.useDynamicRate ?? false;
     _isAvailable = p?.isAvailable ?? true;
     _isFeatured = p?.isFeatured ?? false;
   }
@@ -64,7 +96,11 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     _nameCtrl.dispose();
     _descCtrl.dispose();
     _priceCtrl.dispose();
+    _mrpCtrl.dispose();
+    _offerTagCtrl.dispose();
     _weightCtrl.dispose();
+    _metalWeightCtrl.dispose();
+    _makingChargesCtrl.dispose();
     super.dispose();
   }
 
@@ -84,12 +120,22 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       return;
     }
 
+    final mrpVal = double.tryParse(_mrpCtrl.text.trim());
+    final metalWeightVal = double.tryParse(_metalWeightCtrl.text.trim());
+    final makingChargesVal = double.tryParse(_makingChargesCtrl.text.trim());
+
     final provider = context.read<ProductProvider>();
     final ok = await provider.save(
       existing: widget.product,
       name: _nameCtrl.text.trim(),
       description: _descCtrl.text.trim(),
       price: double.parse(_priceCtrl.text.trim()),
+      mrp: mrpVal,
+      offerTag: _offerTagCtrl.text.trim().isEmpty ? null : _offerTagCtrl.text.trim(),
+      metalType: _metalType,
+      metalWeight: metalWeightVal,
+      makingCharges: makingChargesVal,
+      useDynamicRate: _useDynamicRate,
       categoryId: category.id,
       categoryName: category.name,
       images: _images,
@@ -117,7 +163,6 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     final isSaving = context.watch<ProductProvider>().isSaving;
     final categories = context.watch<CategoryProvider>().categories;
 
-    // If an old product has a material that is not in our list, still show it.
     final materials = [
       ...ProductOptions.materials,
       if (_material != null && !ProductOptions.materials.contains(_material))
@@ -159,14 +204,14 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                       ),
                       const SizedBox(height: 18),
 
-                      // Piece Details Card
+                      // Basic Details Card
                       AppCard(
                         padding: const EdgeInsets.all(18),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'Product Details',
+                              'Basic Details',
                               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
                             ),
                             const SizedBox(height: 16),
@@ -183,26 +228,10 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                               prefixIcon: Icons.category_outlined,
                               items: [
                                 for (final c in categories)
-                                  DropdownMenuItem(
-                                    value: c.id,
-                                    child: Text(
-                                      c.isActive ? c.name : '${c.name} (hidden)',
-                                    ),
-                                  ),
+                                  DropdownMenuItem(value: c.id, child: Text(c.name)),
                               ],
                               onChanged: (v) => setState(() => _categoryId = v),
-                              validator: (v) =>
-                                  v == null ? 'Select a category' : null,
-                            ),
-                            const SizedBox(height: 16),
-                            AppTextField(
-                              controller: _priceCtrl,
-                              label: 'Price (₹)',
-                              prefixIcon: Icons.currency_rupee_rounded,
-                              keyboardType: const TextInputType.numberWithOptions(
-                                decimal: true,
-                              ),
-                              validator: Validators.price,
+                              validator: (v) => v == null ? 'Select a category' : null,
                             ),
                             const SizedBox(height: 16),
                             AppDropdown<String>(
@@ -214,13 +243,12 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                                   DropdownMenuItem(value: m, child: Text(m)),
                               ],
                               onChanged: (v) => setState(() => _material = v),
-                              validator: (v) =>
-                                  v == null ? 'Select a material' : null,
+                              validator: (v) => v == null ? 'Select a material' : null,
                             ),
                             const SizedBox(height: 16),
                             AppTextField(
                               controller: _weightCtrl,
-                              label: 'Weight (e.g. 5.2 g, 18 Karat)',
+                              label: 'Gross Weight (e.g. 5.2 g, 18 Karat)',
                               prefixIcon: Icons.scale_outlined,
                             ),
                             const SizedBox(height: 16),
@@ -228,8 +256,134 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                               controller: _descCtrl,
                               label: 'Description',
                               prefixIcon: Icons.notes_outlined,
-                              maxLines: 4,
+                              maxLines: 3,
                             ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+
+                      // Pricing, Offers & Discounts Card
+                      AppCard(
+                        padding: const EdgeInsets.all(18),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Row(
+                              children: [
+                                Icon(Icons.local_offer_outlined, color: AppColors.primary, size: 20),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Pricing & Festive Offers',
+                                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            AppTextField(
+                              controller: _priceCtrl,
+                              label: 'Selling Price (₹)',
+                              hintText: 'e.g. 11999',
+                              prefixIcon: Icons.currency_rupee_rounded,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              validator: Validators.price,
+                            ),
+                            const SizedBox(height: 16),
+                            AppTextField(
+                              controller: _mrpCtrl,
+                              label: 'Original MRP (₹, optional for strikethrough)',
+                              hintText: 'e.g. 14999 (leave blank if no discount)',
+                              prefixIcon: Icons.money_off_rounded,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            ),
+                            const SizedBox(height: 16),
+                            AppTextField(
+                              controller: _offerTagCtrl,
+                              label: 'Offer / Festive Tag (optional)',
+                              hintText: 'e.g. Diwali Sale, Flat 20% Off',
+                              prefixIcon: Icons.local_fire_department_rounded,
+                            ),
+                            const SizedBox(height: 8),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              children: [
+                                for (final tag in _suggestedOfferTags)
+                                  InkWell(
+                                    onTap: () => setState(() => _offerTagCtrl.text = tag),
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primaryLight.withValues(alpha: 0.6),
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(color: AppColors.borderAccent),
+                                      ),
+                                      child: Text(
+                                        '+ $tag',
+                                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primary),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+
+                      // Dynamic Live Metal Pricing Card
+                      AppCard(
+                        padding: const EdgeInsets.all(18),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SwitchListTile(
+                              contentPadding: EdgeInsets.zero,
+                              activeThumbColor: AppColors.primary,
+                              activeTrackColor: AppColors.primaryLight,
+                              title: const Text(
+                                'Calculate Price from Daily Metal Rate',
+                                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                              ),
+                              subtitle: const Text(
+                                'Automatically updates price as daily gold/silver rates fluctuate',
+                                style: TextStyle(fontSize: 12, color: AppColors.textGrey),
+                              ),
+                              value: _useDynamicRate,
+                              onChanged: (v) => setState(() => _useDynamicRate = v),
+                            ),
+                            if (_useDynamicRate) ...[
+                              const Divider(height: 20),
+                              AppDropdown<String>(
+                                label: 'Metal Type',
+                                value: _metalType,
+                                prefixIcon: Icons.monetization_on_outlined,
+                                items: const [
+                                  DropdownMenuItem(value: 'gold_24k', child: Text('24K Pure Gold')),
+                                  DropdownMenuItem(value: 'gold_22k', child: Text('22K Standard Gold')),
+                                  DropdownMenuItem(value: 'gold_18k', child: Text('18K Diamond Gold')),
+                                  DropdownMenuItem(value: 'silver', child: Text('Fine Silver')),
+                                ],
+                                onChanged: (v) => setState(() => _metalType = v),
+                              ),
+                              const SizedBox(height: 14),
+                              AppTextField(
+                                controller: _metalWeightCtrl,
+                                label: 'Net Metal Weight (Grams)',
+                                hintText: 'e.g. 3.45',
+                                prefixIcon: Icons.scale_rounded,
+                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              ),
+                              const SizedBox(height: 14),
+                              AppTextField(
+                                controller: _makingChargesCtrl,
+                                label: 'Making Charges / Wastage (₹)',
+                                hintText: 'e.g. 1500',
+                                prefixIcon: Icons.add_circle_outline,
+                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              ),
+                            ],
                           ],
                         ),
                       ),

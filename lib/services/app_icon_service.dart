@@ -6,7 +6,7 @@ import 'package:jewel_ora/core/constants/app_icon_options.dart';
 /// Switches the phone's home-screen icon to the one chosen in the Admin panel.
 ///
 /// Android only allows this for icons that are already declared in
-/// AndroidManifest.xml (the <activity-alias> blocks), so the admin picks from
+/// AndroidManifest.xml (the `activity-alias` blocks), so the admin picks from
 /// the bundled festival icons. It only works in a RELEASE build: debug builds
 /// keep the default icon so that "flutter run" can start the app.
 class AppIconService with WidgetsBindingObserver {

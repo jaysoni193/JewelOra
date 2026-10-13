@@ -13,9 +13,11 @@ import 'package:jewel_ora/core/widgets/app_dialog.dart';
 import 'package:jewel_ora/core/widgets/app_loader.dart';
 import 'package:jewel_ora/core/widgets/empty_state.dart';
 import 'package:jewel_ora/models/cart_item_model.dart';
+import 'package:jewel_ora/models/enquiry_model.dart';
 import 'package:jewel_ora/models/product_model.dart';
 import 'package:jewel_ora/providers/auth_provider.dart';
 import 'package:jewel_ora/providers/cart_provider.dart';
+import 'package:jewel_ora/providers/enquiry_provider.dart';
 import 'package:jewel_ora/providers/product_provider.dart';
 import 'package:jewel_ora/providers/settings_provider.dart';
 import 'package:jewel_ora/providers/user_nav_provider.dart';
@@ -86,7 +88,40 @@ class CartScreen extends StatelessWidget {
     List<({ProductModel product, int quantity})> lines,
   ) async {
     final phone = context.read<SettingsProvider>().settings.whatsappNumber;
-    final name = context.read<AuthProvider>().user?.name ?? '';
+    final user = context.read<AuthProvider>().user;
+    final name = user?.name ?? '';
+
+    // Record Enquiry in history
+    if (user != null) {
+      final totalAmount = lines.fold<double>(
+        0,
+        (sum, l) => sum + (l.product.price * l.quantity),
+      );
+      context.read<EnquiryProvider>().recordEnquiry(
+        EnquiryModel(
+          id: '',
+          userId: user.uid,
+          userName: user.name,
+          userPhone: user.phone,
+          userEmail: user.email,
+          items: lines
+              .map(
+                (l) => EnquiryItemModel(
+                  productId: l.product.id,
+                  productName: l.product.name,
+                  productPrice: l.product.price,
+                  productImage: l.product.firstImage,
+                  quantity: l.quantity,
+                ),
+              )
+              .toList(),
+          totalAmount: totalAmount,
+          message: 'Cart enquiry with ${lines.length} items',
+          status: 'submitted',
+          createdAt: DateTime.now(),
+        ),
+      );
+    }
 
     try {
       await WhatsAppService.open(

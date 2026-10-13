@@ -12,10 +12,12 @@ import 'package:jewel_ora/providers/auth_provider.dart';
 import 'package:jewel_ora/providers/category_provider.dart';
 import 'package:jewel_ora/providers/product_provider.dart';
 import 'package:jewel_ora/screens/admin/app_settings_screen.dart';
+import 'package:jewel_ora/screens/admin/admin_enquiry_list_screen.dart';
 import 'package:jewel_ora/screens/admin/banner_list_screen.dart';
 import 'package:jewel_ora/screens/admin/branding_management_screen.dart';
 import 'package:jewel_ora/screens/admin/category_list_screen.dart';
 import 'package:jewel_ora/screens/admin/insights_screen.dart';
+import 'package:jewel_ora/screens/admin/metal_rates_screen.dart';
 import 'package:jewel_ora/screens/admin/product_list_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -25,6 +27,12 @@ class AdminDashboard extends StatelessWidget {
   void _open(BuildContext context, String title) {
     Widget screen;
     switch (title) {
+      case 'Daily Metal Rates':
+        screen = const MetalRatesScreen();
+        break;
+      case 'Customer Enquiries':
+        screen = const AdminEnquiryListScreen();
+        break;
       case 'Products':
         screen = const ProductListScreen();
         break;
@@ -69,6 +77,16 @@ class AdminDashboard extends StatelessWidget {
         context.watch<CategoryProvider>().activeCategories.length;
 
     final items = <_AdminMenuItem>[
+      const _AdminMenuItem(
+        'Daily Metal Rates',
+        AppIcons.metalRates,
+        'Gold & Silver live rates',
+      ),
+      const _AdminMenuItem(
+        'Customer Enquiries',
+        AppIcons.enquiries,
+        'Quotes & lead tracker',
+      ),
       _AdminMenuItem(
         'Products',
         AppIcons.products,
@@ -79,22 +97,22 @@ class AdminDashboard extends StatelessWidget {
         AppIcons.categories,
         '$categoriesCount active',
       ),
-      _AdminMenuItem(
+      const _AdminMenuItem(
         'Banners',
         AppIcons.banners,
         'Home promotions',
       ),
-      _AdminMenuItem(
+      const _AdminMenuItem(
         'App Branding',
         AppIcons.branding,
         'App icon & store name',
       ),
-      _AdminMenuItem(
+      const _AdminMenuItem(
         'Store Settings',
         AppIcons.settings,
-        'WhatsApp & info',
+        'Address, hours & WhatsApp',
       ),
-      _AdminMenuItem(
+      const _AdminMenuItem(
         'Insights & Analytics',
         AppIcons.insights,
         'Views & enquiries',

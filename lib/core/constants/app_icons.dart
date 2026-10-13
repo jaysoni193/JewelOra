@@ -41,4 +41,16 @@ class AppIcons {
   static const IconData branding = Icons.palette_outlined;
   static const IconData upload = Icons.cloud_upload_outlined;
   static const IconData logout = Icons.logout_rounded;
+  static const IconData metalRates = Icons.price_change_outlined;
+  static const IconData enquiries = Icons.question_answer_outlined;
+
+  // Store & Contact
+  static const IconData store = Icons.storefront_outlined;
+  static const IconData location = Icons.location_on_outlined;
+  static const IconData phone = Icons.phone_outlined;
+  static const IconData email = Icons.email_outlined;
+  static const IconData time = Icons.access_time_rounded;
+  static const IconData notifications = Icons.notifications_none_rounded;
+  static const IconData directions = Icons.directions_outlined;
+  static const IconData instagram = Icons.camera_alt_outlined;
 }

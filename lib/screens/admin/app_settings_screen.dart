@@ -40,16 +40,34 @@ class _SettingsForm extends StatefulWidget {
 class _SettingsFormState extends State<_SettingsForm> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _whatsappCtrl;
+  late final TextEditingController _addressCtrl;
+  late final TextEditingController _mapUrlCtrl;
+  late final TextEditingController _phoneCtrl;
+  late final TextEditingController _instagramCtrl;
+  late final TextEditingController _timingsCtrl;
+  late final TextEditingController _emailCtrl;
 
   @override
   void initState() {
     super.initState();
     _whatsappCtrl = TextEditingController(text: widget.initial.whatsappNumber);
+    _addressCtrl = TextEditingController(text: widget.initial.storeAddress);
+    _mapUrlCtrl = TextEditingController(text: widget.initial.mapUrl);
+    _phoneCtrl = TextEditingController(text: widget.initial.storePhone);
+    _instagramCtrl = TextEditingController(text: widget.initial.instagramHandle);
+    _timingsCtrl = TextEditingController(text: widget.initial.storeTimings);
+    _emailCtrl = TextEditingController(text: widget.initial.storeEmail);
   }
 
   @override
   void dispose() {
     _whatsappCtrl.dispose();
+    _addressCtrl.dispose();
+    _mapUrlCtrl.dispose();
+    _phoneCtrl.dispose();
+    _instagramCtrl.dispose();
+    _timingsCtrl.dispose();
+    _emailCtrl.dispose();
     super.dispose();
   }
 
@@ -58,10 +76,15 @@ class _SettingsFormState extends State<_SettingsForm> {
     if (!_formKey.currentState!.validate()) return;
 
     final provider = context.read<SettingsProvider>();
-    // Only the WhatsApp number is changed here; everything else stays as saved.
     final ok = await provider.save(
       provider.settings.copyWith(
         whatsappNumber: _whatsappCtrl.text.replaceAll(RegExp(r'\D'), ''),
+        storeAddress: _addressCtrl.text.trim(),
+        mapUrl: _mapUrlCtrl.text.trim(),
+        storePhone: _phoneCtrl.text.trim(),
+        instagramHandle: _instagramCtrl.text.trim().replaceAll('@', ''),
+        storeTimings: _timingsCtrl.text.trim(),
+        storeEmail: _emailCtrl.text.trim(),
       ),
     );
 
@@ -96,7 +119,7 @@ class _SettingsFormState extends State<_SettingsForm> {
                 ),
                 color: AppColors.primaryLight.withValues(alpha: 0.35),
                 border: Border.all(
-                    color: AppColors.borderGold.withValues(alpha: 0.6)),
+                    color: AppColors.primary.withValues(alpha: 0.3)),
                 child: const Row(
                   children: [
                     BrandLogo(size: 44),
@@ -124,8 +147,9 @@ class _SettingsFormState extends State<_SettingsForm> {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 18),
 
+              // Orders & WhatsApp
               AppCard(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -150,6 +174,66 @@ class _SettingsFormState extends State<_SettingsForm> {
                         style:
                         TextStyle(fontSize: 11, color: AppColors.textGrey),
                       ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 18),
+
+              // Store Location & Info
+              AppCard(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Store Info & Contact',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w700, fontSize: 15)),
+                    const SizedBox(height: 16),
+                    AppTextField(
+                      controller: _addressCtrl,
+                      label: 'Store Physical Address',
+                      prefixIcon: Icons.location_on_outlined,
+                      maxLines: 2,
+                      hintText: 'e.g. 108, Jewel Boulevard, Zaveri Bazaar, Mumbai 400002',
+                    ),
+                    const SizedBox(height: 14),
+                    AppTextField(
+                      controller: _mapUrlCtrl,
+                      label: 'Google Maps Link / URL',
+                      prefixIcon: Icons.map_outlined,
+                      keyboardType: TextInputType.url,
+                      hintText: 'e.g. https://maps.google.com/?q=...',
+                    ),
+                    const SizedBox(height: 14),
+                    AppTextField(
+                      controller: _phoneCtrl,
+                      label: 'Calling Phone Number',
+                      prefixIcon: Icons.phone_outlined,
+                      keyboardType: TextInputType.phone,
+                      hintText: 'e.g. +91 98765 43210',
+                    ),
+                    const SizedBox(height: 14),
+                    AppTextField(
+                      controller: _instagramCtrl,
+                      label: 'Instagram Username / Handle',
+                      prefixIcon: Icons.camera_alt_outlined,
+                      hintText: 'e.g. jewelora.jewels (without @)',
+                    ),
+                    const SizedBox(height: 14),
+                    AppTextField(
+                      controller: _timingsCtrl,
+                      label: 'Store Operating Timings',
+                      prefixIcon: Icons.access_time_rounded,
+                      hintText: 'e.g. Mon - Sat: 10:30 AM - 8:30 PM | Sun: Closed',
+                    ),
+                    const SizedBox(height: 14),
+                    AppTextField(
+                      controller: _emailCtrl,
+                      label: 'Customer Support Email',
+                      prefixIcon: Icons.email_outlined,
+                      keyboardType: TextInputType.emailAddress,
+                      hintText: 'e.g. support@jewelora.com',
                     ),
                   ],
                 ),

@@ -54,7 +54,7 @@ class BrandLogo extends StatelessWidget {
             width: size,
             height: size,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => Container(
+            errorBuilder: (_, error, stack) => Container(
               color: AppColors.primaryLight,
               child: Icon(Icons.diamond_outlined,
                   size: size * 0.5, color: AppColors.primary),

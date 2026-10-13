@@ -26,6 +26,12 @@ class LocalStorage {
       prefs.setString(AppKeys.cachedWelcomeMessage, settings.welcomeMessage),
       prefs.setString(AppKeys.cachedWhatsappNumber, settings.whatsappNumber),
       prefs.setString(AppKeys.cachedAppIcon, settings.appIcon),
+      prefs.setString(AppKeys.cachedStoreAddress, settings.storeAddress),
+      prefs.setString(AppKeys.cachedMapUrl, settings.mapUrl),
+      prefs.setString(AppKeys.cachedStorePhone, settings.storePhone),
+      prefs.setString(AppKeys.cachedInstagramHandle, settings.instagramHandle),
+      prefs.setString(AppKeys.cachedStoreTimings, settings.storeTimings),
+      prefs.setString(AppKeys.cachedStoreEmail, settings.storeEmail),
       prefs.setString(
         AppKeys.cachedBrandingUpdatedAt,
         DateTime.now().toIso8601String(),
@@ -39,6 +45,12 @@ class LocalStorage {
     final welcome = prefs.getString(AppKeys.cachedWelcomeMessage);
     final whatsapp = prefs.getString(AppKeys.cachedWhatsappNumber);
     final icon = prefs.getString(AppKeys.cachedAppIcon);
+    final address = prefs.getString(AppKeys.cachedStoreAddress);
+    final mapUrl = prefs.getString(AppKeys.cachedMapUrl);
+    final phone = prefs.getString(AppKeys.cachedStorePhone);
+    final instagram = prefs.getString(AppKeys.cachedInstagramHandle);
+    final timings = prefs.getString(AppKeys.cachedStoreTimings);
+    final email = prefs.getString(AppKeys.cachedStoreEmail);
 
     // If never cached before, return defaults
     if (appName == null) {
@@ -46,10 +58,16 @@ class LocalStorage {
     }
 
     return AppSettingsModel(
-      appName: appName ?? 'Jewel Ora',
+      appName: appName,
       welcomeMessage: welcome ?? 'Welcome to our jewellery store',
       whatsappNumber: whatsapp ?? '',
       appIcon: icon ?? 'default',
+      storeAddress: address ?? '108, Jewel Boulevard, Zaveri Bazaar, Mumbai 400002',
+      mapUrl: mapUrl ?? 'https://maps.google.com/?q=Zaveri+Bazaar+Mumbai',
+      storePhone: phone ?? '+91 98765 43210',
+      instagramHandle: instagram ?? 'jewelora.jewels',
+      storeTimings: timings ?? 'Mon - Sat: 10:30 AM - 8:30 PM | Sun: 11:00 AM - 6:00 PM',
+      storeEmail: email ?? 'support@jewelora.com',
     );
   }
 
@@ -60,6 +78,12 @@ class LocalStorage {
       prefs.remove(AppKeys.cachedWelcomeMessage),
       prefs.remove(AppKeys.cachedWhatsappNumber),
       prefs.remove(AppKeys.cachedAppIcon),
+      prefs.remove(AppKeys.cachedStoreAddress),
+      prefs.remove(AppKeys.cachedMapUrl),
+      prefs.remove(AppKeys.cachedStorePhone),
+      prefs.remove(AppKeys.cachedInstagramHandle),
+      prefs.remove(AppKeys.cachedStoreTimings),
+      prefs.remove(AppKeys.cachedStoreEmail),
       prefs.remove(AppKeys.cachedBrandingUpdatedAt),
     ]);
   }

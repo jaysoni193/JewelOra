@@ -11,9 +11,12 @@ import 'package:jewel_ora/core/widgets/app_loader.dart';
 import 'package:jewel_ora/core/widgets/empty_state.dart';
 import 'package:jewel_ora/core/widgets/favorite_button.dart';
 import 'package:jewel_ora/core/widgets/view_tracker.dart';
+import 'package:jewel_ora/models/enquiry_model.dart';
 import 'package:jewel_ora/models/product_model.dart';
 import 'package:jewel_ora/providers/auth_provider.dart';
 import 'package:jewel_ora/providers/cart_provider.dart';
+import 'package:jewel_ora/providers/enquiry_provider.dart';
+import 'package:jewel_ora/providers/metal_rate_provider.dart';
 import 'package:jewel_ora/providers/product_provider.dart';
 import 'package:jewel_ora/providers/settings_provider.dart';
 import 'package:jewel_ora/screens/user/widgets/product_image_slider.dart';
@@ -27,10 +30,42 @@ class ProductDetailScreen extends StatelessWidget {
 
   const ProductDetailScreen({super.key, required this.productId});
 
-  Future<void> _chatOnWhatsApp(BuildContext context, ProductModel p) async {
+  Future<void> _chatOnWhatsApp(
+    BuildContext context,
+    ProductModel p,
+    double effectivePrice,
+  ) async {
     final phone = context.read<SettingsProvider>().settings.whatsappNumber;
-    final name = context.read<AuthProvider>().user?.name ?? '';
+    final user = context.read<AuthProvider>().user;
+    final name = user?.name ?? '';
     StatsService.recordEnquiry(p.id);
+
+    // Record in Enquiry History
+    if (user != null) {
+      context.read<EnquiryProvider>().recordEnquiry(
+        EnquiryModel(
+          id: '',
+          userId: user.uid,
+          userName: user.name,
+          userPhone: user.phone,
+          userEmail: user.email,
+          items: [
+            EnquiryItemModel(
+              productId: p.id,
+              productName: p.name,
+              productPrice: effectivePrice,
+              productImage: p.firstImage,
+              quantity: 1,
+            ),
+          ],
+          totalAmount: effectivePrice,
+          message: 'Enquired about ${p.name}',
+          status: 'submitted',
+          createdAt: DateTime.now(),
+        ),
+      );
+    }
+
     try {
       await WhatsAppService.open(
         phone: phone,
@@ -71,49 +106,61 @@ class ProductDetailScreen extends StatelessWidget {
         context,
         quantity == 1
             ? 'Added to cart'
-            : 'Added to cart ($quantity in your cart)',
+            : 'Added to cart (total $quantity in cart)',
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final productsP = context.watch<ProductProvider>();
-    final p = productsP.products.where((e) => e.id == productId).firstOrNull;
+    final productProvider = context.watch<ProductProvider>();
+    final rates = context.watch<MetalRateProvider?>()?.rates;
+    final p = productProvider.findById(productId);
+
+    if (productProvider.isLoading && p == null) {
+      return const Scaffold(
+        body: Center(child: AppLoader()),
+      );
+    }
 
     if (p == null) {
       return Scaffold(
         appBar: AppBar(),
-        body: productsP.isLoading
-            ? const Center(child: AppLoader(size: 50))
-            : const EmptyState(
-                title: 'Product Unavailable',
-                subtitle: 'This piece is no longer available in the boutique.',
-                icon: Icons.diamond_outlined,
-              ),
+        body: const EmptyState(
+          title: 'Piece Not Found',
+          subtitle: 'This item might have been archived or removed.',
+          icon: Icons.diamond_outlined,
+        ),
       );
     }
 
+    final effectivePrice = p.getEffectivePrice(rates);
+
     final specs = <(String, String)>[
-      ('Category', p.categoryName),
-      ('Material', p.material),
-      ('Weight', p.weight),
-    ].where((s) => s.$2.isNotEmpty).toList();
+      if (p.categoryName.isNotEmpty) ('Category', p.categoryName),
+      if (p.material.isNotEmpty) ('Material', p.material),
+      if (p.weight.isNotEmpty) ('Weight', p.weight),
+      if (p.metalType != null && p.metalType!.isNotEmpty)
+        ('Metal Purity', p.metalType!.replaceAll('_', ' ').toUpperCase()),
+      if (p.makingCharges != null && p.makingCharges! > 0)
+        ('Making Charges', Formatters.price(p.makingCharges!)),
+    ];
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Boutique Details'),
+        title: Text(
+          p.categoryName.isNotEmpty ? p.categoryName : 'Jewellery Piece',
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
         actions: [
+          FavoriteButton(productId: p.id),
           IconButton(
             tooltip: 'Share',
             icon: const Icon(Icons.share_outlined),
             onPressed: () => _share(context, p),
           ),
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: FavoriteButton(productId: p.id),
-          ),
+          const SizedBox(width: 4),
         ],
       ),
       body: ListView(
@@ -130,7 +177,43 @@ class ProductDetailScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Availability or Featured Badge
+                // Offer Tag Banner (Diwali Sale, etc.)
+                if (p.offerTag != null && p.offerTag!.isNotEmpty) ...[
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      gradient: AppColors.accentGradient,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.accent.withValues(alpha: 0.25),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.local_fire_department_rounded, color: Colors.white, size: 18),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            '${p.offerTag!.toUpperCase()} SPECIAL OFFER',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.6,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+
+                // Availability & Featured Badges
                 Row(
                   children: [
                     if (!p.isAvailable)
@@ -186,6 +269,32 @@ class ProductDetailScreen extends StatelessWidget {
                           ),
                         ),
                       ],
+                      if (p.useDynamicRate) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceVariant,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: AppColors.border),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.bolt_rounded, size: 14, color: AppColors.primary),
+                              SizedBox(width: 2),
+                              Text(
+                                'Live Rate Priced',
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ],
                   ],
                 ),
@@ -204,15 +313,50 @@ class ProductDetailScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
 
-                // Price
-                Text(
-                  Formatters.price(p.price),
-                  style: const TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.primary,
-                    letterSpacing: -0.4,
-                  ),
+                // Price & Discount Row
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Text(
+                      Formatters.price(effectivePrice),
+                      style: const TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.primary,
+                        letterSpacing: -0.4,
+                      ),
+                    ),
+                    if (p.hasDiscount) ...[
+                      const SizedBox(width: 10),
+                      Text(
+                        Formatters.price(p.mrp!),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textLight,
+                          decoration: TextDecoration.lineThrough,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: AppColors.successLight,
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
+                        ),
+                        child: Text(
+                          'Save ${Formatters.price(p.savings)} (${p.discountPercent}% OFF)',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.success,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
                 const SizedBox(height: 20),
 
@@ -252,36 +396,23 @@ class ProductDetailScreen extends StatelessWidget {
                       color: AppColors.textMuted,
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                 ],
 
-                // Trust & Inquiry note
+                // Authenticity & Trust Badges
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: AppColors.surfaceVariant.withValues(alpha: 0.6),
+                    color: AppColors.surface,
                     borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
                     border: Border.all(color: AppColors.border),
                   ),
                   child: const Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      Icon(
-                        Icons.verified_outlined,
-                        size: 20,
-                        color: AppColors.primaryDark,
-                      ),
-                      SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          '100% Certified Authentic Jewellery. Final customization, sizing, and payment details are confirmed directly with our boutique via WhatsApp.',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: AppColors.textGrey,
-                            height: 1.4,
-                          ),
-                        ),
-                      ),
+                      _TrustBadge(icon: Icons.verified_outlined, title: '100% Certified'),
+                      _TrustBadge(icon: Icons.autorenew_rounded, title: 'Lifetime Exchange'),
+                      _TrustBadge(icon: Icons.local_shipping_outlined, title: 'Insured Delivery'),
                     ],
                   ),
                 ),
@@ -291,7 +422,7 @@ class ProductDetailScreen extends StatelessWidget {
         ],
       ),
 
-      // ---------- Pinned Action Buttons ----------
+      // Pinned Action Buttons
       bottomNavigationBar: Container(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
         decoration: BoxDecoration(
@@ -322,7 +453,7 @@ class ProductDetailScreen extends StatelessWidget {
                   title: 'Enquire on WhatsApp',
                   icon: Icons.chat_rounded,
                   backgroundColor: AppColors.whatsapp,
-                  onPressed: () => _chatOnWhatsApp(context, p),
+                  onPressed: () => _chatOnWhatsApp(context, p, effectivePrice),
                 ),
               ),
             ],
@@ -358,6 +489,31 @@ class _SpecRow extends StatelessWidget {
             fontWeight: FontWeight.w600,
             fontSize: 14,
             color: AppColors.textDark,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _TrustBadge extends StatelessWidget {
+  final IconData icon;
+  final String title;
+
+  const _TrustBadge({required this.icon, required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Icon(icon, size: 22, color: AppColors.primary),
+        const SizedBox(height: 4),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textGrey,
           ),
         ),
       ],

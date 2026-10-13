@@ -98,6 +98,24 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> signInWithGoogle() async {
+    _errorMessage = null;
+    _setLoading(true);
+    try {
+      _user = await _service.signInWithGoogle();
+      _status = AuthStatus.authenticated;
+      return true;
+    } on AuthException catch (e) {
+      _errorMessage = e.message;
+      return false;
+    } catch (_) {
+      _errorMessage = AppStrings.somethingWentWrong;
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   Future<bool> sendPasswordReset(String email) async {
     _errorMessage = null;
     try {

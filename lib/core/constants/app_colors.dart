@@ -42,10 +42,15 @@ class AppColors {
   static const Color whatsapp = Color(0xFF25D366);         // WhatsApp Brand
   static const Color whatsappDark = Color(0xFF1EAE53);
 
-  // Backward-compatibility aliases (guaranteeing zero breakage across codebase)
-  static const Color goldAccent = accent;                  // Redirect to modern rose berry
-  static const Color goldShimmer = primaryLight;           // Redirect to soft lilac
-  static const Color borderGold = borderAccent;            // Redirect to plum-tinted border
+  // Backward-compatibility and semantic aliases
+  static const Color cardBackground = Color(0xFFFFFFFF);
+  static const Color borderLight = Color(0xFFECE7F2);
+  static const Color plumDeep = Color(0xFF381F4C);
+  static const Color secondaryLilac = Color(0xFFF5EEFB);
+  static const Color accentRose = Color(0xFFDE4E76);
+  static const Color goldAccent = Color(0xFFDE4E76);                  // Redirect to modern rose berry
+  static const Color goldShimmer = Color(0xFFF5EEFB);           // Redirect to soft lilac
+  static const Color borderGold = Color(0xFFD8CCE6);            // Redirect to plum-tinted border
 
   // Modern Gradients
   static const LinearGradient primaryGradient = LinearGradient(
