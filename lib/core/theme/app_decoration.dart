@@ -21,12 +21,22 @@ class AppDecoration {
     ),
   ];
 
+  static List<BoxShadow> get cardShadow => luxuryShadow;
+
   static List<BoxShadow> get buttonShadow => [
     BoxShadow(
       color: AppColors.primary.withValues(alpha: 0.25),
       offset: const Offset(0, 4),
       blurRadius: 12,
       spreadRadius: 0,
+    ),
+  ];
+
+  static List<BoxShadow> glowShadow(Color color, {double opacity = 0.25}) => [
+    BoxShadow(
+      color: color.withValues(alpha: opacity),
+      offset: const Offset(0, 4),
+      blurRadius: 12,
     ),
   ];
 
@@ -55,4 +65,17 @@ class AppDecoration {
   );
 
   static BoxDecoration modernHaloDecoration = goldHaloDecoration;
+
+  static BoxDecoration categoryRingDecoration({bool isSelected = false}) =>
+      goldHaloDecoration;
+
+  static BoxDecoration pillDecoration({
+    Color? color,
+    Color? borderColor,
+  }) =>
+      BoxDecoration(
+        color: color ?? AppColors.surface,
+        borderRadius: BorderRadius.circular(AppSizes.radiusCircular),
+        border: Border.all(color: borderColor ?? AppColors.border),
+      );
 }

@@ -72,18 +72,9 @@ class ProductService {
       parameters: {'name': product.name},
     );
     try {
-      await _col.doc(product.id).update({
-        'name': product.name,
-        'description': product.description,
-        'price': product.price,
-        'categoryId': product.categoryId,
-        'categoryName': product.categoryName,
-        'images': product.images,
-        'material': product.material,
-        'weight': product.weight,
-        'isAvailable': product.isAvailable,
-        'isFeatured': product.isFeatured,
-      });
+      final data = product.toMap();
+      data.remove('createdAt');
+      await _col.doc(product.id).update(data);
       FirebaseLogger.response(
         collection: FirestorePaths.products,
         operation: 'update',
@@ -179,5 +170,50 @@ class ProductService {
       );
       rethrow;
     }
+  }
+
+  /// Admin Tool: Duplicates a product piece in 1 tap
+  Future<String> duplicate(ProductModel p) async {
+    final copy = p.copyWith(
+      name: '${p.name} (Copy)',
+    );
+    final docRef = await _col.add(copy.toMap());
+    return docRef.id;
+  }
+
+  /// Admin Tool: Bulk price change by percentage
+  Future<int> bulkUpdatePrices({
+    required List<ProductModel> products,
+    required double percentage,
+    String? categoryId,
+    String? metalType,
+  }) async {
+    final batch = _db.batch();
+    int count = 0;
+    final factor = 1.0 + (percentage / 100.0);
+
+    for (final p in products) {
+      if (categoryId != null && categoryId.isNotEmpty && p.categoryId != categoryId) {
+        continue;
+      }
+      if (metalType != null && metalType.isNotEmpty && p.metalType != metalType) {
+        continue;
+      }
+      final newPrice = (p.price * factor).roundToDouble();
+      final newMrp = p.mrp != null ? (p.mrp! * factor).roundToDouble() : null;
+
+      final ref = _col.doc(p.id);
+      batch.update(ref, {
+        'price': newPrice,
+        'mrp': ?newMrp,
+      });
+      count++;
+      if (count >= 490) break;
+    }
+
+    if (count > 0) {
+      await batch.commit();
+    }
+    return count;
   }
 }

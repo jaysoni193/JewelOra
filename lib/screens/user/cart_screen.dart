@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:jewel_ora/core/constants/app_colors.dart';
-import 'package:jewel_ora/core/constants/app_sizes.dart';
 import 'package:jewel_ora/core/constants/app_strings.dart';
 import 'package:jewel_ora/core/errors/app_exception.dart';
 import 'package:jewel_ora/core/utils/formatters.dart';
@@ -9,18 +8,18 @@ import 'package:jewel_ora/core/utils/image_url.dart';
 import 'package:jewel_ora/core/utils/ui_helpers.dart';
 import 'package:jewel_ora/core/widgets/app_button.dart';
 import 'package:jewel_ora/core/widgets/app_card.dart';
-import 'package:jewel_ora/core/widgets/app_dialog.dart';
 import 'package:jewel_ora/core/widgets/app_loader.dart';
 import 'package:jewel_ora/core/widgets/empty_state.dart';
-import 'package:jewel_ora/models/cart_item_model.dart';
 import 'package:jewel_ora/models/enquiry_model.dart';
 import 'package:jewel_ora/models/product_model.dart';
 import 'package:jewel_ora/providers/auth_provider.dart';
 import 'package:jewel_ora/providers/cart_provider.dart';
 import 'package:jewel_ora/providers/enquiry_provider.dart';
+import 'package:jewel_ora/providers/metal_rate_provider.dart';
 import 'package:jewel_ora/providers/product_provider.dart';
 import 'package:jewel_ora/providers/settings_provider.dart';
 import 'package:jewel_ora/providers/user_nav_provider.dart';
+import 'package:jewel_ora/screens/user/enquiry_history_screen.dart';
 import 'package:jewel_ora/screens/user/product_detail_screen.dart';
 import 'package:jewel_ora/services/stats_service.dart';
 import 'package:jewel_ora/services/whatsapp_service.dart';
@@ -29,74 +28,23 @@ import 'package:provider/provider.dart';
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
 
-  Future<void> _clear(BuildContext context) async {
-    final ok = await AppDialog.confirm(
-      context,
-      title: 'Clear Cart',
-      message: 'Are you sure you want to remove all items from your cart?',
-      confirmText: 'Clear',
-      isDestructive: true,
-    );
-    if (!ok || !context.mounted) return;
-
-    final cart = context.read<CartProvider>();
-    final success = await cart.clear();
-    if (!context.mounted) return;
-    if (!success) {
-      showAppSnackBar(
-        context,
-        cart.errorMessage ?? AppStrings.somethingWentWrong,
-        isError: true,
-      );
-    }
-  }
-
-  Future<void> _remove(
-    BuildContext context,
-    CartItemModel item,
-    String name,
-  ) async {
-    final cart = context.read<CartProvider>();
-    final ok = await cart.remove(item.productId);
-    if (!context.mounted) return;
-
-    if (!ok) {
-      showAppSnackBar(
-        context,
-        cart.errorMessage ?? AppStrings.somethingWentWrong,
-        isError: true,
-      );
-      return;
-    }
-
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text('$name removed from cart'),
-          action: SnackBarAction(
-            label: 'Undo',
-            textColor: AppColors.goldAccent,
-            onPressed: () => cart.restore(item),
-          ),
-        ),
-      );
-  }
-
   Future<void> _sendEnquiry(
     BuildContext context,
-    List<({ProductModel product, int quantity})> lines,
+    List<({ProductModel product, int quantity, String? size, double price})> items,
   ) async {
-    final phone = context.read<SettingsProvider>().settings.whatsappNumber;
+    final settings = context.read<SettingsProvider>().settings;
     final user = context.read<AuthProvider>().user;
     final name = user?.name ?? '';
 
+    // Record stats for each product
+    for (final i in items) {
+      StatsService.recordEnquiry(i.product.id);
+    }
+
+    final total = items.fold(0.0, (sum, i) => sum + (i.price * i.quantity));
+
     // Record Enquiry in history
     if (user != null) {
-      final totalAmount = lines.fold<double>(
-        0,
-        (sum, l) => sum + (l.product.price * l.quantity),
-      );
       context.read<EnquiryProvider>().recordEnquiry(
         EnquiryModel(
           id: '',
@@ -104,19 +52,20 @@ class CartScreen extends StatelessWidget {
           userName: user.name,
           userPhone: user.phone,
           userEmail: user.email,
-          items: lines
+          items: items
               .map(
-                (l) => EnquiryItemModel(
-                  productId: l.product.id,
-                  productName: l.product.name,
-                  productPrice: l.product.price,
-                  productImage: l.product.firstImage,
-                  quantity: l.quantity,
+                (i) => EnquiryItemModel(
+                  productId: i.product.id,
+                  productName: i.product.name,
+                  productPrice: i.price,
+                  productImage: i.product.firstImage,
+                  quantity: i.quantity,
+                  size: i.size,
                 ),
               )
               .toList(),
-          totalAmount: totalAmount,
-          message: 'Cart enquiry with ${lines.length} items',
+          totalAmount: total,
+          message: 'Cart enquiry for ${items.length} items',
           status: 'submitted',
           createdAt: DateTime.now(),
         ),
@@ -125,131 +74,122 @@ class CartScreen extends StatelessWidget {
 
     try {
       await WhatsAppService.open(
-        phone: phone,
-        message: WhatsAppService.buildCartMessage(lines, customerName: name),
+        phone: settings.whatsappNumber,
+        message: WhatsAppService.buildCartMessage(
+          items.map((i) => (product: i.product, quantity: i.quantity, size: i.size, price: i.price)).toList(),
+          customerName: name,
+        ),
       );
-      StatsService.recordEnquiries(lines.map((l) => l.product.id));
     } on AppException catch (e) {
       if (context.mounted) showAppSnackBar(context, e.message, isError: true);
     }
-  }
-
-  void _openProduct(BuildContext context, String productId) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => ProductDetailScreen(productId: productId),
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     final cart = context.watch<CartProvider>();
     final productsP = context.watch<ProductProvider>();
-    final byId = {for (final p in productsP.products) p.id: p};
-
-    final orderable = <({ProductModel product, int quantity})>[];
-    var excluded = 0; // out of stock or deleted
-    for (final item in cart.items) {
-      final p = byId[item.productId];
-      if (p != null && p.isAvailable) {
-        orderable.add((product: p, quantity: item.quantity));
-      } else {
-        excluded++;
-      }
-    }
-    final total = orderable.fold<double>(
-      0,
-      (sum, l) => sum + l.product.price * l.quantity,
-    );
+    final ratesP = context.watch<MetalRateProvider>();
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('My Cart'),
+        title: Text(AppStrings.shoppingBag),
         actions: [
-          if (cart.items.isNotEmpty)
-            IconButton(
-              tooltip: 'Clear cart',
-              icon: const Icon(Icons.delete_sweep_outlined),
-              onPressed: () => _clear(context),
+          IconButton(
+            tooltip: 'My Enquiries & Quotes',
+            icon: const Icon(Icons.receipt_long_outlined),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const EnquiryHistoryScreen()),
             ),
+          ),
         ],
       ),
       body: Builder(
         builder: (context) {
-          if (cart.isLoading || productsP.isLoading) {
+          if (cart.isLoading && cart.items.isEmpty) {
             return const Center(child: AppLoader(size: 50));
           }
 
           if (cart.items.isEmpty) {
             return EmptyState(
-              title: 'Your cart is empty',
-              subtitle: 'Explore our latest jewellery arrivals and add pieces to your cart.',
+              title: AppStrings.cartEmpty,
+              subtitle: AppStrings.cartEmptySubtitle,
               icon: Icons.shopping_bag_outlined,
-              actionLabel: 'Browse Collection',
-              onAction: () => context
-                  .read<UserNavProvider>()
-                  .setIndex(UserNavProvider.shopTab),
+              actionLabel: AppStrings.exploreCollection,
+              onAction: () => context.read<UserNavProvider>().setIndex(UserNavProvider.shopTab),
             );
           }
+
+          // Precompute orderable items and total upfront so Estimated Total and Send button are never zero/disabled
+          final orderable = <({ProductModel product, int quantity, String? size, double price})>[];
+          var excluded = 0;
+
+          for (final item in cart.items) {
+            final product = productsP.findById(item.productId);
+            if (product != null) {
+              if (product.isAvailable) {
+                final price = product.getEffectivePrice(ratesP.rates);
+                orderable.add((
+                  product: product,
+                  quantity: item.quantity,
+                  size: item.size,
+                  price: price,
+                ));
+              } else {
+                excluded++;
+              }
+            }
+          }
+
+          final estimatedTotal = orderable.fold(0.0, (sum, i) => sum + (i.price * i.quantity));
 
           return Column(
             children: [
               Expanded(
                 child: ListView.separated(
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
                   itemCount: cart.items.length,
                   separatorBuilder: (context, index) => const SizedBox(height: 12),
                   itemBuilder: (context, i) {
                     final item = cart.items[i];
-                    final p = byId[item.productId];
+                    final product = productsP.findById(item.productId);
 
-                    return Dismissible(
-                      key: ValueKey(item.productId),
-                      direction: DismissDirection.endToStart,
-                      background: Container(
-                        alignment: Alignment.centerRight,
-                        padding: const EdgeInsets.only(right: 24),
-                        decoration: BoxDecoration(
-                          color: AppColors.error,
-                          borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
+                    if (product == null) {
+                      return _MissingTile(onRemove: () => cart.remove(item.productId));
+                    }
+
+                    final effectivePrice = product.getEffectivePrice(ratesP.rates);
+
+                    return _CartTile(
+                      product: product,
+                      effectivePrice: effectivePrice,
+                      quantity: item.quantity,
+                      size: item.size,
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => ProductDetailScreen(productId: product.id),
                         ),
-                        child: const Icon(Icons.delete_outline, color: Colors.white, size: 28),
                       ),
-                      onDismissed: (_) =>
-                          _remove(context, item, p?.name ?? 'Item'),
-                      child: p == null
-                          ? _MissingTile(
-                              onRemove: () =>
-                                  context.read<CartProvider>().remove(item.productId),
-                            )
-                          : _CartTile(
-                              product: p,
-                              quantity: item.quantity,
-                              onTap: () => _openProduct(context, p.id),
-                              onRemove: () => _remove(context, item, p.name),
-                              onDecrease: () => cart.changeQuantity(
-                                  p.id, item.quantity - 1),
-                              onIncrease: () => cart.changeQuantity(
-                                  p.id, item.quantity + 1),
-                            ),
+                      onRemove: () => cart.remove(product.id),
+                      onDecrease: () => cart.changeQuantity(product.id, item.quantity - 1),
+                      onIncrease: () => cart.changeQuantity(product.id, item.quantity + 1),
                     );
                   },
                 ),
               ),
 
-              // ---------- Summary & WhatsApp Action ----------
+              // Bottom Checkout / Enquiry Bar
               Container(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                padding: const EdgeInsets.fromLTRB(18, 14, 18, 14),
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   border: const Border(top: BorderSide(color: AppColors.border)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 8,
                       offset: const Offset(0, -3),
                     ),
                   ],
@@ -275,16 +215,16 @@ class CartScreen extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            'Estimated Total',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.estimatedTotal,
+                            style: const TextStyle(
                               color: AppColors.textGrey,
                               fontSize: 15,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                           Text(
-                            Formatters.price(total),
+                            Formatters.price(estimatedTotal),
                             style: const TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.w800,
@@ -295,7 +235,7 @@ class CartScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 14),
                       AppButton(
-                        title: 'Send Enquiry on WhatsApp',
+                        title: AppStrings.sendEnquiryWhatsApp,
                         icon: Icons.chat_rounded,
                         backgroundColor: AppColors.whatsapp,
                         onPressed: orderable.isEmpty
@@ -316,7 +256,9 @@ class CartScreen extends StatelessWidget {
 
 class _CartTile extends StatelessWidget {
   final ProductModel product;
+  final double effectivePrice;
   final int quantity;
+  final String? size;
   final VoidCallback onTap;
   final VoidCallback onRemove;
   final VoidCallback onDecrease;
@@ -324,7 +266,9 @@ class _CartTile extends StatelessWidget {
 
   const _CartTile({
     required this.product,
+    required this.effectivePrice,
     required this.quantity,
+    this.size,
     required this.onTap,
     required this.onRemove,
     required this.onDecrease,
@@ -392,6 +336,17 @@ class _CartTile extends StatelessWidget {
                     ),
                   ],
                 ),
+                if (size != null && size!.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    'Size: $size',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 4),
                 if (!p.isAvailable)
                   const Text(
@@ -403,13 +358,29 @@ class _CartTile extends StatelessWidget {
                     ),
                   )
                 else ...[
-                  Text(
-                    Formatters.price(p.price),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                      color: AppColors.primary,
-                    ),
+                  Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 6,
+                    children: [
+                      Text(
+                        Formatters.price(effectivePrice),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      if (p.hasDiscount)
+                        Text(
+                          Formatters.price(p.mrp!),
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textLight,
+                            decoration: TextDecoration.lineThrough,
+                          ),
+                        ),
+                    ],
                   ),
                   const SizedBox(height: 8),
                   Row(
@@ -485,7 +456,6 @@ class _QtyButton extends StatelessWidget {
   }
 }
 
-/// Shown when the product was deleted by the admin.
 class _MissingTile extends StatelessWidget {
   final VoidCallback onRemove;
   const _MissingTile({required this.onRemove});

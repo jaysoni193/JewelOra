@@ -5,6 +5,7 @@ import 'package:jewel_ora/core/constants/app_sizes.dart';
 import 'package:jewel_ora/core/constants/app_strings.dart';
 import 'package:jewel_ora/core/utils/formatters.dart';
 import 'package:jewel_ora/core/utils/image_url.dart';
+import 'package:jewel_ora/core/utils/responsive.dart';
 import 'package:jewel_ora/core/utils/ui_helpers.dart';
 import 'package:jewel_ora/core/widgets/app_card.dart';
 import 'package:jewel_ora/core/widgets/app_dialog.dart';
@@ -14,6 +15,7 @@ import 'package:jewel_ora/models/product_model.dart';
 import 'package:jewel_ora/providers/category_provider.dart';
 import 'package:jewel_ora/providers/product_provider.dart';
 import 'package:jewel_ora/screens/admin/product_form_screen.dart';
+import 'package:jewel_ora/screens/admin/widgets/bulk_price_dialog.dart';
 import 'package:provider/provider.dart';
 
 class ProductListScreen extends StatefulWidget {
@@ -26,11 +28,28 @@ class ProductListScreen extends StatefulWidget {
 class _ProductListScreenState extends State<ProductListScreen> {
   String _query = '';
   String? _categoryId; // null = all
+  int _currentPage = 1;
+  static const int _pageSize = 10;
 
   void _openForm([ProductModel? product]) {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => ProductFormScreen(product: product)),
     );
+  }
+
+  Future<void> _duplicate(ProductModel p) async {
+    final provider = context.read<ProductProvider>();
+    final success = await provider.duplicate(p);
+    if (!mounted) return;
+    if (success) {
+      showAppSnackBar(context, 'Duplicated "${p.name}" successfully');
+    } else {
+      showAppSnackBar(
+        context,
+        provider.errorMessage ?? AppStrings.somethingWentWrong,
+        isError: true,
+      );
+    }
   }
 
   Future<void> _delete(ProductModel p) async {
@@ -73,98 +92,201 @@ class _ProductListScreenState extends State<ProductListScreen> {
       return matchCategory && matchQuery;
     }).toList();
 
+    final totalPages = items.isEmpty ? 1 : (items.length / _pageSize).ceil();
+    final effectivePage = _currentPage.clamp(1, totalPages);
+    final startIndex = (effectivePage - 1) * _pageSize;
+    final pageItems = items.skip(startIndex).take(_pageSize).toList();
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text('Jewellery Pieces (${provider.products.length})'),
+        actions: [
+          IconButton(
+            tooltip: 'Bulk Price Adjustment',
+            icon: const Icon(Icons.price_change_rounded),
+            onPressed: () => BulkPriceDialog.show(context),
+          ),
+          const SizedBox(width: 4),
+        ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _openForm(),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Add Piece'),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 48),
+        child: FloatingActionButton.extended(
+          onPressed: () => _openForm(),
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          icon: const Icon(Icons.add_rounded),
+          label: const Text('Add Piece'),
+        ),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 6, 16, 10),
-            child: TextField(
-              onChanged: (v) => setState(() => _query = v),
-              decoration: InputDecoration(
-                hintText: 'Search products by name',
-                prefixIcon: const Icon(Icons.search_rounded, size: 22, color: AppColors.textGrey),
-                suffixIcon: _query.isEmpty
-                    ? null
-                    : IconButton(
-                        icon: const Icon(Icons.close_rounded, size: 20),
-                        onPressed: () => setState(() => _query = ''),
-                      ),
+      body: ResponsiveContentWrapper(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 6, 16, 10),
+              child: TextField(
+                onChanged: (v) => setState(() {
+                  _query = v;
+                  _currentPage = 1;
+                }),
+                decoration: InputDecoration(
+                  hintText: 'Search products by name',
+                  prefixIcon: const Icon(Icons.search_rounded,
+                      size: 22, color: AppColors.textGrey),
+                  suffixIcon: _query.isEmpty
+                      ? null
+                      : IconButton(
+                          icon: const Icon(Icons.close_rounded, size: 20),
+                          onPressed: () => setState(() {
+                            _query = '';
+                            _currentPage = 1;
+                          }),
+                        ),
+                ),
               ),
             ),
-          ),
-          SizedBox(
-            height: 42,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              children: [
-                _FilterChip(
-                  label: 'All',
-                  selected: _categoryId == null,
-                  onTap: () => setState(() => _categoryId = null),
-                ),
-                for (final c in categories)
+            SizedBox(
+              height: 42,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                children: [
                   _FilterChip(
-                    label: c.name,
-                    selected: _categoryId == c.id,
-                    onTap: () => setState(() => _categoryId = c.id),
+                    label: 'All Pieces',
+                    selected: _categoryId == null,
+                    onTap: () => setState(() {
+                      _categoryId = null;
+                      _currentPage = 1;
+                    }),
                   ),
-              ],
+                  for (final c in categories)
+                    _FilterChip(
+                      label: c.name,
+                      selected: _categoryId == c.id,
+                      onTap: () => setState(() {
+                        _categoryId = c.id;
+                        _currentPage = 1;
+                      }),
+                    ),
+                ],
+              ),
             ),
-          ),
-          Expanded(
-            child: Builder(
-              builder: (context) {
-                if (provider.isLoading) {
-                  return const Center(child: AppLoader(size: 50));
-                }
-                if (provider.products.isEmpty) {
-                  return const EmptyState(
-                    title: 'No products in store',
-                    subtitle: 'Tap the button below to add your first jewellery piece.',
-                    icon: Icons.diamond_outlined,
-                  );
-                }
-                if (items.isEmpty) {
-                  return const EmptyState(
-                    title: 'No pieces match your search',
-                    subtitle: 'Try searching with a different keyword or category.',
-                    icon: Icons.search_off_rounded,
-                  );
-                }
-                return ListView.separated(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 90),
-                  itemCount: items.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 12),
-                  itemBuilder: (context, i) {
-                    final p = items[i];
-                    return _ProductTile(
-                      product: p,
-                      onEdit: () => _openForm(p),
-                      onDelete: () => _delete(p),
-                      onToggleAvailable: () =>
-                          _toggle(() => provider.toggleAvailable(p)),
-                      onToggleFeatured: () =>
-                          _toggle(() => provider.toggleFeatured(p)),
+            Expanded(
+              child: Builder(
+                builder: (context) {
+                  if (provider.isLoading) {
+                    return const Center(child: AppLoader(size: 50));
+                  }
+                  if (provider.products.isEmpty) {
+                    return const EmptyState(
+                      title: 'No products in store',
+                      subtitle:
+                          'Tap the button below to add your first jewellery piece.',
+                      icon: Icons.diamond_outlined,
                     );
-                  },
-                );
-              },
+                  }
+                  if (items.isEmpty) {
+                    return const EmptyState(
+                      title: 'No pieces match your search',
+                      subtitle:
+                          'Try searching with a different keyword or category.',
+                      icon: Icons.search_off_rounded,
+                    );
+                  }
+                  return ListView.separated(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 20),
+                    itemCount: pageItems.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 12),
+                    itemBuilder: (context, i) {
+                      final p = pageItems[i];
+                      return _ProductTile(
+                        product: p,
+                        onEdit: () => _openForm(p),
+                        onDuplicate: () => _duplicate(p),
+                        onDelete: () => _delete(p),
+                        onToggleAvailable: () =>
+                            _toggle(() => provider.toggleAvailable(p)),
+                        onToggleFeatured: () =>
+                            _toggle(() => provider.toggleFeatured(p)),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+            // ---------- Bottom Pagination Controls ----------
+            if (items.isNotEmpty)
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  border: Border(
+                    top: BorderSide(
+                      color: AppColors.border.withValues(alpha: 0.8),
+                      width: 0.8,
+                    ),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Showing ${startIndex + 1}–${startIndex + pageItems.length} of ${items.length}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textGrey,
+                      ),
+                    ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.chevron_left_rounded),
+                          onPressed: effectivePage > 1
+                              ? () => setState(
+                                  () => _currentPage = effectivePage - 1)
+                              : null,
+                          tooltip: 'Previous Page',
+                          visualDensity: VisualDensity.compact,
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryLight,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '$effectivePage of $totalPages',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.primaryDark,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.chevron_right_rounded),
+                          onPressed: effectivePage < totalPages
+                              ? () => setState(
+                                  () => _currentPage = effectivePage + 1)
+                              : null,
+                          tooltip: 'Next Page',
+                          visualDensity: VisualDensity.compact,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -211,6 +333,7 @@ class _FilterChip extends StatelessWidget {
 class _ProductTile extends StatelessWidget {
   final ProductModel product;
   final VoidCallback onEdit;
+  final VoidCallback onDuplicate;
   final VoidCallback onDelete;
   final VoidCallback onToggleAvailable;
   final VoidCallback onToggleFeatured;
@@ -218,6 +341,7 @@ class _ProductTile extends StatelessWidget {
   const _ProductTile({
     required this.product,
     required this.onEdit,
+    required this.onDuplicate,
     required this.onDelete,
     required this.onToggleAvailable,
     required this.onToggleFeatured,
@@ -232,14 +356,15 @@ class _ProductTile extends StatelessWidget {
       child: Row(
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
             child: SizedBox(
               width: 76,
               height: 76,
               child: p.firstImage.isEmpty
                   ? Container(
                       color: AppColors.primaryLight,
-                      child: const Icon(Icons.diamond_outlined, color: AppColors.primary),
+                      child: const Icon(Icons.diamond_outlined,
+                          color: AppColors.primary),
                     )
                   : CachedNetworkImage(
                       imageUrl: ImageUrl.optimized(p.firstImage, width: 220),
@@ -263,7 +388,7 @@ class _ProductTile extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontSize: 15,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textDark,
                   ),
                 ),
@@ -283,7 +408,7 @@ class _ProductTile extends StatelessWidget {
                   style: const TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 14,
-                    color: AppColors.primaryDark,
+                    color: AppColors.primary,
                   ),
                 ),
                 if (p.isFeatured || !p.isAvailable)
@@ -293,9 +418,11 @@ class _ProductTile extends StatelessWidget {
                       spacing: 6,
                       children: [
                         if (p.isFeatured)
-                          const _Badge('Featured', AppColors.primaryDark, AppColors.primaryLight),
+                          const _Badge('Featured', AppColors.primary,
+                              AppColors.primaryLight),
                         if (!p.isAvailable)
-                          const _Badge('Hidden / Out of Stock', AppColors.error, AppColors.errorLight),
+                          const _Badge('Hidden / Out of Stock',
+                              AppColors.error, AppColors.errorLight),
                       ],
                     ),
                   ),
@@ -303,12 +430,17 @@ class _ProductTile extends StatelessWidget {
             ),
           ),
           PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert_rounded, color: AppColors.textGrey),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            icon:
+                const Icon(Icons.more_vert_rounded, color: AppColors.textGrey),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             onSelected: (v) {
               switch (v) {
                 case 'edit':
                   onEdit();
+                  break;
+                case 'duplicate':
+                  onDuplicate();
                   break;
                 case 'featured':
                   onToggleFeatured();
@@ -332,13 +464,33 @@ class _ProductTile extends StatelessWidget {
                   ],
                 ),
               ),
+              const PopupMenuItem(
+                value: 'duplicate',
+                child: Row(
+                  children: [
+                    Icon(Icons.copy_rounded,
+                        size: 18, color: AppColors.primary),
+                    SizedBox(width: 8),
+                    Text('Duplicate Piece',
+                        style: TextStyle(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ),
               PopupMenuItem(
                 value: 'featured',
                 child: Row(
                   children: [
-                    Icon(p.isFeatured ? Icons.star_border_rounded : Icons.star_rounded, size: 18),
+                    Icon(
+                        p.isFeatured
+                            ? Icons.star_border_rounded
+                            : Icons.star_rounded,
+                        size: 18),
                     SizedBox(width: 8),
-                    Text(p.isFeatured ? 'Remove from Featured' : 'Mark as Featured'),
+                    Text(p.isFeatured
+                        ? 'Remove from Featured'
+                        : 'Mark as Featured'),
                   ],
                 ),
               ),
@@ -346,9 +498,15 @@ class _ProductTile extends StatelessWidget {
                 value: 'available',
                 child: Row(
                   children: [
-                    Icon(p.isAvailable ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 18),
+                    Icon(
+                        p.isAvailable
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        size: 18),
                     SizedBox(width: 8),
-                    Text(p.isAvailable ? 'Mark Unavailable' : 'Mark Available'),
+                    Text(p.isAvailable
+                        ? 'Mark Unavailable'
+                        : 'Mark Available'),
                   ],
                 ),
               ),
@@ -356,9 +514,11 @@ class _ProductTile extends StatelessWidget {
                 value: 'delete',
                 child: Row(
                   children: [
-                    Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.error),
+                    Icon(Icons.delete_outline_rounded,
+                        size: 18, color: AppColors.error),
                     SizedBox(width: 8),
-                    Text('Delete Piece', style: TextStyle(color: AppColors.error)),
+                    Text('Delete Piece',
+                        style: TextStyle(color: AppColors.error)),
                   ],
                 ),
               ),

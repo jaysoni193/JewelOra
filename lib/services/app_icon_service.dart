@@ -20,9 +20,7 @@ class AppIconService with WidgetsBindingObserver {
   bool _started = false;
 
   bool get _supported =>
-      !kIsWeb &&
-          kReleaseMode &&
-          defaultTargetPlatform == TargetPlatform.android;
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
   /// Call every time the settings change. Starts listening on first call.
   void update(String key) {
@@ -32,6 +30,7 @@ class AppIconService with WidgetsBindingObserver {
       _started = true;
       WidgetsBinding.instance.addObserver(this);
     }
+    _apply();
   }
 
   // The icon changes when the user leaves the app, never while using it.

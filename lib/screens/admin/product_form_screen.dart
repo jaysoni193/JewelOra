@@ -31,6 +31,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   late final TextEditingController _mrpCtrl;
   late final TextEditingController _offerTagCtrl;
   late final TextEditingController _weightCtrl;
+  late final TextEditingController _sizesCtrl;
   late final TextEditingController _metalWeightCtrl;
   late final TextEditingController _makingChargesCtrl;
 
@@ -75,6 +76,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     );
     _offerTagCtrl = TextEditingController(text: p?.offerTag ?? '');
     _weightCtrl = TextEditingController(text: p?.weight ?? '');
+    _sizesCtrl = TextEditingController(text: p?.availableSizes.join(', ') ?? '');
     _metalWeightCtrl = TextEditingController(
       text: p?.metalWeight != null ? p!.metalWeight.toString() : '',
     );
@@ -99,6 +101,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     _mrpCtrl.dispose();
     _offerTagCtrl.dispose();
     _weightCtrl.dispose();
+    _sizesCtrl.dispose();
     _metalWeightCtrl.dispose();
     _makingChargesCtrl.dispose();
     super.dispose();
@@ -123,6 +126,11 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     final mrpVal = double.tryParse(_mrpCtrl.text.trim());
     final metalWeightVal = double.tryParse(_metalWeightCtrl.text.trim());
     final makingChargesVal = double.tryParse(_makingChargesCtrl.text.trim());
+    final sizesList = _sizesCtrl.text
+        .split(',')
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toList();
 
     final provider = context.read<ProductProvider>();
     final ok = await provider.save(
@@ -143,6 +151,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       weight: _weightCtrl.text.trim(),
       isAvailable: _isAvailable,
       isFeatured: _isFeatured,
+      availableSizes: sizesList,
     );
 
     if (!mounted) return;
@@ -250,6 +259,13 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                               controller: _weightCtrl,
                               label: 'Gross Weight (e.g. 5.2 g, 18 Karat)',
                               prefixIcon: Icons.scale_outlined,
+                            ),
+                            const SizedBox(height: 16),
+                            AppTextField(
+                              controller: _sizesCtrl,
+                              label: 'Available Sizes (comma separated, optional)',
+                              hintText: 'e.g. 12, 14, 16, 18 or 2.4, 2.6, 2.8',
+                              prefixIcon: Icons.straighten_rounded,
                             ),
                             const SizedBox(height: 16),
                             AppTextField(

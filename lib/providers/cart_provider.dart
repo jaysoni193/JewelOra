@@ -65,7 +65,7 @@ class CartProvider extends ChangeNotifier {
   }
 
   /// Returns the new quantity, or null if it failed (see [errorMessage]).
-  Future<int?> add(String productId) async {
+  Future<int?> add(String productId, {String? size}) async {
     _errorMessage = null;
     final uid = _uid;
     if (uid == null) return null;
@@ -82,6 +82,7 @@ class CartProvider extends ChangeNotifier {
         uid,
         productId,
         maxQuantity: maxQuantity,
+        size: size,
       );
     } on AppException catch (e) {
       _errorMessage = e.message;

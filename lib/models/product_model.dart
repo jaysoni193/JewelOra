@@ -19,6 +19,7 @@ class ProductModel {
   final bool useDynamicRate; // calculate price based on live daily rate
   final bool isAvailable;
   final bool isFeatured;
+  final List<String> availableSizes; // Custom sizes set by admin
   final DateTime? createdAt;
 
   const ProductModel({
@@ -39,6 +40,7 @@ class ProductModel {
     this.useDynamicRate = false,
     this.isAvailable = true,
     this.isFeatured = false,
+    this.availableSizes = const [],
     this.createdAt,
   });
 
@@ -50,6 +52,22 @@ class ProductModel {
       hasDiscount ? (((mrp! - price) / mrp!) * 100).round() : 0;
 
   double get savings => hasDiscount ? (mrp! - price) : 0;
+
+  /// Returns custom sizes if configured, or smart default jewellery sizes based on category/name
+  List<String> get effectiveSizes {
+    if (availableSizes.isNotEmpty) return availableSizes;
+    final lowerName = '$name $categoryName'.toLowerCase();
+    if (lowerName.contains('ring')) {
+      return const ['10', '12', '14', '16', '18', '20', 'Custom Size'];
+    }
+    if (lowerName.contains('bangle') || lowerName.contains('bracelet') || lowerName.contains('kada')) {
+      return const ['2.2', '2.4', '2.6', '2.8', 'Adjustable'];
+    }
+    if (lowerName.contains('chain') || lowerName.contains('necklace') || lowerName.contains('mangalsutra') || lowerName.contains('choker')) {
+      return const ['16 inch', '18 inch', '20 inch', '22 inch', 'Adjustable'];
+    }
+    return const ['Standard / Free Size'];
+  }
 
   double getEffectivePrice(MetalRateModel? rates) {
     if (useDynamicRate && rates != null && metalType != null && metalWeight != null) {
@@ -97,6 +115,7 @@ class ProductModel {
       useDynamicRate: map['useDynamicRate'] ?? false,
       isAvailable: map['isAvailable'] ?? true,
       isFeatured: map['isFeatured'] ?? false,
+      availableSizes: List<String>.from(map['availableSizes'] ?? []),
       createdAt: (map['createdAt'] as Timestamp?)?.toDate(),
     );
   }
@@ -118,6 +137,7 @@ class ProductModel {
     'useDynamicRate': useDynamicRate,
     'isAvailable': isAvailable,
     'isFeatured': isFeatured,
+    if (availableSizes.isNotEmpty) 'availableSizes': availableSizes,
     'createdAt': createdAt != null
         ? Timestamp.fromDate(createdAt!)
         : FieldValue.serverTimestamp(),
@@ -140,6 +160,7 @@ class ProductModel {
     bool? useDynamicRate,
     bool? isAvailable,
     bool? isFeatured,
+    List<String>? availableSizes,
   }) {
     return ProductModel(
       id: id,
@@ -159,6 +180,7 @@ class ProductModel {
       useDynamicRate: useDynamicRate ?? this.useDynamicRate,
       isAvailable: isAvailable ?? this.isAvailable,
       isFeatured: isFeatured ?? this.isFeatured,
+      availableSizes: availableSizes ?? this.availableSizes,
       createdAt: createdAt,
     );
   }

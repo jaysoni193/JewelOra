@@ -4,6 +4,7 @@ import 'package:jewel_ora/core/constants/app_strings.dart';
 import 'package:jewel_ora/core/utils/ui_helpers.dart';
 import 'package:jewel_ora/core/utils/validators.dart';
 import 'package:jewel_ora/core/widgets/app_button.dart';
+import 'package:jewel_ora/core/widgets/app_loader.dart';
 import 'package:jewel_ora/core/widgets/brand_logo.dart';
 import 'package:jewel_ora/core/widgets/app_text_field.dart';
 import 'package:jewel_ora/providers/auth_provider.dart';
@@ -34,34 +35,50 @@ class _LoginScreenState extends State<LoginScreen> {
     FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) return;
 
-    final auth = context.read<AuthProvider>();
-    final ok = await auth.login(
-      email: _emailCtrl.text.trim(),
-      password: _passwordCtrl.text,
+    GlobalLoader.show(
+      message: 'Signing in to JewelOra...',
+      subMessage: 'Verifying your credentials',
     );
-
-    // On success, AuthGate switches the screen automatically.
-    if (!ok && mounted) {
-      showAppSnackBar(
-        context,
-        auth.errorMessage ?? AppStrings.somethingWentWrong,
-        isError: true,
+    try {
+      final auth = context.read<AuthProvider>();
+      final ok = await auth.login(
+        email: _emailCtrl.text.trim(),
+        password: _passwordCtrl.text,
       );
-    }
-  }
 
-  Future<void> _loginWithGoogle() async {
-    final auth = context.read<AuthProvider>();
-    final ok = await auth.signInWithGoogle();
-    if (!ok && mounted) {
-      if (auth.errorMessage != null &&
-          !auth.errorMessage!.contains('canceled')) {
+      // On success, AuthGate switches the screen automatically.
+      if (!ok && mounted) {
         showAppSnackBar(
           context,
           auth.errorMessage ?? AppStrings.somethingWentWrong,
           isError: true,
         );
       }
+    } finally {
+      GlobalLoader.hide();
+    }
+  }
+
+  Future<void> _loginWithGoogle() async {
+    GlobalLoader.show(
+      message: 'Connecting with Google...',
+      subMessage: 'Opening secure Google authentication',
+    );
+    try {
+      final auth = context.read<AuthProvider>();
+      final ok = await auth.signInWithGoogle();
+      if (!ok && mounted) {
+        if (auth.errorMessage != null &&
+            !auth.errorMessage!.contains('canceled')) {
+          showAppSnackBar(
+            context,
+            auth.errorMessage ?? AppStrings.somethingWentWrong,
+            isError: true,
+          );
+        }
+      }
+    } finally {
+      GlobalLoader.hide();
     }
   }
 
@@ -70,16 +87,24 @@ class _LoginScreenState extends State<LoginScreen> {
       showAppSnackBar(context, 'Enter your email above first', isError: true);
       return;
     }
-    final auth = context.read<AuthProvider>();
-    final ok = await auth.sendPasswordReset(_emailCtrl.text.trim());
-    if (!mounted) return;
-    showAppSnackBar(
-      context,
-      ok
-          ? 'Password reset link sent to your email'
-          : (auth.errorMessage ?? AppStrings.somethingWentWrong),
-      isError: !ok,
+    GlobalLoader.show(
+      message: 'Sending Reset Link...',
+      subMessage: 'Preparing your password recovery email',
     );
+    try {
+      final auth = context.read<AuthProvider>();
+      final ok = await auth.sendPasswordReset(_emailCtrl.text.trim());
+      if (!mounted) return;
+      showAppSnackBar(
+        context,
+        ok
+            ? 'Password reset link sent to your email'
+            : (auth.errorMessage ?? AppStrings.somethingWentWrong),
+        isError: !ok,
+      );
+    } finally {
+      GlobalLoader.hide();
+    }
   }
 
   @override
@@ -114,10 +139,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  const Text(
+                  Text(
                     AppStrings.appTagline,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                       letterSpacing: 1.2,
@@ -153,9 +178,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: TextButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 4),
                       ),
-                      child: const Text(
+                      child: Text(
                         AppStrings.forgotPassword,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: AppColors.primary,
@@ -205,9 +230,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
+                      Text(
                         AppStrings.dontHaveAccount,
-                        style: TextStyle(color: AppColors.textGrey, fontSize: 14),
+                        style: const TextStyle(color: AppColors.textGrey, fontSize: 14),
                       ),
                       TextButton(
                         onPressed: isLoading
@@ -217,9 +242,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             builder: (_) => const RegisterScreen(),
                           ),
                         ),
-                        child: const Text(
+                        child: Text(
                           AppStrings.register,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontWeight: FontWeight.w700,
                             color: AppColors.primary,
                           ),

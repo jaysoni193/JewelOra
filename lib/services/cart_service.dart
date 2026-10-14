@@ -46,6 +46,7 @@ class CartService {
     String uid,
     String productId, {
     required int maxQuantity,
+    String? size,
   }) {
     final startTime = DateTime.now();
     final ref = _cart(uid).doc(productId);
@@ -64,7 +65,9 @@ class CartService {
         if (current >= maxQuantity) {
           throw AppException('You can order at most $maxQuantity of one item.');
         }
-        tx.update(ref, {'quantity': current + 1});
+        final updateMap = <String, dynamic>{'quantity': current + 1};
+        if (size != null && size.isNotEmpty) updateMap['size'] = size;
+        tx.update(ref, updateMap);
         FirebaseLogger.response(
           collection: '${FirestorePaths.users}/$uid/${FirestorePaths.cart}',
           operation: 'addOrIncrement (incremented)',
@@ -75,7 +78,7 @@ class CartService {
         return current + 1;
       }
 
-      tx.set(ref, CartItemModel(productId: productId).toMap());
+      tx.set(ref, CartItemModel(productId: productId, size: size).toMap());
       FirebaseLogger.response(
         collection: '${FirestorePaths.users}/$uid/${FirestorePaths.cart}',
         operation: 'addOrIncrement (new item)',

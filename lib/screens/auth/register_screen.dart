@@ -4,6 +4,7 @@ import 'package:jewel_ora/core/constants/app_strings.dart';
 import 'package:jewel_ora/core/utils/ui_helpers.dart';
 import 'package:jewel_ora/core/utils/validators.dart';
 import 'package:jewel_ora/core/widgets/app_button.dart';
+import 'package:jewel_ora/core/widgets/app_loader.dart';
 import 'package:jewel_ora/core/widgets/app_text_field.dart';
 import 'package:jewel_ora/core/widgets/brand_logo.dart';
 import 'package:jewel_ora/providers/auth_provider.dart';
@@ -38,42 +39,58 @@ class _RegisterScreenState extends State<RegisterScreen> {
     FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) return;
 
-    final auth = context.read<AuthProvider>();
-    final ok = await auth.register(
-      name: _nameCtrl.text.trim(),
-      email: _emailCtrl.text.trim(),
-      password: _passwordCtrl.text,
-      phone: _phoneCtrl.text.trim(),
+    GlobalLoader.show(
+      message: 'Creating your account...',
+      subMessage: 'Setting up your bespoke jewellery profile',
     );
-
-    if (!mounted) return;
-    if (ok) {
-      // Remove this screen so AuthGate (the first route) becomes visible.
-      Navigator.of(context).popUntil((route) => route.isFirst);
-    } else {
-      showAppSnackBar(
-        context,
-        auth.errorMessage ?? AppStrings.somethingWentWrong,
-        isError: true,
+    try {
+      final auth = context.read<AuthProvider>();
+      final ok = await auth.register(
+        name: _nameCtrl.text.trim(),
+        email: _emailCtrl.text.trim(),
+        password: _passwordCtrl.text,
+        phone: _phoneCtrl.text.trim(),
       );
-    }
-  }
 
-  Future<void> _loginWithGoogle() async {
-    final auth = context.read<AuthProvider>();
-    final ok = await auth.signInWithGoogle();
-    if (!mounted) return;
-    if (ok) {
-      Navigator.of(context).popUntil((route) => route.isFirst);
-    } else {
-      if (auth.errorMessage != null &&
-          !auth.errorMessage!.contains('canceled')) {
+      if (!mounted) return;
+      if (ok) {
+        // Remove this screen so AuthGate (the first route) becomes visible.
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      } else {
         showAppSnackBar(
           context,
           auth.errorMessage ?? AppStrings.somethingWentWrong,
           isError: true,
         );
       }
+    } finally {
+      GlobalLoader.hide();
+    }
+  }
+
+  Future<void> _loginWithGoogle() async {
+    GlobalLoader.show(
+      message: 'Connecting with Google...',
+      subMessage: 'Opening secure Google authentication',
+    );
+    try {
+      final auth = context.read<AuthProvider>();
+      final ok = await auth.signInWithGoogle();
+      if (!mounted) return;
+      if (ok) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      } else {
+        if (auth.errorMessage != null &&
+            !auth.errorMessage!.contains('canceled')) {
+          showAppSnackBar(
+            context,
+            auth.errorMessage ?? AppStrings.somethingWentWrong,
+            isError: true,
+          );
+        }
+      }
+    } finally {
+      GlobalLoader.hide();
     }
   }
 
@@ -84,7 +101,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text(AppStrings.createAccount),
+        title: Text(AppStrings.createAccount),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -96,9 +113,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
               children: [
                 const Center(child: BrandLogo(size: 72)),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   AppStrings.joinExclusivity,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 14,
                     color: AppColors.textGrey,
                     fontWeight: FontWeight.w500,
@@ -202,9 +219,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Text(
+                      Text(
                         AppStrings.continueWithGoogle,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: AppColors.textDark,
@@ -218,15 +235,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
+                    Text(
                       AppStrings.alreadyHaveAccount,
-                      style: TextStyle(color: AppColors.textGrey, fontSize: 14),
+                      style: const TextStyle(color: AppColors.textGrey, fontSize: 14),
                     ),
                     TextButton(
                       onPressed: isLoading ? null : () => Navigator.of(context).pop(),
-                      child: const Text(
+                      child: Text(
                         AppStrings.login,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontWeight: FontWeight.w700,
                           color: AppColors.primary,
                         ),

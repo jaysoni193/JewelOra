@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jewel_ora/core/constants/app_colors.dart';
+import 'package:jewel_ora/core/constants/app_strings.dart';
 import 'package:jewel_ora/core/widgets/app_loader.dart';
 import 'package:jewel_ora/core/widgets/empty_state.dart';
 import 'package:jewel_ora/core/widgets/product_card.dart';
@@ -31,7 +32,7 @@ class WishlistScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('My Wishlist')),
+      appBar: AppBar(title: Text(AppStrings.myWishlist)),
       body: Builder(
         builder: (context) {
           if (wishlist.isLoading ||
@@ -41,10 +42,10 @@ class WishlistScreen extends StatelessWidget {
           }
           if (products.isEmpty) {
             return EmptyState(
-              title: 'No favourites yet',
+              title: AppStrings.noData,
               subtitle: 'Tap the heart icon on any piece you love to save it to your wishlist.',
               icon: Icons.favorite_border_rounded,
-              actionLabel: 'Browse Collection',
+              actionLabel: AppStrings.browseShop,
               onAction: () => Navigator.of(context).pop(),
             );
           }

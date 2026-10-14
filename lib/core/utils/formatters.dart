@@ -1,7 +1,9 @@
 class Formatters {
   Formatters._();
 
-  static String price(double value) {
+  static String price(double value) => currency(value);
+
+  static String currency(double value) {
     final s = value.round().toString();
     if (s.length <= 3) return '₹$s';
 
@@ -14,5 +16,18 @@ class Formatters {
     }
     if (rest.isNotEmpty) parts.insert(0, rest);
     return '₹${parts.join(',')},$last3';
+  }
+
+  static String compactPrice(double value) {
+    if (value >= 10000000) {
+      return '₹${(value / 10000000).toStringAsFixed(1)} Cr';
+    }
+    if (value >= 100000) {
+      return '₹${(value / 100000).toStringAsFixed(1)} L';
+    }
+    if (value >= 1000) {
+      return '₹${(value / 1000).toStringAsFixed(1)} K';
+    }
+    return currency(value);
   }
 }

@@ -4,6 +4,7 @@ import 'package:jewel_ora/core/constants/app_icons.dart';
 import 'package:jewel_ora/core/constants/app_sizes.dart';
 import 'package:jewel_ora/core/constants/app_strings.dart';
 import 'package:jewel_ora/core/theme/app_decoration.dart';
+import 'package:jewel_ora/core/utils/ui_helpers.dart';
 import 'package:jewel_ora/core/widgets/app_card.dart';
 import 'package:jewel_ora/core/widgets/brand_logo.dart';
 import 'package:jewel_ora/core/widgets/app_dialog.dart';
@@ -19,6 +20,7 @@ import 'package:jewel_ora/screens/admin/category_list_screen.dart';
 import 'package:jewel_ora/screens/admin/insights_screen.dart';
 import 'package:jewel_ora/screens/admin/metal_rates_screen.dart';
 import 'package:jewel_ora/screens/admin/product_list_screen.dart';
+import 'package:jewel_ora/services/seed_data_service.dart';
 import 'package:provider/provider.dart';
 
 class AdminDashboard extends StatelessWidget {
@@ -61,6 +63,85 @@ class AdminDashboard extends StatelessWidget {
     final ok = await AppDialog.logout(context);
     if (ok && context.mounted) {
       await context.read<AuthProvider>().logout();
+    }
+  }
+
+  Future<void> _confirmSeed(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
+        ),
+        title: const Row(
+          children: [
+            Icon(Icons.auto_awesome_rounded, color: AppColors.primary),
+            SizedBox(width: 8),
+            Text(
+              'Load Sample Catalogue?',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'This will populate 18 luxury jewellery items covering all features:\n',
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+            ),
+            Text('• Live Metal Rates (24K Gold, 22K Gold, Silver)'),
+            Text('• MRP strikethrough & discounts (up to 30%)'),
+            Text('• Festive offer tags & sizing chips'),
+            Text('• Multi-image galleries & specifications'),
+            Text('• 8 Categories & 3 Promotional Banners'),
+            Text('• Both In-Stock & Out-of-Stock items\n'),
+            Text(
+              'Cost: 29 Firestore writes (100% free under Spark tier).',
+              style: TextStyle(
+                fontSize: 12,
+                color: AppColors.primaryDark,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+              ),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Seed Catalogue'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      showAppSnackBar(context, 'Seeding sample catalogue...');
+      try {
+        final count = await SeedDataService.seedCatalogue();
+        if (context.mounted) {
+          showAppSnackBar(
+            context,
+            'Success! Loaded $count sample items across 8 categories & 3 banners.',
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          showAppSnackBar(context, 'Error seeding data: $e', isError: true);
+        }
+      }
     }
   }
 
@@ -125,6 +206,11 @@ class AdminDashboard extends StatelessWidget {
         title: const Text('Admin Console'),
         actions: [
           IconButton(
+            tooltip: 'Seed Sample Catalogue (18 items)',
+            icon: const Icon(Icons.auto_awesome_rounded, color: AppColors.primary),
+            onPressed: () => _confirmSeed(context),
+          ),
+          IconButton(
             tooltip: AppStrings.logout,
             icon: const Icon(Icons.logout_rounded),
             onPressed: () => _logout(context),
@@ -140,7 +226,8 @@ class AdminDashboard extends StatelessWidget {
             AppCard(
               padding: const EdgeInsets.all(20),
               color: AppColors.surface,
-              border: Border.all(color: AppColors.borderAccent.withValues(alpha: 0.8)),
+              border: Border.all(
+                  color: AppColors.borderAccent.withValues(alpha: 0.8)),
               child: Row(
                 children: [
                   const BrandLogo(size: 52),
@@ -160,7 +247,8 @@ class AdminDashboard extends StatelessWidget {
                         const SizedBox(height: 3),
                         const Text(
                           'Jewel Ora Management Suite',
-                          style: TextStyle(fontSize: 12, color: AppColors.textGrey),
+                          style: TextStyle(
+                              fontSize: 12, color: AppColors.textGrey),
                         ),
                       ],
                     ),
@@ -187,10 +275,97 @@ class AdminDashboard extends StatelessWidget {
                     label: 'Out of Stock',
                     value: '$outOfStockCount',
                     icon: Icons.inventory_2_outlined,
-                    color: outOfStockCount > 0 ? AppColors.error : AppColors.success,
+                    color: outOfStockCount > 0
+                        ? AppColors.error
+                        : AppColors.success,
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 16),
+
+            // One-tap Seed Demo Catalogue Banner
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppColors.primaryLight, Colors.white],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+                border: Border.all(
+                  color: AppColors.borderAccent.withValues(alpha: 0.8),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.auto_awesome_rounded,
+                          color: AppColors.primary,
+                          size: 22,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Sample Catalogue (18 Items)',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                                color: AppColors.textDark,
+                              ),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'Populate all features: live metal rates, discounts, offers & sizes',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: AppColors.textGrey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 40,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(0, 40),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(AppSizes.radiusMedium),
+                        ),
+                      ),
+                      icon: const Icon(Icons.bolt_rounded, size: 18),
+                      label: const Text(
+                        'Seed Demo Catalogue',
+                        style: TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w700),
+                      ),
+                      onPressed: () => _confirmSeed(context),
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 22),
 
@@ -249,14 +424,15 @@ class _AdminMenuCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: 50,
+            height: 50,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: AppColors.primaryLight.withValues(alpha: 0.5),
-              border: Border.all(color: AppColors.borderGold.withValues(alpha: 0.4)),
+              border: Border.all(
+                  color: AppColors.borderAccent.withValues(alpha: 0.7)),
             ),
-            child: Icon(item.icon, size: 22, color: AppColors.primaryDark),
+            child: Icon(item.icon, size: 28, color: AppColors.primary),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -333,7 +509,8 @@ class _StatPill extends StatelessWidget {
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 11, color: AppColors.textGrey),
+                  style:
+                      const TextStyle(fontSize: 11, color: AppColors.textGrey),
                 ),
               ],
             ),

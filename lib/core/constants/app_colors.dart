@@ -16,7 +16,7 @@ class AppColors {
   static const Color silverLight = Color(0xFFF4F4F6);      // Delicate Silver Mist
 
   // Clean Neutral Foundations (GIVA & CaratLane Crisp Surfaces)
-  static const Color background = Color(0xFFF9F8FA);       // Crisp Porcelain Off-White (No yellow tint)
+  static const Color background = Color(0xFFF9F8FA);       // Crisp Porcelain Off-White
   static const Color surface = Colors.white;               // Pure White Surface
   static const Color surfaceVariant = Color(0xFFF3EFF7);   // Light Lilac-Grey Tint
   static const Color surfaceDark = Color(0xFF1D1625);      // Deep Aubergine / Obsidian
@@ -39,6 +39,7 @@ class AppColors {
   static const Color errorLight = Color(0xFFFDF0F4);
   static const Color success = Color(0xFF0D9488);          // Modern Teal Emerald Green
   static const Color successLight = Color(0xFFE6F5F3);
+  static const Color info = Color(0xFF3B82F6);
   static const Color whatsapp = Color(0xFF25D366);         // WhatsApp Brand
   static const Color whatsappDark = Color(0xFF1EAE53);
 
@@ -48,9 +49,19 @@ class AppColors {
   static const Color plumDeep = Color(0xFF381F4C);
   static const Color secondaryLilac = Color(0xFFF5EEFB);
   static const Color accentRose = Color(0xFFDE4E76);
-  static const Color goldAccent = Color(0xFFDE4E76);                  // Redirect to modern rose berry
-  static const Color goldShimmer = Color(0xFFF5EEFB);           // Redirect to soft lilac
-  static const Color borderGold = Color(0xFFD8CCE6);            // Redirect to plum-tinted border
+  static const Color goldAccent = Color(0xFFDE4E76);
+  static const Color goldShimmer = Color(0xFFF5EEFB);
+  static const Color borderGold = Color(0xFFD8CCE6);
+  static const Color teal = Color(0xFF0D9488);
+  static const Color tealLight = Color(0xFFE6F5F3);
+  static const Color accentTeal = Color(0xFF0D9488);
+  static const Color accentTealLight = Color(0xFFE6F5F3);
+  static const Color accentCoral = Color(0xFFDE3B68);
+  static const Color accentCoralLight = Color(0xFFFDF0F4);
+  static const Color violet = Color(0xFF4F3267);
+  static const Color skyBlue = Color(0xFF3B82F6);
+  static const Color skyBlueLight = Color(0xFFEFF6FF);
+  static const Color shadowLight = Color(0x0D4F3267);
 
   // Modern Gradients
   static const LinearGradient primaryGradient = LinearGradient(
@@ -65,7 +76,7 @@ class AppColors {
     end: Alignment.bottomRight,
   );
 
-  static const LinearGradient goldGradient = primaryGradient; // Redirected to modern plum gradient
+  static const LinearGradient goldGradient = primaryGradient;
 
   static const LinearGradient darkLuxuryGradient = LinearGradient(
     colors: [Color(0xFF281C35), Color(0xFF150D1C)],
@@ -78,4 +89,25 @@ class AppColors {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
+
+  static const LinearGradient brandGradient = primaryGradient;
+  static const LinearGradient coralGradient = accentGradient;
+  static const LinearGradient tealGradient = LinearGradient(
+    colors: [Color(0xFF0D9488), Color(0xFF14B8A6)],
+  );
+  static const LinearGradient skyGradient = LinearGradient(
+    colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+  );
+  static const LinearGradient coolGradient = skyGradient;
+
+  // Admin section gradients
+  static const LinearGradient adminRatesGradient = primaryGradient;
+  static const LinearGradient adminEnquiriesGradient = accentGradient;
+  static const LinearGradient adminProductsGradient = primaryGradient;
+  static const LinearGradient adminCategoriesGradient = accentGradient;
+  static const LinearGradient adminBannersGradient = primaryGradient;
+  static const LinearGradient adminBrandingGradient = accentGradient;
+  static const LinearGradient adminSettingsGradient = primaryGradient;
+  static const LinearGradient adminInsightsGradient = accentGradient;
+  static const LinearGradient adminToolsGradient = primaryGradient;
 }

@@ -72,7 +72,7 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
-          minimumSize: const Size.fromHeight(AppSizes.buttonHeight),
+          minimumSize: const Size(0, AppSizes.buttonHeight),
           elevation: 0,
           shadowColor: AppColors.primary.withValues(alpha: 0.25),
           shape: RoundedRectangleBorder(
@@ -86,7 +86,7 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primary,
-          minimumSize: const Size.fromHeight(AppSizes.buttonHeight),
+          minimumSize: const Size(0, AppSizes.buttonHeight),
           side: const BorderSide(color: AppColors.primary, width: 1.2),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
@@ -178,6 +178,29 @@ class AppTheme {
         color: AppColors.divider,
         thickness: 1,
         space: 1,
+      ),
+    );
+  }
+
+  static ThemeData get dark {
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: AppColors.primary,
+      primary: AppColors.primaryLight,
+      secondary: AppColors.accentLight,
+      surface: AppColors.surfaceDark,
+      error: AppColors.error,
+      brightness: Brightness.dark,
+    );
+
+    return ThemeData(
+      useMaterial3: true,
+      colorScheme: colorScheme,
+      scaffoldBackgroundColor: AppColors.darkBackground,
+      appBarTheme: const AppBarTheme(
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: AppColors.darkBackground,
+        foregroundColor: Colors.white,
       ),
     );
   }

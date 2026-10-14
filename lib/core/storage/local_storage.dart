@@ -52,7 +52,6 @@ class LocalStorage {
     final timings = prefs.getString(AppKeys.cachedStoreTimings);
     final email = prefs.getString(AppKeys.cachedStoreEmail);
 
-    // If never cached before, return defaults
     if (appName == null) {
       return const AppSettingsModel();
     }
@@ -86,5 +85,46 @@ class LocalStorage {
       prefs.remove(AppKeys.cachedStoreEmail),
       prefs.remove(AppKeys.cachedBrandingUpdatedAt),
     ]);
+  }
+
+  // ---------- Task 3.4: Recently Viewed Products (0 Firestore Cost) ----------
+  static const String _keyRecentlyViewed = 'jewel_ora_recently_viewed';
+
+  Future<void> addRecentlyViewed(String productId) async {
+    final prefs = await _safePrefs;
+    final list = prefs.getStringList(_keyRecentlyViewed) ?? [];
+    list.remove(productId);
+    list.insert(0, productId);
+    if (list.length > 20) {
+      list.removeRange(20, list.length);
+    }
+    await prefs.setStringList(_keyRecentlyViewed, list);
+  }
+
+  List<String> getRecentlyViewedSync() {
+    return _prefs?.getStringList(_keyRecentlyViewed) ?? [];
+  }
+
+  Future<List<String>> getRecentlyViewed() async {
+    final prefs = await _safePrefs;
+    return prefs.getStringList(_keyRecentlyViewed) ?? [];
+  }
+
+  Future<void> clearRecentlyViewed() async {
+    final prefs = await _safePrefs;
+    await prefs.remove(_keyRecentlyViewed);
+  }
+
+  // ---------- Task 3.8: App Language Preference (0 Firestore Cost) ----------
+  static const String _keyAppLocale = 'jewel_ora_app_locale';
+
+  Future<void> setAppLocale(String languageCode) async {
+    final prefs = await _safePrefs;
+    await prefs.setString(_keyAppLocale, languageCode);
+  }
+
+  Future<String> getAppLocale() async {
+    final prefs = await _safePrefs;
+    return prefs.getString(_keyAppLocale) ?? 'en';
   }
 }

@@ -75,7 +75,7 @@ class _SingleImageUploaderState extends State<SingleImageUploader> {
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
               border: Border.all(
-                color: _url.isNotEmpty ? AppColors.borderGold : AppColors.border,
+                color: _url.isNotEmpty ? AppColors.borderAccent : AppColors.border,
                 width: 1.2,
               ),
             ),

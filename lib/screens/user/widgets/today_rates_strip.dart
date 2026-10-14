@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:jewel_ora/core/constants/app_colors.dart';
 import 'package:jewel_ora/core/constants/app_sizes.dart';
+import 'package:jewel_ora/core/constants/app_strings.dart';
 import 'package:jewel_ora/core/utils/formatters.dart';
+import 'package:jewel_ora/core/widgets/app_button.dart';
 import 'package:jewel_ora/models/metal_rate_model.dart';
 import 'package:jewel_ora/providers/metal_rate_provider.dart';
 import 'package:provider/provider.dart';
@@ -14,7 +16,7 @@ class TodayRatesStrip extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => _RateCalculatorSheet(rates: rates),
+      builder: (ctx) => RateCalculatorSheet(rates: rates),
     );
   }
 
@@ -55,9 +57,9 @@ class TodayRatesStrip extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 6),
-              const Text(
-                "TODAY'S METAL RATES",
-                style: TextStyle(
+              Text(
+                AppStrings.todayRates.toUpperCase(),
+                style: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0.8,
@@ -68,15 +70,15 @@ class TodayRatesStrip extends StatelessWidget {
               InkWell(
                 onTap: () => _openCalculator(context, rates),
                 borderRadius: BorderRadius.circular(4),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                   child: Row(
                     children: [
-                      Icon(Icons.calculate_outlined, size: 14, color: AppColors.primary),
-                      SizedBox(width: 4),
+                      const Icon(Icons.calculate_outlined, size: 14, color: AppColors.primary),
+                      const SizedBox(width: 4),
                       Text(
-                        'Calculate',
-                        style: TextStyle(
+                        AppStrings.calculate,
+                        style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: AppColors.primary,
@@ -221,15 +223,15 @@ class _RateChip extends StatelessWidget {
   }
 }
 
-class _RateCalculatorSheet extends StatefulWidget {
+class RateCalculatorSheet extends StatefulWidget {
   final MetalRateModel rates;
-  const _RateCalculatorSheet({required this.rates});
+  const RateCalculatorSheet({super.key, required this.rates});
 
   @override
-  State<_RateCalculatorSheet> createState() => _RateCalculatorSheetState();
+  State<RateCalculatorSheet> createState() => _RateCalculatorSheetState();
 }
 
-class _RateCalculatorSheetState extends State<_RateCalculatorSheet> {
+class _RateCalculatorSheetState extends State<RateCalculatorSheet> {
   String _selectedMetal = '22K';
   final TextEditingController _weightCtrl = TextEditingController(text: '10');
 
@@ -262,97 +264,131 @@ class _RateCalculatorSheetState extends State<_RateCalculatorSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.fromLTRB(
-        20,
-        20,
-        20,
-        MediaQuery.of(context).viewInsets.bottom + 24,
-      ),
       decoration: const BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            20,
+            12,
+            20,
+            MediaQuery.of(context).viewInsets.bottom + 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                'Live Gold & Silver Calculator',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textDark),
+              // Handle bar
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.border,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
               ),
-              IconButton(
-                icon: const Icon(Icons.close_rounded),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'Live Rate Calculator',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              // Metal Selector Chips
+              SegmentedButton<String>(
+                segments: const [
+                  ButtonSegment(value: '24K', label: Text('24K')),
+                  ButtonSegment(value: '22K', label: Text('22K')),
+                  ButtonSegment(value: '18K', label: Text('18K')),
+                  ButtonSegment(value: 'Silver', label: Text('Silver')),
+                ],
+                selected: {_selectedMetal},
+                onSelectionChanged: (set) => setState(() => _selectedMetal = set.first),
+              ),
+              const SizedBox(height: 16),
+              // Weight input
+              TextField(
+                controller: _weightCtrl,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                onChanged: (_) => setState(() {}),
+                decoration: InputDecoration(
+                  labelText: 'Weight (in Grams)',
+                  suffixText: 'Grams',
+                  prefixIcon: const Icon(Icons.scale_rounded, color: AppColors.primary),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Estimated Total Display Card
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryLight.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.borderAccent),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Rate: ${Formatters.price(_currentRate)} / g',
+                          style: const TextStyle(fontSize: 12, color: AppColors.textGrey),
+                        ),
+                        const SizedBox(height: 2),
+                        const Text(
+                          'Estimated Value',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textDark,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      Formatters.price(_calculatedTotal),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              AppButton(
+                title: 'Close',
                 onPressed: () => Navigator.pop(context),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          // Metal Selector Chips
-          SegmentedButton<String>(
-            segments: const [
-              ButtonSegment(value: '24K', label: Text('24K Gold')),
-              ButtonSegment(value: '22K', label: Text('22K Gold')),
-              ButtonSegment(value: '18K', label: Text('18K Gold')),
-              ButtonSegment(value: 'Silver', label: Text('Silver')),
-            ],
-            selected: {_selectedMetal},
-            onSelectionChanged: (set) => setState(() => _selectedMetal = set.first),
-          ),
-          const SizedBox(height: 16),
-          // Weight input
-          TextField(
-            controller: _weightCtrl,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            onChanged: (_) => setState(() {}),
-            decoration: InputDecoration(
-              labelText: 'Weight (in Grams)',
-              suffixText: 'Grams',
-              prefixIcon: const Icon(Icons.scale_rounded, color: AppColors.primary),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-          ),
-          const SizedBox(height: 16),
-          // Estimated Total Display Card
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.primaryLight.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.borderAccent),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Rate: ${Formatters.price(_currentRate)} / gram',
-                      style: const TextStyle(fontSize: 12, color: AppColors.textGrey),
-                    ),
-                    const SizedBox(height: 2),
-                    const Text(
-                      'Estimated Metal Value',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textDark),
-                    ),
-                  ],
-                ),
-                Text(
-                  Formatters.price(_calculatedTotal),
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 }
+
+typedef RateCalculatorDialog = RateCalculatorSheet;

@@ -33,7 +33,7 @@ class ProductProvider extends ChangeNotifier {
 
   void _listen() {
     _sub = _service.watchProducts().listen(
-          (data) {
+      (data) {
         _products = data;
         _isLoading = false;
         notifyListeners();
@@ -65,6 +65,7 @@ class ProductProvider extends ChangeNotifier {
     required String weight,
     required bool isAvailable,
     required bool isFeatured,
+    List<String> availableSizes = const [],
   }) async {
     _errorMessage = null;
     _isSaving = true;
@@ -89,6 +90,7 @@ class ProductProvider extends ChangeNotifier {
         useDynamicRate: useDynamicRate,
         isAvailable: isAvailable,
         isFeatured: isFeatured,
+        availableSizes: availableSizes,
         createdAt: existing?.createdAt,
       );
 
@@ -114,6 +116,37 @@ class ProductProvider extends ChangeNotifier {
       _run(() => _service.setFeatured(p.id, !p.isFeatured));
 
   Future<bool> delete(String id) => _run(() => _service.delete(id));
+
+  /// Admin Tool 1: Duplicate product piece
+  Future<bool> duplicate(ProductModel p) =>
+      _run(() => _service.duplicate(p));
+
+  /// Admin Tool 2: Bulk price change
+  Future<int> bulkUpdatePrices({
+    required double percentage,
+    String? categoryId,
+    String? metalType,
+  }) async {
+    _errorMessage = null;
+    _isSaving = true;
+    notifyListeners();
+
+    try {
+      final count = await _service.bulkUpdatePrices(
+        products: _products,
+        percentage: percentage,
+        categoryId: categoryId,
+        metalType: metalType,
+      );
+      return count;
+    } catch (_) {
+      _errorMessage = AppStrings.somethingWentWrong;
+      return 0;
+    } finally {
+      _isSaving = false;
+      notifyListeners();
+    }
+  }
 
   Future<bool> _run(Future<void> Function() action) async {
     _errorMessage = null;

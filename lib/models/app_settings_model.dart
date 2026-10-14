@@ -12,6 +12,11 @@ class AppSettingsModel {
   final String storeTimings;
   final String storeEmail;
 
+  // Admin Tool: Force Update Flag
+  final bool forceUpdate;
+  final String minAppVersion;
+  final String forceUpdateMessage;
+
   const AppSettingsModel({
     this.appName = AppStrings.appName,
     this.whatsappNumber = '',
@@ -23,6 +28,9 @@ class AppSettingsModel {
     this.instagramHandle = 'jewelora.jewels',
     this.storeTimings = 'Mon - Sat: 10:30 AM - 8:30 PM | Sun: 11:00 AM - 6:00 PM',
     this.storeEmail = 'support@jewelora.com',
+    this.forceUpdate = false,
+    this.minAppVersion = '1.0.0',
+    this.forceUpdateMessage = 'A critical update is required to continue viewing our latest collection.',
   });
 
   factory AppSettingsModel.fromMap(Map<String, dynamic> map) {
@@ -37,6 +45,10 @@ class AppSettingsModel {
       instagramHandle: map['instagramHandle'] ?? 'jewelora.jewels',
       storeTimings: map['storeTimings'] ?? 'Mon - Sat: 10:30 AM - 8:30 PM | Sun: 11:00 AM - 6:00 PM',
       storeEmail: map['storeEmail'] ?? 'support@jewelora.com',
+      forceUpdate: map['forceUpdate'] ?? false,
+      minAppVersion: map['minAppVersion'] ?? '1.0.0',
+      forceUpdateMessage: map['forceUpdateMessage'] ??
+          'A critical update is required to continue viewing our latest collection.',
     );
   }
 
@@ -51,6 +63,9 @@ class AppSettingsModel {
     'instagramHandle': instagramHandle,
     'storeTimings': storeTimings,
     'storeEmail': storeEmail,
+    'forceUpdate': forceUpdate,
+    'minAppVersion': minAppVersion,
+    'forceUpdateMessage': forceUpdateMessage,
   };
 
   AppSettingsModel copyWith({
@@ -64,6 +79,9 @@ class AppSettingsModel {
     String? instagramHandle,
     String? storeTimings,
     String? storeEmail,
+    bool? forceUpdate,
+    String? minAppVersion,
+    String? forceUpdateMessage,
   }) {
     return AppSettingsModel(
       appName: appName ?? this.appName,
@@ -76,6 +94,9 @@ class AppSettingsModel {
       instagramHandle: instagramHandle ?? this.instagramHandle,
       storeTimings: storeTimings ?? this.storeTimings,
       storeEmail: storeEmail ?? this.storeEmail,
+      forceUpdate: forceUpdate ?? this.forceUpdate,
+      minAppVersion: minAppVersion ?? this.minAppVersion,
+      forceUpdateMessage: forceUpdateMessage ?? this.forceUpdateMessage,
     );
   }
 }

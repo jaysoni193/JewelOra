@@ -25,16 +25,40 @@ class AppDropdown<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final effectiveValue =
+        items.any((item) => item.value == value) ? value : null;
+
     return DropdownButtonFormField<T>(
-      initialValue: value,
-      items: items,
+      isExpanded: true,
+      initialValue: effectiveValue,
+      items: items.map((item) {
+        return DropdownMenuItem<T>(
+          key: item.key,
+          value: item.value,
+          enabled: item.enabled,
+          alignment: item.alignment,
+          child: DefaultTextStyle(
+            style: const TextStyle(
+              fontSize: 14,
+              color: AppColors.textDark,
+              fontWeight: FontWeight.w500,
+              overflow: TextOverflow.ellipsis,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            child: item.child,
+          ),
+        );
+      }).toList(),
       onChanged: enabled ? onChanged : null,
       validator: validator,
-      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textGrey),
+      icon: const Icon(Icons.keyboard_arrow_down_rounded,
+          color: AppColors.textGrey),
       style: const TextStyle(
-        fontSize: 15,
+        fontSize: 14,
         color: AppColors.textDark,
         fontWeight: FontWeight.w500,
+        overflow: TextOverflow.ellipsis,
       ),
       dropdownColor: AppColors.surface,
       decoration: InputDecoration(

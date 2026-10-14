@@ -6,6 +6,7 @@ class EnquiryItemModel {
   final double productPrice;
   final String productImage;
   final int quantity;
+  final String? size;
 
   const EnquiryItemModel({
     required this.productId,
@@ -13,6 +14,7 @@ class EnquiryItemModel {
     required this.productPrice,
     this.productImage = '',
     this.quantity = 1,
+    this.size,
   });
 
   factory EnquiryItemModel.fromMap(Map<String, dynamic> map) {
@@ -22,6 +24,7 @@ class EnquiryItemModel {
       productPrice: (map['productPrice'] ?? 0).toDouble(),
       productImage: map['productImage'] ?? '',
       quantity: (map['quantity'] ?? 1) as int,
+      size: map['size'] as String?,
     );
   }
 
@@ -31,6 +34,7 @@ class EnquiryItemModel {
     'productPrice': productPrice,
     'productImage': productImage,
     'quantity': quantity,
+    if (size != null && size!.isNotEmpty) 'size': size,
   };
 }
 

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:jewel_ora/core/constants/app_colors.dart';
 import 'package:jewel_ora/core/constants/app_sizes.dart';
 import 'package:jewel_ora/core/theme/app_text_styles.dart';
+import 'package:jewel_ora/core/utils/formatters.dart';
 import 'package:jewel_ora/core/utils/image_url.dart';
 import 'package:jewel_ora/core/widgets/app_card.dart';
 import 'package:jewel_ora/core/widgets/app_loader.dart';
@@ -11,8 +12,10 @@ import 'package:jewel_ora/models/product_model.dart';
 import 'package:jewel_ora/models/product_stats_model.dart';
 import 'package:jewel_ora/providers/banner_provider.dart';
 import 'package:jewel_ora/providers/category_provider.dart';
+import 'package:jewel_ora/providers/enquiry_provider.dart';
 import 'package:jewel_ora/providers/product_provider.dart';
 import 'package:jewel_ora/providers/stats_provider.dart';
+import 'package:jewel_ora/screens/admin/admin_enquiry_list_screen.dart';
 import 'package:jewel_ora/screens/admin/product_form_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -66,6 +69,15 @@ class _InsightsScreenState extends State<InsightsScreen> {
     final byId = {for (final p in products) p.id: p};
     final mostViewed = _rank(stats.items, byId, (s) => s.views);
     final mostEnquired = _rank(stats.items, byId, (s) => s.enquiries);
+
+    final enquiries = context.watch<EnquiryProvider>().allEnquiries;
+    final activeLeads = enquiries
+        .where((e) => e.status == 'in_discussion' || e.status == 'quote_shared')
+        .length;
+    final confirmedLeads =
+        enquiries.where((e) => e.status == 'completed').length;
+    final pipelineValue =
+        enquiries.fold(0.0, (sum, e) => sum + e.totalAmount);
 
     var totalViews = 0;
     var totalEnquiries = 0;
@@ -162,6 +174,161 @@ class _InsightsScreenState extends State<InsightsScreen> {
                   note: 'WhatsApp clicks',
                 ),
               ],
+            ),
+            const SizedBox(height: AppSizes.p20),
+
+            // Customer Leads & Quotes Pipeline Card
+            AppCard(
+              padding: const EdgeInsets.all(16),
+              color: AppColors.primaryLight.withValues(alpha: 0.5),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.2),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.question_answer_outlined,
+                              color: AppColors.primary, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'Leads & Quotes Pipeline',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textDark,
+                            ),
+                          ),
+                        ],
+                      ),
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          visualDensity: VisualDensity.compact,
+                        ),
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const AdminEnquiryListScreen(),
+                          ),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'View Leads',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                            SizedBox(width: 2),
+                            Icon(Icons.chevron_right_rounded,
+                                size: 16, color: AppColors.primary),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Total Leads',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: AppColors.textGrey,
+                              ),
+                            ),
+                            Text(
+                              '${enquiries.length}',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textDark,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'In Discussion',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: AppColors.textGrey,
+                              ),
+                            ),
+                            Text(
+                              '$activeLeads',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFFB45309),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Confirmed',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: AppColors.textGrey,
+                              ),
+                            ),
+                            Text(
+                              '$confirmedLeads',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF047857),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Pipeline Value',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: AppColors.textGrey,
+                              ),
+                            ),
+                            Text(
+                              Formatters.compactPrice(pipelineValue),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: AppSizes.p24),
 

@@ -15,6 +15,8 @@ class AppButton extends StatelessWidget {
   final Color? foregroundColor;
   final double? height;
   final double? width;
+  final LinearGradient? gradient;
+  final double? borderRadius;
 
   const AppButton({
     super.key,
@@ -28,6 +30,8 @@ class AppButton extends StatelessWidget {
     this.foregroundColor,
     this.height,
     this.width,
+    this.gradient,
+    this.borderRadius,
   });
 
   const AppButton.outlined({
@@ -41,6 +45,8 @@ class AppButton extends StatelessWidget {
     this.foregroundColor,
     this.height,
     this.width,
+    this.gradient,
+    this.borderRadius,
   }) : type = AppButtonType.outlined;
 
   const AppButton.secondary({
@@ -54,6 +60,8 @@ class AppButton extends StatelessWidget {
     this.foregroundColor,
     this.height,
     this.width,
+    this.gradient,
+    this.borderRadius,
   }) : type = AppButtonType.secondary;
 
   const AppButton.text({
@@ -67,12 +75,15 @@ class AppButton extends StatelessWidget {
     this.foregroundColor,
     this.height,
     this.width,
+    this.gradient,
+    this.borderRadius,
   }) : type = AppButtonType.text;
 
   @override
   Widget build(BuildContext context) {
     final effectiveHeight = height ?? AppSizes.buttonHeight;
     final isEnabled = onPressed != null && !isLoading;
+    final effectiveRadius = borderRadius ?? AppSizes.radiusMedium;
 
     Widget childContent;
     if (isLoading) {
@@ -94,13 +105,16 @@ class AppButton extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 19),
-            const SizedBox(width: 8),
+            Icon(icon, size: 18),
+            const SizedBox(width: 6),
           ],
-          Text(
-            title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          Flexible(
+            child: Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
           ),
         ],
       );
@@ -117,11 +131,12 @@ class AppButton extends StatelessWidget {
             foregroundColor: foregroundColor ?? Colors.white,
             disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.4),
             disabledForegroundColor: Colors.white.withValues(alpha: 0.7),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
             elevation: isEnabled ? 2 : 0,
             shadowColor: AppColors.primary.withValues(alpha: 0.35),
             minimumSize: Size(isFullWidth ? double.infinity : (width ?? 0), effectiveHeight),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+              borderRadius: BorderRadius.circular(effectiveRadius),
             ),
           ),
           child: childContent,
@@ -134,10 +149,11 @@ class AppButton extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: backgroundColor ?? AppColors.surfaceVariant,
             foregroundColor: foregroundColor ?? AppColors.textDark,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
             elevation: 0,
             minimumSize: Size(isFullWidth ? double.infinity : (width ?? 0), effectiveHeight),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+              borderRadius: BorderRadius.circular(effectiveRadius),
             ),
           ),
           child: childContent,
@@ -149,6 +165,7 @@ class AppButton extends StatelessWidget {
           onPressed: isEnabled ? onPressed : null,
           style: OutlinedButton.styleFrom(
             foregroundColor: foregroundColor ?? AppColors.primaryDark,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
             side: BorderSide(
               color: isEnabled
                   ? (foregroundColor ?? AppColors.primary)
@@ -157,7 +174,7 @@ class AppButton extends StatelessWidget {
             ),
             minimumSize: Size(isFullWidth ? double.infinity : (width ?? 0), effectiveHeight),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+              borderRadius: BorderRadius.circular(effectiveRadius),
             ),
           ),
           child: childContent,

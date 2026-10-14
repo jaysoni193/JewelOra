@@ -4,7 +4,7 @@ import 'package:jewel_ora/core/constants/app_strings.dart';
 import 'package:jewel_ora/core/widgets/app_button.dart';
 
 class EmptyState extends StatelessWidget {
-  final String title;
+  final String? title;
   final String? subtitle;
   final IconData icon;
   final String? actionLabel;
@@ -12,7 +12,7 @@ class EmptyState extends StatelessWidget {
 
   const EmptyState({
     super.key,
-    this.title = AppStrings.noData,
+    this.title,
     String? subtitle,
     String? message,
     this.icon = Icons.diamond_outlined,
@@ -26,65 +26,81 @@ class EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 88,
-              height: 88,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.primaryLight.withValues(alpha: 0.5),
-                border: Border.all(
-                  color: AppColors.borderAccent.withValues(alpha: 0.7),
-                  width: 1.5,
-                ),
-              ),
-              child: Center(
-                child: Icon(
-                  icon,
-                  size: 40,
-                  color: AppColors.primary,
+    final effectiveTitle = title ?? AppStrings.noData;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final minHeight =
+            constraints.hasBoundedHeight ? constraints.maxHeight : 0.0;
+
+        return SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: minHeight),
+            child: Center(
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.primaryLight.withValues(alpha: 0.5),
+                        border: Border.all(
+                          color: AppColors.borderAccent.withValues(alpha: 0.7),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          icon,
+                          size: 38,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    Text(
+                      effectiveTitle,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                    if (subtitle != null && subtitle!.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        subtitle!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textGrey,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                    if (actionLabel != null && onAction != null) ...[
+                      const SizedBox(height: 20),
+                      AppButton(
+                        title: actionLabel!,
+                        onPressed: onAction,
+                        isFullWidth: false,
+                        height: 44,
+                      ),
+                    ],
+                  ],
                 ),
               ),
             ),
-            const SizedBox(height: 20),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textDark,
-              ),
-            ),
-            if (subtitle != null && subtitle!.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(
-                subtitle!,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textGrey,
-                  height: 1.4,
-                ),
-              ),
-            ],
-            if (actionLabel != null && onAction != null) ...[
-              const SizedBox(height: 24),
-              AppButton(
-                title: actionLabel!,
-                onPressed: onAction,
-                isFullWidth: false,
-                height: 44,
-              ),
-            ],
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

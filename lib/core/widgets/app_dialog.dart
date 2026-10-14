@@ -11,10 +11,12 @@ class AppDialog {
     BuildContext context, {
     required String title,
     required String message,
-    String confirmText = 'Confirm',
-    String cancelText = AppStrings.cancel,
+    String? confirmText,
+    String? cancelText,
     bool isDestructive = false,
   }) async {
+    final effectiveConfirm = confirmText ?? AppStrings.confirm;
+    final effectiveCancel = cancelText ?? AppStrings.cancel;
     final result = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -42,7 +44,7 @@ class AppDialog {
             children: [
               Expanded(
                 child: AppButton.outlined(
-                  title: cancelText,
+                  title: effectiveCancel,
                   height: 44,
                   onPressed: () => Navigator.pop(ctx, false),
                 ),
@@ -50,7 +52,7 @@ class AppDialog {
               const SizedBox(width: 12),
               Expanded(
                 child: AppButton(
-                  title: confirmText,
+                  title: effectiveConfirm,
                   height: 44,
                   backgroundColor: isDestructive ? AppColors.error : AppColors.primary,
                   onPressed: () => Navigator.pop(ctx, true),
@@ -69,13 +71,13 @@ class AppDialog {
     required String title,
     required String message,
     String? deleteText,
-    String confirmText = AppStrings.delete,
+    String? confirmText,
   }) {
     return confirm(
       context,
       title: title,
       message: message,
-      confirmText: deleteText ?? confirmText,
+      confirmText: deleteText ?? confirmText ?? AppStrings.delete,
       isDestructive: true,
     );
   }

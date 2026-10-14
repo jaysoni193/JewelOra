@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ic_launcher_background">#050A11</color>
+    <color name="ic_launcher_background_akshaya">#770913</color>
+    <color name="ic_launcher_background_christmas">#BD1822</color>
+    <color name="ic_launcher_background_diwali">#5F0A27</color>
+    <color name="ic_launcher_background_eid">#0B5347</color>
+    <color name="ic_launcher_background_holi">#FFF8EC</color>
+    <color name="ic_launcher_background_navratri">#581077</color>
+    <color name="ic_launcher_background_newyear">#0A0E32</color>
+    <color name="ic_launcher_background_rakhi">#FEE3D5</color>
+</resources>

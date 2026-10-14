@@ -9,6 +9,7 @@ import 'package:jewel_ora/providers/category_provider.dart';
 import 'package:jewel_ora/providers/product_provider.dart';
 import 'package:jewel_ora/providers/shop_filter_provider.dart';
 import 'package:jewel_ora/screens/user/product_detail_screen.dart';
+import 'package:jewel_ora/screens/user/widgets/shop_filter_sheet.dart';
 import 'package:provider/provider.dart';
 
 class ShopScreen extends StatefulWidget {
@@ -21,39 +22,35 @@ class ShopScreen extends StatefulWidget {
 class _ShopScreenState extends State<ShopScreen> {
   final _searchCtrl = TextEditingController();
   final _scrollCtrl = ScrollController();
-  late final ShopFilterProvider _filter;
-
-  String _lastKey = '';
-  int _filteredCount = 0; // total results, used by the paging listener
+  late ShopFilterProvider _filter;
+  int _filteredCount = 0;
 
   @override
   void initState() {
     super.initState();
     _filter = context.read<ShopFilterProvider>();
-    _lastKey = _filter.filterKey;
-    _filter.addListener(_onFilterChanged);
+    _searchCtrl.text = _filter.query;
     _scrollCtrl.addListener(_onScroll);
   }
 
   @override
-  void dispose() {
-    _filter.removeListener(_onFilterChanged);
-    _scrollCtrl.dispose();
-    _searchCtrl.dispose();
-    super.dispose();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final f = context.read<ShopFilterProvider>();
+    if (f != _filter) {
+      _filter = f;
+      if (_searchCtrl.text != _filter.query) {
+        _searchCtrl.text = _filter.query;
+      }
+    }
   }
 
-  /// Keeps the search box in sync when the filter is changed from outside
-  /// (for example "Clear filters" or a category tapped on Home), and scrolls
-  /// back to the top whenever the results change.
-  void _onFilterChanged() {
-    if (_searchCtrl.text != _filter.query) {
-      _searchCtrl.text = _filter.query;
-    }
-    if (_filter.filterKey != _lastKey) {
-      _lastKey = _filter.filterKey;
-      if (_scrollCtrl.hasClients) _scrollCtrl.jumpTo(0);
-    }
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    _scrollCtrl.removeListener(_onScroll);
+    _scrollCtrl.dispose();
+    super.dispose();
   }
 
   void _onScroll() {
@@ -114,6 +111,19 @@ class _ShopScreenState extends State<ShopScreen> {
     if (picked != null) _filter.setSort(picked);
   }
 
+  void _openFilters() {
+    final filter = _filter;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => ChangeNotifierProvider.value(
+        value: filter,
+        child: ShopFilterSheet(filter: filter),
+      ),
+    );
+  }
+
   void _openProduct(String productId) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -139,7 +149,18 @@ class _ShopScreenState extends State<ShopScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Jewellery Collection'),
+        title: Text(AppStrings.jewelleryCollection),
+        actions: [
+          IconButton(
+            tooltip: AppStrings.filterCollection,
+            icon: Badge(
+              isLabelVisible: filter.hasActiveFilters,
+              backgroundColor: AppColors.accent,
+              child: const Icon(Icons.tune_rounded),
+            ),
+            onPressed: _openFilters,
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -171,7 +192,7 @@ class _ShopScreenState extends State<ShopScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
                 _CategoryChip(
-                  label: 'All',
+                  label: AppStrings.all,
                   selected: selectedId == null,
                   onTap: () => filter.setCategory(null),
                 ),
@@ -192,7 +213,7 @@ class _ShopScreenState extends State<ShopScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    '${filtered.length} ${filtered.length == 1 ? 'item' : 'items'} found',
+                    '${filtered.length} ${filtered.length == 1 ? AppStrings.itemFound : AppStrings.itemsFound}',
                     style: const TextStyle(
                       color: AppColors.textGrey,
                       fontSize: 13,
@@ -209,7 +230,7 @@ class _ShopScreenState extends State<ShopScreen> {
             ),
           ),
 
-          // ---------- Responsive Product Grid ----------
+          // ---------- Product Grid ----------
           Expanded(
             child: Builder(
               builder: (context) {
@@ -217,36 +238,145 @@ class _ShopScreenState extends State<ShopScreen> {
                   return const Center(child: AppLoader(size: 50));
                 }
                 if (productsP.products.isEmpty) {
-                  return const EmptyState(
-                    title: 'Collection is empty',
-                    subtitle: 'Please check back soon for our latest arrivals.',
+                  return EmptyState(
+                    title: AppStrings.collectionEmpty,
+                    subtitle: AppStrings.exploreArrivals,
                     icon: Icons.diamond_outlined,
                   );
                 }
                 if (filtered.isEmpty) {
                   return EmptyState(
-                    title: 'No jewellery found',
+                    title: AppStrings.noData,
                     subtitle: 'Try adjusting your search or category filters.',
                     icon: Icons.search_off_rounded,
                     actionLabel: 'Clear filters',
                     onAction: filter.clearFilters,
                   );
                 }
-                return GridView.builder(
+                return CustomScrollView(
                   controller: _scrollCtrl,
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
-                  itemCount: visible.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 14,
-                    mainAxisSpacing: 14,
-                    childAspectRatio: 0.65,
-                  ),
-                  itemBuilder: (context, i) => ProductCard(
-                    product: visible[i],
-                    onTap: () => _openProduct(visible[i].id),
-                  ),
+                  slivers: [
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                      sliver: SliverGrid(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 14,
+                          mainAxisSpacing: 14,
+                          childAspectRatio: 0.65,
+                        ),
+                        delegate: SliverChildBuilderDelegate(
+                          (context, i) => ProductCard(
+                            product: visible[i],
+                            onTap: () => _openProduct(visible[i].id),
+                          ),
+                          childCount: visible.length,
+                        ),
+                      ),
+                    ),
+                    // ---------- Pagination Footer ----------
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+                        child: Column(
+                          children: [
+                            // Progress text
+                            Text(
+                              'Showing ${visible.length} of ${filtered.length} designs',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textGrey,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            // Linear progress indicator
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: LinearProgressIndicator(
+                                value: filtered.isEmpty
+                                    ? 1.0
+                                    : (visible.length / filtered.length)
+                                        .clamp(0.0, 1.0),
+                                minHeight: 4,
+                                backgroundColor: AppColors.primaryLight,
+                                valueColor: const AlwaysStoppedAnimation<Color>(
+                                  AppColors.primary,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            if (visible.length < filtered.length)
+                              SizedBox(
+                                width: double.infinity,
+                                child: OutlinedButton.icon(
+                                  onPressed: () =>
+                                      filter.loadMore(filtered.length),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: AppColors.primary,
+                                    side: const BorderSide(
+                                      color: AppColors.primary,
+                                      width: 1.2,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
+                                  ),
+                                  icon: const Icon(Icons.arrow_downward_rounded,
+                                      size: 18),
+                                  label: Text(
+                                    'Load More Designs (${filtered.length - visible.length} remaining)',
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            else if (filtered.length > 6)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface,
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: AppColors.border,
+                                    width: 0.8,
+                                  ),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.check_circle_outline_rounded,
+                                      size: 16,
+                                      color: AppColors.primary,
+                                    ),
+                                    SizedBox(width: 6),
+                                    Text(
+                                      'You have viewed the full collection',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: AppColors.textGrey,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 );
               },
             ),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:jewel_ora/core/constants/app_colors.dart';
 import 'package:jewel_ora/core/constants/app_icons.dart';
+import 'package:jewel_ora/core/constants/app_strings.dart';
 import 'package:jewel_ora/core/utils/formatters.dart';
+import 'package:jewel_ora/core/utils/responsive.dart';
 import 'package:jewel_ora/core/widgets/app_button.dart';
 import 'package:jewel_ora/core/widgets/app_card.dart';
 import 'package:jewel_ora/core/widgets/app_image.dart';
@@ -14,46 +16,137 @@ import 'package:jewel_ora/providers/user_nav_provider.dart';
 import 'package:jewel_ora/services/whatsapp_service.dart';
 import 'package:provider/provider.dart';
 
-class EnquiryHistoryScreen extends StatelessWidget {
+class EnquiryHistoryScreen extends StatefulWidget {
   const EnquiryHistoryScreen({super.key});
+
+  @override
+  State<EnquiryHistoryScreen> createState() => _EnquiryHistoryScreenState();
+}
+
+class _EnquiryHistoryScreenState extends State<EnquiryHistoryScreen> {
+  int _currentPage = 1;
+  static const int _pageSize = 8;
 
   @override
   Widget build(BuildContext context) {
     final enquiryProvider = context.watch<EnquiryProvider>();
     final enquiries = enquiryProvider.userEnquiries;
 
+    final totalPages =
+        enquiries.isEmpty ? 1 : (enquiries.length / _pageSize).ceil();
+    final effectivePage = _currentPage.clamp(1, totalPages);
+    final startIndex = (effectivePage - 1) * _pageSize;
+    final pageItems = enquiries.skip(startIndex).take(_pageSize).toList();
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('My Enquiries & Quotes'),
+        title: Text(AppStrings.enquiryHistory),
       ),
-      body: enquiryProvider.isLoading
-          ? const Center(child: AppLoader())
-          : enquiries.isEmpty
-              ? EmptyState(
-                  icon: AppIcons.enquiries,
-                  title: 'No Enquiries Yet',
-                  message:
-                      'When you enquire about custom jewellery, rings, or cart items via WhatsApp, your enquiry records and quote updates will appear here.',
-                  actionLabel: 'Explore Jewellery',
-                  onAction: () {
-                    Navigator.of(context).pop();
-                    context
-                        .read<UserNavProvider>()
-                        .setIndex(UserNavProvider.shopTab);
-                  },
-                )
-              : ListView.separated(
-                  physics: const BouncingScrollPhysics(),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  itemCount: enquiries.length,
-                  separatorBuilder: (_, index) => const SizedBox(height: 14),
-                  itemBuilder: (context, index) {
-                    final item = enquiries[index];
-                    return _EnquiryCard(enquiry: item);
-                  },
-                ),
+      body: ResponsiveContentWrapper(
+        child: enquiryProvider.isLoading
+            ? const Center(child: AppLoader())
+            : enquiries.isEmpty
+                ? EmptyState(
+                    icon: AppIcons.enquiries,
+                    title: 'No Enquiries Yet',
+                    subtitle:
+                        'When you enquire about custom jewellery, rings, or cart items via WhatsApp, your enquiry records and quote updates will appear here.',
+                    actionLabel: 'Explore Jewellery',
+                    onAction: () {
+                      Navigator.of(context).pop();
+                      try {
+                        context
+                            .read<UserNavProvider>()
+                            .setIndex(UserNavProvider.shopTab);
+                      } catch (_) {}
+                    },
+                  )
+                : Column(
+                    children: [
+                      Expanded(
+                        child: ListView.separated(
+                          physics: const BouncingScrollPhysics(),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 16),
+                          itemCount: pageItems.length,
+                          separatorBuilder: (_, index) =>
+                              const SizedBox(height: 14),
+                          itemBuilder: (context, index) {
+                            final item = pageItems[index];
+                            return _EnquiryCard(enquiry: item);
+                          },
+                        ),
+                      ),
+                      // Bottom Pagination Controls
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          border: Border(
+                            top: BorderSide(
+                              color: AppColors.border.withValues(alpha: 0.8),
+                              width: 0.8,
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Showing ${startIndex + 1}–${startIndex + pageItems.length} of ${enquiries.length}',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textGrey,
+                              ),
+                            ),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.chevron_left_rounded),
+                                  onPressed: effectivePage > 1
+                                      ? () => setState(() =>
+                                          _currentPage = effectivePage - 1)
+                                      : null,
+                                  tooltip: 'Previous Page',
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primaryLight,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    '$effectivePage of $totalPages',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.primaryDark,
+                                    ),
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.chevron_right_rounded),
+                                  onPressed: effectivePage < totalPages
+                                      ? () => setState(() =>
+                                          _currentPage = effectivePage + 1)
+                                      : null,
+                                  tooltip: 'Next Page',
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+      ),
     );
   }
 }
@@ -65,11 +158,11 @@ class _EnquiryCard extends StatelessWidget {
   Color _getStatusBg(String status) {
     switch (status) {
       case 'in_discussion':
-        return const Color(0xFFFEF3C7);
+        return AppColors.accentLight;
       case 'quote_shared':
-        return const Color(0xFFE0F2FE);
+        return AppColors.skyBlueLight;
       case 'completed':
-        return const Color(0xFFECFDF5);
+        return AppColors.tealLight;
       case 'submitted':
       default:
         return AppColors.primaryLight;
@@ -79,11 +172,11 @@ class _EnquiryCard extends StatelessWidget {
   Color _getStatusTextColor(String status) {
     switch (status) {
       case 'in_discussion':
-        return const Color(0xFFB45309);
+        return AppColors.accent;
       case 'quote_shared':
-        return const Color(0xFF0369A1);
+        return AppColors.skyBlue;
       case 'completed':
-        return const Color(0xFF047857);
+        return AppColors.teal;
       case 'submitted':
       default:
         return AppColors.primary;
@@ -94,10 +187,7 @@ class _EnquiryCard extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (_) => _EnquiryDetailsSheet(enquiry: enquiry),
     );
   }
@@ -140,7 +230,7 @@ class _EnquiryCard extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceDark.withValues(alpha: 0.06),
+                      color: AppColors.surfaceVariant,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -223,7 +313,7 @@ class _EnquiryCard extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              'Qty: ${item.quantity} • ${Formatters.price(item.productPrice)}',
+                              'Qty: ${item.quantity}${item.size != null && item.size!.isNotEmpty ? " • Size: ${item.size}" : ""} • ${Formatters.price(item.productPrice)}',
                               style: const TextStyle(
                                 fontSize: 12,
                                 color: AppColors.textGrey,
@@ -278,8 +368,8 @@ class _EnquiryCard extends StatelessWidget {
               ),
               OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF25D366),
-                  side: const BorderSide(color: Color(0xFF25D366)),
+                  foregroundColor: AppColors.whatsapp,
+                  side: const BorderSide(color: AppColors.whatsapp),
                   padding:
                       const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   shape: RoundedRectangleBorder(
@@ -311,162 +401,172 @@ class _EnquiryDetailsSheet extends StatelessWidget {
         ? enquiry.id.substring(0, 6).toUpperCase()
         : enquiry.id.toUpperCase();
 
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 20,
-        right: 20,
-        top: 20,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 38,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.borderLight,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(
+            20,
+            14,
+            20,
+            MediaQuery.of(context).viewInsets.bottom + 20,
           ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Enquiry #$ref',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textDark,
+              // Handle bar
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.border,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-              IconButton(
-                icon: const Icon(Icons.close_rounded),
-                onPressed: () => Navigator.of(context).pop(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Enquiry #$ref',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
               ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Status: ${enquiry.statusDisplay}',
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primary,
-            ),
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Requested Jewellery Items',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textDark,
-            ),
-          ),
-          const SizedBox(height: 10),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 240),
-            child: ListView.separated(
-              shrinkWrap: true,
-              itemCount: enquiry.items.length,
-              separatorBuilder: (_, index) => const Divider(height: 12),
-              itemBuilder: (context, index) {
-                final item = enquiry.items[index];
-                return Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: SizedBox(
-                        width: 46,
-                        height: 46,
-                        child: item.productImage.isNotEmpty
-                            ? AppImage(
-                                imageUrl: item.productImage,
-                                fit: BoxFit.cover,
-                              )
-                            : Container(
-                                color: AppColors.primaryLight,
-                                child: const Icon(Icons.diamond_outlined,
-                                    color: AppColors.primary),
-                              ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item.productName,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          Text(
-                            'Quantity: ${item.quantity}',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: AppColors.textGrey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Text(
-                      Formatters.price(item.productPrice * item.quantity),
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textDark,
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-          const Divider(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Total Estimated Quote:',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textDark,
-                ),
-              ),
+              const SizedBox(height: 8),
               Text(
-                Formatters.price(enquiry.totalAmount),
+                'Status: ${enquiry.statusDisplay}',
                 style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
                   color: AppColors.primary,
                 ),
               ),
+              const SizedBox(height: 16),
+              const Text(
+                'Requested Jewellery Items',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textDark,
+                ),
+              ),
+              const SizedBox(height: 10),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 240),
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: enquiry.items.length,
+                  separatorBuilder: (_, index) => const Divider(height: 12),
+                  itemBuilder: (context, index) {
+                    final item = enquiry.items[index];
+                    return Row(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: SizedBox(
+                            width: 46,
+                            height: 46,
+                            child: item.productImage.isNotEmpty
+                                ? AppImage(
+                                    imageUrl: item.productImage,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Container(
+                                    color: AppColors.primaryLight,
+                                    child: const Icon(Icons.diamond_outlined,
+                                        color: AppColors.primary),
+                                  ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.productName,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Text(
+                                'Quantity: ${item.quantity}${item.size != null && item.size!.isNotEmpty ? " • Size: ${item.size}" : ""}',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textGrey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Text(
+                          Formatters.price(item.productPrice * item.quantity),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textDark,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+              const Divider(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Total Estimated Quote:',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                  Text(
+                    Formatters.price(enquiry.totalAmount),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              AppButton(
+                title: 'Chat on WhatsApp',
+                icon: AppIcons.whatsapp,
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  final settings = context.read<SettingsProvider>().settings;
+                  final msg =
+                      'Hello! Following up on my jewellery enquiry #$ref for: ${enquiry.items.map((i) => i.productName).join(', ')}';
+                  WhatsAppService.open(
+                      phone: settings.whatsappNumber, message: msg);
+                },
+              ),
             ],
           ),
-          const SizedBox(height: 20),
-          AppButton(
-            title: 'Chat on WhatsApp',
-            icon: AppIcons.whatsapp,
-            onPressed: () {
-              Navigator.of(context).pop();
-              final settings = context.read<SettingsProvider>().settings;
-              final msg =
-                  'Hello! Following up on my jewellery enquiry #$ref for: ${enquiry.items.map((i) => i.productName).join(', ')}';
-              WhatsAppService.open(
-                  phone: settings.whatsappNumber, message: msg);
-            },
-          ),
-        ],
+        ),
       ),
     );
   }

@@ -69,7 +69,7 @@ class _BrandingManagementScreenState extends State<BrandingManagementScreen> {
     showAppSnackBar(
       context,
       ok
-          ? 'Saved. The logo is updated everywhere in the app.'
+          ? 'Saved. The app launcher icon has been updated.'
           : (provider.errorMessage ?? AppStrings.somethingWentWrong),
       isError: !ok,
     );

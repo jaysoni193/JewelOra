@@ -68,7 +68,7 @@ class StoreInfoScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Store & Experience Centre'),
+        title: Text(AppStrings.storeInfo),
       ),
       body: ListView(
         physics: const BouncingScrollPhysics(),
@@ -180,7 +180,7 @@ class StoreInfoScreen extends StatelessWidget {
               Expanded(
                 child: _QuickActionButton(
                   icon: AppIcons.phone,
-                  label: 'Call Store',
+                  label: AppStrings.callStore,
                   color: AppColors.primary,
                   onTap: () => _makeCall(context, settings.storePhone),
                 ),
@@ -204,7 +204,7 @@ class StoreInfoScreen extends StatelessWidget {
               Expanded(
                 child: _QuickActionButton(
                   icon: AppIcons.directions,
-                  label: 'Directions',
+                  label: AppStrings.getDirections,
                   color: AppColors.accentRose,
                   onTap: () => _launchExternal(context, settings.mapUrl),
                 ),
@@ -248,10 +248,10 @@ class StoreInfoScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'Store Location',
-                        style: TextStyle(
+                        AppStrings.storeAddress,
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                           color: AppColors.textDark,

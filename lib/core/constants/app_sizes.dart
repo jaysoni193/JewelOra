@@ -27,6 +27,9 @@ class AppSizes {
   static const double radiusLarge = 16.0;
   static const double radiusExtraLarge = 24.0;
   static const double radiusCircular = 100.0;
+  static const double radiusCard = 16.0;
+  static const double radiusCardLarge = 20.0;
+  static const double radiusPill = 100.0;
 
   // Elevation
   static const double elevationLow = 2.0;

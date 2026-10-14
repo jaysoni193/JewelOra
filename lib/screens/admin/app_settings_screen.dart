@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:jewel_ora/core/constants/app_colors.dart';
 import 'package:jewel_ora/core/constants/app_strings.dart';
+import 'package:jewel_ora/core/utils/responsive.dart';
 import 'package:jewel_ora/core/utils/ui_helpers.dart';
 import 'package:jewel_ora/core/utils/validators.dart';
 import 'package:jewel_ora/core/widgets/app_button.dart';
@@ -21,7 +22,8 @@ class AppSettingsScreen extends StatelessWidget {
     final provider = context.watch<SettingsProvider>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Store Settings')),
+      backgroundColor: AppColors.background,
+      appBar: AppBar(title: const Text('Store & App Settings')),
       body: provider.isLoading
           ? const Center(child: AppLoader())
           : _SettingsForm(initial: provider.settings),
@@ -46,6 +48,9 @@ class _SettingsFormState extends State<_SettingsForm> {
   late final TextEditingController _instagramCtrl;
   late final TextEditingController _timingsCtrl;
   late final TextEditingController _emailCtrl;
+  late final TextEditingController _minVersionCtrl;
+  late final TextEditingController _updateMsgCtrl;
+  late bool _forceUpdate;
 
   @override
   void initState() {
@@ -54,9 +59,15 @@ class _SettingsFormState extends State<_SettingsForm> {
     _addressCtrl = TextEditingController(text: widget.initial.storeAddress);
     _mapUrlCtrl = TextEditingController(text: widget.initial.mapUrl);
     _phoneCtrl = TextEditingController(text: widget.initial.storePhone);
-    _instagramCtrl = TextEditingController(text: widget.initial.instagramHandle);
+    _instagramCtrl =
+        TextEditingController(text: widget.initial.instagramHandle);
     _timingsCtrl = TextEditingController(text: widget.initial.storeTimings);
     _emailCtrl = TextEditingController(text: widget.initial.storeEmail);
+    _minVersionCtrl =
+        TextEditingController(text: widget.initial.minAppVersion);
+    _updateMsgCtrl =
+        TextEditingController(text: widget.initial.forceUpdateMessage);
+    _forceUpdate = widget.initial.forceUpdate;
   }
 
   @override
@@ -68,6 +79,8 @@ class _SettingsFormState extends State<_SettingsForm> {
     _instagramCtrl.dispose();
     _timingsCtrl.dispose();
     _emailCtrl.dispose();
+    _minVersionCtrl.dispose();
+    _updateMsgCtrl.dispose();
     super.dispose();
   }
 
@@ -85,6 +98,9 @@ class _SettingsFormState extends State<_SettingsForm> {
         instagramHandle: _instagramCtrl.text.trim().replaceAll('@', ''),
         storeTimings: _timingsCtrl.text.trim(),
         storeEmail: _emailCtrl.text.trim(),
+        forceUpdate: _forceUpdate,
+        minAppVersion: _minVersionCtrl.text.trim(),
+        forceUpdateMessage: _updateMsgCtrl.text.trim(),
       ),
     );
 
@@ -103,149 +119,232 @@ class _SettingsFormState extends State<_SettingsForm> {
     final isSaving = context.watch<SettingsProvider>().isSaving;
 
     return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Shortcut: icon, logo, name and tagline all live in Branding.
-              AppCard(
-                padding: const EdgeInsets.all(16),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                      builder: (_) => const BrandingManagementScreen()),
+      child: ResponsiveContentWrapper(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Shortcut: icon, logo, name and tagline all live in Branding.
+                AppCard(
+                  padding: const EdgeInsets.all(16),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                        builder: (_) => const BrandingManagementScreen()),
+                  ),
+                  color: AppColors.primaryLight.withValues(alpha: 0.35),
+                  border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.3)),
+                  child: const Row(
+                    children: [
+                      BrandLogo(size: 44),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'App icon, store name & tagline',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w700, fontSize: 14),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'Choose the icon used on phones and as the logo everywhere',
+                              style: TextStyle(
+                                  fontSize: 12, color: AppColors.textGrey),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(Icons.chevron_right_rounded,
+                          color: AppColors.primary),
+                    ],
+                  ),
                 ),
-                color: AppColors.primaryLight.withValues(alpha: 0.35),
-                border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.3)),
-                child: const Row(
-                  children: [
-                    BrandLogo(size: 44),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                const SizedBox(height: 18),
+
+                // Force Update Flag (Task 3.9)
+                AppCard(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                         children: [
-                          Text(
-                            'App icon, store name & tagline',
-                            style: TextStyle(
-                                fontWeight: FontWeight.w700, fontSize: 14),
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: _forceUpdate
+                                  ? AppColors.errorLight
+                                  : AppColors.tealLight,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              Icons.system_update_rounded,
+                              color: _forceUpdate
+                                  ? AppColors.error
+                                  : AppColors.teal,
+                              size: 20,
+                            ),
                           ),
-                          SizedBox(height: 2),
-                          Text(
-                            'Choose the icon used on phones and as the logo everywhere',
-                            style: TextStyle(
-                                fontSize: 12, color: AppColors.textGrey),
+                          const SizedBox(width: 12),
+                          const Expanded(
+                            child: Text(
+                              'App Maintenance & Force Update',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w700, fontSize: 15),
+                            ),
+                          ),
+                          Switch(
+                            value: _forceUpdate,
+                            activeThumbColor: AppColors.primary,
+                            activeTrackColor: AppColors.primaryLight,
+                            onChanged: (v) => setState(() => _forceUpdate = v),
                           ),
                         ],
                       ),
-                    ),
-                    Icon(Icons.chevron_right_rounded,
-                        color: AppColors.primaryDark),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 18),
-
-              // Orders & WhatsApp
-              AppCard(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Orders & Enquiries',
+                      const SizedBox(height: 6),
+                      Text(
+                        _forceUpdate
+                            ? 'Force update is ACTIVE. Customers will see a blocking update screen until updated.'
+                            : 'Force update is disabled. All customers have normal access.',
                         style: TextStyle(
-                            fontWeight: FontWeight.w700, fontSize: 15)),
-                    const SizedBox(height: 16),
-                    AppTextField(
-                      controller: _whatsappCtrl,
-                      label: 'WhatsApp Business Number',
-                      prefixIcon: Icons.chat_outlined,
-                      keyboardType: TextInputType.phone,
-                      validator: Validators.whatsapp,
-                      hintText: 'e.g. 919876543210',
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.only(top: 4, left: 4),
-                      child: Text(
-                        'Include country code without + or spaces (e.g. 919876543210)',
-                        style:
-                        TextStyle(fontSize: 11, color: AppColors.textGrey),
+                          fontSize: 12,
+                          color: _forceUpdate
+                              ? AppColors.error
+                              : AppColors.textGrey,
+                          fontWeight: _forceUpdate
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                        ),
                       ),
-                    ),
-                  ],
+                      if (_forceUpdate) ...[
+                        const SizedBox(height: 16),
+                        AppTextField(
+                          controller: _minVersionCtrl,
+                          label: 'Minimum Allowed App Version',
+                          prefixIcon: Icons.tag_rounded,
+                          hintText: 'e.g. 1.2.0',
+                        ),
+                        const SizedBox(height: 12),
+                        AppTextField(
+                          controller: _updateMsgCtrl,
+                          label: 'Customer Update Message',
+                          prefixIcon: Icons.message_outlined,
+                          maxLines: 2,
+                          hintText:
+                              'e.g. We have launched new Diwali collections! Please update your app.',
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 18),
+                const SizedBox(height: 18),
 
-              // Store Location & Info
-              AppCard(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Store Info & Contact',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w700, fontSize: 15)),
-                    const SizedBox(height: 16),
-                    AppTextField(
-                      controller: _addressCtrl,
-                      label: 'Store Physical Address',
-                      prefixIcon: Icons.location_on_outlined,
-                      maxLines: 2,
-                      hintText: 'e.g. 108, Jewel Boulevard, Zaveri Bazaar, Mumbai 400002',
-                    ),
-                    const SizedBox(height: 14),
-                    AppTextField(
-                      controller: _mapUrlCtrl,
-                      label: 'Google Maps Link / URL',
-                      prefixIcon: Icons.map_outlined,
-                      keyboardType: TextInputType.url,
-                      hintText: 'e.g. https://maps.google.com/?q=...',
-                    ),
-                    const SizedBox(height: 14),
-                    AppTextField(
-                      controller: _phoneCtrl,
-                      label: 'Calling Phone Number',
-                      prefixIcon: Icons.phone_outlined,
-                      keyboardType: TextInputType.phone,
-                      hintText: 'e.g. +91 98765 43210',
-                    ),
-                    const SizedBox(height: 14),
-                    AppTextField(
-                      controller: _instagramCtrl,
-                      label: 'Instagram Username / Handle',
-                      prefixIcon: Icons.camera_alt_outlined,
-                      hintText: 'e.g. jewelora.jewels (without @)',
-                    ),
-                    const SizedBox(height: 14),
-                    AppTextField(
-                      controller: _timingsCtrl,
-                      label: 'Store Operating Timings',
-                      prefixIcon: Icons.access_time_rounded,
-                      hintText: 'e.g. Mon - Sat: 10:30 AM - 8:30 PM | Sun: Closed',
-                    ),
-                    const SizedBox(height: 14),
-                    AppTextField(
-                      controller: _emailCtrl,
-                      label: 'Customer Support Email',
-                      prefixIcon: Icons.email_outlined,
-                      keyboardType: TextInputType.emailAddress,
-                      hintText: 'e.g. support@jewelora.com',
-                    ),
-                  ],
+                // Orders & WhatsApp
+                AppCard(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Orders & WhatsApp Enquiries',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w700, fontSize: 15)),
+                      const SizedBox(height: 16),
+                      AppTextField(
+                        controller: _whatsappCtrl,
+                        label: 'WhatsApp Business Number',
+                        prefixIcon: Icons.chat_outlined,
+                        keyboardType: TextInputType.phone,
+                        validator: Validators.whatsapp,
+                        hintText: 'e.g. 919876543210',
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.only(top: 4, left: 4),
+                        child: Text(
+                          'Include country code without + or spaces (e.g. 919876543210)',
+                          style: TextStyle(
+                              fontSize: 11, color: AppColors.textGrey),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 28),
+                const SizedBox(height: 18),
 
-              AppButton(
-                title: 'Save Settings',
-                isLoading: isSaving,
-                onPressed: _submit,
-              ),
-            ],
+                // Store Location & Info
+                AppCard(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Store Info & Contact',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w700, fontSize: 15)),
+                      const SizedBox(height: 16),
+                      AppTextField(
+                        controller: _addressCtrl,
+                        label: 'Store Physical Address',
+                        prefixIcon: Icons.location_on_outlined,
+                        maxLines: 2,
+                        hintText:
+                            'e.g. 108, Jewel Boulevard, Zaveri Bazaar, Mumbai 400002',
+                      ),
+                      const SizedBox(height: 14),
+                      AppTextField(
+                        controller: _mapUrlCtrl,
+                        label: 'Google Maps Link / URL',
+                        prefixIcon: Icons.map_outlined,
+                        keyboardType: TextInputType.url,
+                        hintText: 'e.g. https://maps.google.com/?q=...',
+                      ),
+                      const SizedBox(height: 14),
+                      AppTextField(
+                        controller: _phoneCtrl,
+                        label: 'Calling Phone Number',
+                        prefixIcon: Icons.phone_outlined,
+                        keyboardType: TextInputType.phone,
+                        hintText: 'e.g. +91 98765 43210',
+                      ),
+                      const SizedBox(height: 14),
+                      AppTextField(
+                        controller: _instagramCtrl,
+                        label: 'Instagram Username / Handle',
+                        prefixIcon: Icons.camera_alt_outlined,
+                        hintText: 'e.g. jewelora.jewels (without @)',
+                      ),
+                      const SizedBox(height: 14),
+                      AppTextField(
+                        controller: _timingsCtrl,
+                        label: 'Store Operating Timings',
+                        prefixIcon: Icons.access_time_rounded,
+                        hintText:
+                            'e.g. Mon - Sat: 10:30 AM - 8:30 PM | Sun: Closed',
+                      ),
+                      const SizedBox(height: 14),
+                      AppTextField(
+                        controller: _emailCtrl,
+                        label: 'Customer Support Email',
+                        prefixIcon: Icons.email_outlined,
+                        keyboardType: TextInputType.emailAddress,
+                        hintText: 'e.g. support@jewelora.com',
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 28),
+
+                AppButton(
+                  title: 'Save Settings',
+                  isLoading: isSaving,
+                  onPressed: _submit,
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),

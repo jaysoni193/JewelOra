@@ -12,22 +12,49 @@ enum ShopSort {
 }
 
 class ShopFilterProvider extends ChangeNotifier {
-  static const int pageSize = 20;
+  static const int pageSize = 12;
 
   String _query = '';
   String? _categoryId; // null = all
   ShopSort _sort = ShopSort.newest;
   int _visibleCount = pageSize;
 
+  // Task 3.4 Filter Attributes
+  double? _minPrice;
+  double? _maxPrice;
+  final Set<String> _materials = {};
+  bool _inStockOnly = false;
+
   String get query => _query;
   String? get categoryId => _categoryId;
   ShopSort get sort => _sort;
   int get visibleCount => _visibleCount;
+  double? get minPrice => _minPrice;
+  double? get maxPrice => _maxPrice;
+  Set<String> get materials => Set.unmodifiable(_materials);
+  bool get inStockOnly => _inStockOnly;
+
+  bool get hasActiveFilters =>
+      _query.isNotEmpty ||
+      _categoryId != null ||
+      _minPrice != null ||
+      _maxPrice != null ||
+      _materials.isNotEmpty ||
+      _inStockOnly ||
+      _sort != ShopSort.newest;
+
+  int get activeFilterCount {
+    var count = 0;
+    if (_minPrice != null || _maxPrice != null) count++;
+    if (_materials.isNotEmpty) count += _materials.length;
+    if (_inStockOnly) count++;
+    return count;
+  }
 
   /// Changes whenever the results must scroll back to the top.
-  String get filterKey => '$_query|$_categoryId|${_sort.name}';
+  String get filterKey =>
+      '$_query|$_categoryId|${_sort.name}|$_minPrice|$_maxPrice|${_materials.join(',')}|$_inStockOnly';
 
-  /// The selected category, or null if it is hidden or deleted meanwhile.
   String? effectiveCategoryId(Set<String> activeCategoryIds) =>
       (_categoryId != null && activeCategoryIds.contains(_categoryId))
           ? _categoryId
@@ -45,7 +72,6 @@ class ShopFilterProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Used by Home: open a category with a clean search.
   void showCategory(String id) {
     _query = '';
     _categoryId = id;
@@ -59,9 +85,37 @@ class ShopFilterProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setPriceRange(double? min, double? max) {
+    _minPrice = min;
+    _maxPrice = max;
+    _visibleCount = pageSize;
+    notifyListeners();
+  }
+
+  void toggleMaterial(String material) {
+    if (_materials.contains(material)) {
+      _materials.remove(material);
+    } else {
+      _materials.add(material);
+    }
+    _visibleCount = pageSize;
+    notifyListeners();
+  }
+
+  void setInStockOnly(bool value) {
+    _inStockOnly = value;
+    _visibleCount = pageSize;
+    notifyListeners();
+  }
+
   void clearFilters() {
     _query = '';
     _categoryId = null;
+    _sort = ShopSort.newest;
+    _minPrice = null;
+    _maxPrice = null;
+    _materials.clear();
+    _inStockOnly = false;
     _visibleCount = pageSize;
     notifyListeners();
   }
@@ -72,18 +126,22 @@ class ShopFilterProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Applies visibility, category, search and sort. Returns the FULL
-  /// filtered list; the screen shows only the first [visibleCount] items.
+  /// Applies category, search, price range, material, in-stock, and sort filters.
   List<ProductModel> apply(
-      List<ProductModel> all,
-      Set<String> activeCategoryIds,
-      ) {
+    List<ProductModel> all,
+    Set<String> activeCategoryIds,
+  ) {
     final category = effectiveCategoryId(activeCategoryIds);
     final q = _query.trim().toLowerCase();
 
     final result = all.where((p) {
       if (!activeCategoryIds.contains(p.categoryId)) return false;
       if (category != null && p.categoryId != category) return false;
+      if (_inStockOnly && !p.isAvailable) return false;
+      if (_minPrice != null && p.price < _minPrice!) return false;
+      if (_maxPrice != null && p.price > _maxPrice!) return false;
+      if (_materials.isNotEmpty && !_materials.contains(p.material)) return false;
+
       if (q.isEmpty) return true;
       return p.name.toLowerCase().contains(q) ||
           p.categoryName.toLowerCase().contains(q) ||
@@ -92,14 +150,15 @@ class ShopFilterProvider extends ChangeNotifier {
 
     switch (_sort) {
       case ShopSort.newest:
-        break; // already newest first from ProductService
+        break;
       case ShopSort.priceLow:
         result.sort((a, b) => a.price.compareTo(b.price));
       case ShopSort.priceHigh:
         result.sort((a, b) => b.price.compareTo(a.price));
       case ShopSort.nameAZ:
         result.sort(
-                (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+        );
     }
     return result;
   }

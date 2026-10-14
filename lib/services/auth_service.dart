@@ -299,7 +299,7 @@ class AuthService {
         error: e,
         stackTrace: st,
       );
-      throw const AuthException(AppStrings.somethingWentWrong);
+      throw AuthException(AppStrings.somethingWentWrong);
     }
   }
 

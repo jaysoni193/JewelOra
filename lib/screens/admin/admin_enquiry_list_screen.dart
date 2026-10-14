@@ -3,6 +3,7 @@ import 'package:jewel_ora/core/constants/app_colors.dart';
 import 'package:jewel_ora/core/constants/app_icons.dart';
 import 'package:jewel_ora/core/constants/app_strings.dart';
 import 'package:jewel_ora/core/utils/formatters.dart';
+import 'package:jewel_ora/core/utils/responsive.dart';
 import 'package:jewel_ora/core/utils/ui_helpers.dart';
 import 'package:jewel_ora/core/widgets/app_card.dart';
 import 'package:jewel_ora/core/widgets/app_image.dart';
@@ -23,6 +24,15 @@ class AdminEnquiryListScreen extends StatefulWidget {
 
 class _AdminEnquiryListScreenState extends State<AdminEnquiryListScreen> {
   String _selectedFilter = 'all';
+  int _currentPage = 1;
+  static const int _pageSize = 8;
+
+  void _onFilterSelected(String filter) {
+    setState(() {
+      _selectedFilter = filter;
+      _currentPage = 1;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,82 +43,155 @@ class _AdminEnquiryListScreenState extends State<AdminEnquiryListScreen> {
         ? all
         : all.where((e) => e.status == _selectedFilter).toList();
 
+    final totalPages = filtered.isEmpty ? 1 : (filtered.length / _pageSize).ceil();
+    final effectivePage = _currentPage.clamp(1, totalPages);
+    final startIndex = (effectivePage - 1) * _pageSize;
+    final pageItems = filtered.skip(startIndex).take(_pageSize).toList();
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Customer Leads & Enquiries'),
       ),
-      body: Column(
-        children: [
-          // Filter Tabs
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                _FilterChip(
-                  label: 'All (${all.length})',
-                  isSelected: _selectedFilter == 'all',
-                  onTap: () => setState(() => _selectedFilter = 'all'),
-                ),
-                const SizedBox(width: 8),
-                _FilterChip(
-                  label:
-                      'New (${all.where((e) => e.status == 'submitted').length})',
-                  isSelected: _selectedFilter == 'submitted',
-                  onTap: () => setState(() => _selectedFilter = 'submitted'),
-                ),
-                const SizedBox(width: 8),
-                _FilterChip(
-                  label:
-                      'In Discussion (${all.where((e) => e.status == 'in_discussion').length})',
-                  isSelected: _selectedFilter == 'in_discussion',
-                  onTap: () =>
-                      setState(() => _selectedFilter = 'in_discussion'),
-                ),
-                const SizedBox(width: 8),
-                _FilterChip(
-                  label:
-                      'Quotes Shared (${all.where((e) => e.status == 'quote_shared').length})',
-                  isSelected: _selectedFilter == 'quote_shared',
-                  onTap: () =>
-                      setState(() => _selectedFilter = 'quote_shared'),
-                ),
-                const SizedBox(width: 8),
-                _FilterChip(
-                  label:
-                      'Confirmed (${all.where((e) => e.status == 'completed').length})',
-                  isSelected: _selectedFilter == 'completed',
-                  onTap: () => setState(() => _selectedFilter = 'completed'),
-                ),
-              ],
+      body: ResponsiveContentWrapper(
+        child: Column(
+          children: [
+            // Filter Tabs
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  _FilterChip(
+                    label: 'All (${all.length})',
+                    isSelected: _selectedFilter == 'all',
+                    onTap: () => _onFilterSelected('all'),
+                  ),
+                  const SizedBox(width: 8),
+                  _FilterChip(
+                    label:
+                        'New (${all.where((e) => e.status == 'submitted').length})',
+                    isSelected: _selectedFilter == 'submitted',
+                    onTap: () => _onFilterSelected('submitted'),
+                  ),
+                  const SizedBox(width: 8),
+                  _FilterChip(
+                    label:
+                        'In Discussion (${all.where((e) => e.status == 'in_discussion').length})',
+                    isSelected: _selectedFilter == 'in_discussion',
+                    onTap: () => _onFilterSelected('in_discussion'),
+                  ),
+                  const SizedBox(width: 8),
+                  _FilterChip(
+                    label:
+                        'Quotes Shared (${all.where((e) => e.status == 'quote_shared').length})',
+                    isSelected: _selectedFilter == 'quote_shared',
+                    onTap: () => _onFilterSelected('quote_shared'),
+                  ),
+                  const SizedBox(width: 8),
+                  _FilterChip(
+                    label:
+                        'Confirmed (${all.where((e) => e.status == 'completed').length})',
+                    isSelected: _selectedFilter == 'completed',
+                    onTap: () => _onFilterSelected('completed'),
+                  ),
+                ],
+              ),
             ),
-          ),
 
-          // Enquiries List
-          Expanded(
-            child: enquiryProvider.isLoading
-                ? const Center(child: AppLoader())
-                : filtered.isEmpty
-                    ? const EmptyState(
-                        icon: AppIcons.enquiries,
-                        title: 'No Enquiries Found',
-                        message:
-                            'Customer enquiries generated from product details or cart will show up here.',
-                      )
-                    : ListView.separated(
-                        physics: const BouncingScrollPhysics(),
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                        itemCount: filtered.length,
-                        separatorBuilder: (_, index) =>
-                            const SizedBox(height: 14),
-                        itemBuilder: (context, index) {
-                          final item = filtered[index];
-                          return _AdminEnquiryCard(enquiry: item);
-                        },
+            // Enquiries List
+            Expanded(
+              child: enquiryProvider.isLoading
+                  ? const Center(child: AppLoader())
+                  : filtered.isEmpty
+                      ? const EmptyState(
+                          icon: AppIcons.enquiries,
+                          title: 'No Enquiries Found',
+                          subtitle:
+                              'Customer enquiries generated from product details or cart will show up here.',
+                        )
+                      : ListView.separated(
+                          physics: const BouncingScrollPhysics(),
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+                          itemCount: pageItems.length,
+                          separatorBuilder: (_, index) =>
+                              const SizedBox(height: 14),
+                          itemBuilder: (context, index) {
+                            final item = pageItems[index];
+                            return _AdminEnquiryCard(enquiry: item);
+                          },
+                        ),
+            ),
+
+            // Bottom Pagination Controls
+            if (filtered.isNotEmpty)
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  border: Border(
+                    top: BorderSide(
+                      color: AppColors.border.withValues(alpha: 0.8),
+                      width: 0.8,
+                    ),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Showing ${startIndex + 1}–${startIndex + pageItems.length} of ${filtered.length}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textGrey,
                       ),
-          ),
-        ],
+                    ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.chevron_left_rounded),
+                          onPressed: effectivePage > 1
+                              ? () => setState(
+                                  () => _currentPage = effectivePage - 1)
+                              : null,
+                          tooltip: 'Previous Page',
+                          visualDensity: VisualDensity.compact,
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryLight,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '$effectivePage of $totalPages',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.primaryDark,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.chevron_right_rounded),
+                          onPressed: effectivePage < totalPages
+                              ? () => setState(
+                                  () => _currentPage = effectivePage + 1)
+                              : null,
+                          tooltip: 'Next Page',
+                          visualDensity: VisualDensity.compact,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -160,11 +243,11 @@ class _AdminEnquiryCard extends StatelessWidget {
   Color _getStatusBg(String status) {
     switch (status) {
       case 'in_discussion':
-        return const Color(0xFFFEF3C7);
+        return AppColors.accentLight;
       case 'quote_shared':
-        return const Color(0xFFE0F2FE);
+        return AppColors.skyBlueLight;
       case 'completed':
-        return const Color(0xFFECFDF5);
+        return AppColors.tealLight;
       case 'submitted':
       default:
         return AppColors.primaryLight;
@@ -174,11 +257,11 @@ class _AdminEnquiryCard extends StatelessWidget {
   Color _getStatusTextColor(String status) {
     switch (status) {
       case 'in_discussion':
-        return const Color(0xFFB45309);
+        return AppColors.accent;
       case 'quote_shared':
-        return const Color(0xFF0369A1);
+        return AppColors.skyBlue;
       case 'completed':
-        return const Color(0xFF047857);
+        return AppColors.teal;
       case 'submitted':
       default:
         return AppColors.primary;
@@ -186,44 +269,52 @@ class _AdminEnquiryCard extends StatelessWidget {
   }
 
   Future<void> _changeStatus(BuildContext context) async {
-    final newStatus = await showModalBottomSheet<String>(
+    final newStatus = await showDialog<String>(
       context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: Text(
-                'Update Enquiry Status',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+      builder: (ctx) => Dialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Update Enquiry Status',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: () => Navigator.of(ctx).pop(),
+                  ),
+                ],
               ),
-            ),
-            ListTile(
-              title: const Text('Enquiry Sent / New'),
-              leading: const Icon(Icons.mark_email_unread_outlined),
-              onTap: () => Navigator.of(ctx).pop('submitted'),
-            ),
-            ListTile(
-              title: const Text('In Discussion'),
-              leading: const Icon(Icons.question_answer_outlined),
-              onTap: () => Navigator.of(ctx).pop('in_discussion'),
-            ),
-            ListTile(
-              title: const Text('Quote Shared'),
-              leading: const Icon(Icons.request_quote_outlined),
-              onTap: () => Navigator.of(ctx).pop('quote_shared'),
-            ),
-            ListTile(
-              title: const Text('Order Confirmed / Completed'),
-              leading: const Icon(Icons.check_circle_outline_rounded),
-              onTap: () => Navigator.of(ctx).pop('completed'),
-            ),
-          ],
+              const SizedBox(height: 8),
+              ListTile(
+                title: const Text('Enquiry Sent / New'),
+                leading: const Icon(Icons.mark_email_unread_outlined),
+                onTap: () => Navigator.of(ctx).pop('submitted'),
+              ),
+              ListTile(
+                title: const Text('In Discussion'),
+                leading: const Icon(Icons.question_answer_outlined),
+                onTap: () => Navigator.of(ctx).pop('in_discussion'),
+              ),
+              ListTile(
+                title: const Text('Quote Shared'),
+                leading: const Icon(Icons.request_quote_outlined),
+                onTap: () => Navigator.of(ctx).pop('quote_shared'),
+              ),
+              ListTile(
+                title: const Text('Order Confirmed / Completed'),
+                leading: const Icon(Icons.check_circle_outline_rounded),
+                onTap: () => Navigator.of(ctx).pop('completed'),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -404,7 +495,7 @@ class _AdminEnquiryCard extends StatelessWidget {
               ),
               IconButton(
                 icon: const Icon(AppIcons.whatsapp,
-                    size: 20, color: Color(0xFF25D366)),
+                    size: 20, color: AppColors.whatsapp),
                 tooltip: 'WhatsApp Customer',
                 onPressed: () => _whatsappCustomer(context),
               ),
@@ -449,7 +540,7 @@ class _AdminEnquiryCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'Qty ${item.quantity} • ${Formatters.price(item.productPrice)}',
+                      'Qty ${item.quantity}${item.size != null && item.size!.isNotEmpty ? " • Size: ${item.size}" : ""} • ${Formatters.price(item.productPrice)}',
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
