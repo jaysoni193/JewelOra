@@ -22,6 +22,7 @@ import 'package:jewel_ora/screens/admin/category_list_screen.dart';
 import 'package:jewel_ora/screens/admin/insights_screen.dart';
 import 'package:jewel_ora/screens/admin/metal_rates_screen.dart';
 import 'package:jewel_ora/screens/admin/product_list_screen.dart';
+import 'package:jewel_ora/screens/admin/widgets/admin_notification_sheet.dart';
 import 'package:jewel_ora/services/seed_data_service.dart';
 import 'package:provider/provider.dart';
 
@@ -55,6 +56,9 @@ class AdminDashboard extends StatelessWidget {
       case 'Insights & Analytics':
         screen = const InsightsScreen();
         break;
+      case 'Push Notifications':
+        AdminNotificationSheet.show(context);
+        return;
       default:
         screen = ComingSoonScreen(title: title);
     }
@@ -206,6 +210,11 @@ class AdminDashboard extends StatelessWidget {
         'Insights & Analytics',
         AppIcons.insights,
         'Views & enquiries',
+      ),
+      const _AdminMenuItem(
+        'Push Notifications',
+        Icons.campaign_rounded,
+        'Broadcast live alerts',
       ),
     ];
 

@@ -3,6 +3,7 @@ import 'package:jewel_ora/core/constants/app_colors.dart';
 import 'package:jewel_ora/core/utils/formatters.dart';
 import 'package:jewel_ora/core/utils/image_url.dart';
 import 'package:jewel_ora/core/utils/ui_helpers.dart';
+import 'package:jewel_ora/core/widgets/app_bottom_sheet.dart';
 import 'package:jewel_ora/core/widgets/app_button.dart';
 import 'package:jewel_ora/models/metal_rate_model.dart';
 import 'package:jewel_ora/models/product_model.dart';
@@ -19,11 +20,9 @@ class GiftFinderSheet extends StatefulWidget {
   const GiftFinderSheet({super.key});
 
   static Future<void> show(BuildContext context) {
-    return showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => const GiftFinderSheet(),
+    return AppBottomSheet.show(
+      context,
+      child: const GiftFinderSheet(),
     );
   }
 
@@ -124,18 +123,12 @@ Could you share your top curated designs and help me select the perfect piece? â
     final ratesP = context.watch<MetalRateProvider>();
     final matches = _getMatchingProducts(productP.products, ratesP.rates);
 
-    return Material(
-      color: AppColors.surface,
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      clipBehavior: Clip.antiAlias,
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: EdgeInsets.only(bottom: bottomInset),
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-            child: Column(
+    return Padding(
+      padding: EdgeInsets.only(bottom: bottomInset),
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+        child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -614,11 +607,9 @@ Could you share your top curated designs and help me select the perfect piece? â
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
+        );
+      }
+    }
 
 class GiftFinderHelper {
   static List<ProductModel> filterAndScore({

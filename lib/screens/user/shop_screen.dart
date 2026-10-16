@@ -113,16 +113,7 @@ class _ShopScreenState extends State<ShopScreen> {
   }
 
   void _openFilters() {
-    final filter = _filter;
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => ChangeNotifierProvider.value(
-        value: filter,
-        child: ShopFilterSheet(filter: filter),
-      ),
-    );
+    ShopFilterSheet.show(context);
   }
 
   void _openProduct(String productId) {

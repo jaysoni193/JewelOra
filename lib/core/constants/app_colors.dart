@@ -44,6 +44,9 @@ class AppColors {
   static const Color whatsappDark = Color(0xFF1EAE53);
 
   // Backward-compatibility and semantic aliases
+  static const Color accentGold = Color(0xFFD4AF37);
+  static const Color cardBg = Color(0xFFFFFFFF);
+  static const Color textMedium = Color(0xFF554D63);
   static const Color cardBackground = Color(0xFFFFFFFF);
   static const Color borderLight = Color(0xFFECE7F2);
   static const Color plumDeep = Color(0xFF381F4C);

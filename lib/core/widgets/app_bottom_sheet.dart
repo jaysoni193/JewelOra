@@ -26,7 +26,8 @@ class AppBottomSheet {
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black54,
       builder: (ctx) {
-        return Center(
+        return Align(
+          alignment: Alignment.bottomCenter,
           child: ConstrainedBox(
             constraints: BoxConstraints(
               maxWidth: 600,
@@ -40,6 +41,7 @@ class AppBottomSheet {
               clipBehavior: Clip.antiAlias,
               child: SafeArea(
                 top: false,
+                bottom: true,
                 child: child,
               ),
             ),
@@ -370,7 +372,12 @@ class CommonBottomSheetContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        12,
+        20,
+        24 + MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,

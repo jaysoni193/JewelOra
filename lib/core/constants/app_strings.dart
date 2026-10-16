@@ -35,6 +35,11 @@ class AppStrings {
   static String get edit => tr('edit');
   static String get add => tr('add');
   static String get retry => tr('retry');
+  static String get pleaseCheckInternetConnection =>
+      tr('pleaseCheckInternetConnection');
+  static String get noInternetConnection => tr('noInternetConnection');
+  static String get checkInternetSubtitle => tr('checkInternetSubtitle');
+  static String get backOnline => tr('backOnline');
   static String get clear => tr('clear');
   static String get apply => tr('apply');
   static String get viewAll => tr('viewAll');
@@ -169,6 +174,14 @@ class AppStrings {
   static String get storeInfoSubtitle => tr('storeInfoSubtitle');
   static String get ringSizeGuideSubtitle => tr('ringSizeGuideSubtitle');
   static String get jewelleryCareSubtitle => tr('jewelleryCareSubtitle');
+  static String get careGoldTitle => tr('careGoldTitle');
+  static String get careGoldDesc => tr('careGoldDesc');
+  static String get careDiamondsTitle => tr('careDiamondsTitle');
+  static String get careDiamondsDesc => tr('careDiamondsDesc');
+  static String get careSilverTitle => tr('careSilverTitle');
+  static String get careSilverDesc => tr('careSilverDesc');
+  static String get careDailyWearTitle => tr('careDailyWearTitle');
+  static String get careDailyWearDesc => tr('careDailyWearDesc');
   static String get oldGoldCalculator => tr('oldGoldCalculator');
   static String get oldGoldCalculatorSubtitle => tr('oldGoldCalculatorSubtitle');
   static String get giftFinder => tr('giftFinder');
@@ -305,6 +318,47 @@ class AppStrings {
   static String get metalRates => tr('metalRates');
   static String get customerEnquiries => tr('customerEnquiries');
 
+  // Notifications & FCM
+  static String get notifications => tr('notifications');
+  static String get notificationCenter => tr('notificationCenter');
+  static String get notificationSettings => tr('notificationSettings');
+  static String get goldDropAlerts => tr('goldDropAlerts');
+  static String get goldDropAlertsDesc => tr('goldDropAlertsDesc');
+  static String get newCollectionAlerts => tr('newCollectionAlerts');
+  static String get newCollectionAlertsDesc => tr('newCollectionAlertsDesc');
+  static String get festiveOffersAlerts => tr('festiveOffersAlerts');
+  static String get festiveOffersAlertsDesc => tr('festiveOffersAlertsDesc');
+  static String get broadcastPushNotification => tr('broadcastPushNotification');
+  static String get sendPushNotification => tr('sendPushNotification');
+  static String get pushNotificationSent => tr('pushNotificationSent');
+  static String get fcmServerKey => tr('fcmServerKey');
+  static String get fcmServerKeyDesc => tr('fcmServerKeyDesc');
+  static String get targetAudience => tr('targetAudience');
+  static String get allUsers => tr('allUsers');
+  static String get markAllAsRead => tr('markAllAsRead');
+  static String get noNotificationsYet => tr('noNotificationsYet');
+  static String get notificationTitle => tr('notificationTitle');
+  static String get notificationMessage => tr('notificationMessage');
+  static String get presets => tr('presets');
+
+  // AR Virtual Try-On
+  static String get arVirtualTryOn => tr('arVirtualTryOn');
+  static String get arTryOnSubtitle => tr('arTryOnSubtitle');
+  static String get tryLiveFaceMirror => tr('tryLiveFaceMirror');
+  static String get tryEarringsAndNecklaces => tr('tryEarringsAndNecklaces');
+  static String get earrings => tr('earrings');
+  static String get necklaces => tr('necklaces');
+  static String get alignFaceGuide => tr('alignFaceGuide');
+  static String get dragToAdjust => tr('dragToAdjust');
+  static String get snapLook => tr('snapLook');
+  static String get shareLook => tr('shareLook');
+  static String get switchCamera => tr('switchCamera');
+  static String get uploadPhoto => tr('uploadPhoto');
+  static String get resetPosition => tr('resetPosition');
+  static String get toggleGuide => tr('toggleGuide');
+  static String get mirrorMode => tr('mirrorMode');
+  static String get howDoesThisLook => tr('howDoesThisLook');
+
   // ==========================================
   // Multi-Language Translation Dictionaries
   // ==========================================
@@ -321,6 +375,11 @@ class AppStrings {
       'edit': 'Edit',
       'add': 'Add',
       'retry': 'Retry',
+      'pleaseCheckInternetConnection': 'Please Check Internet Connection',
+      'noInternetConnection': 'No Internet Connection',
+      'checkInternetSubtitle':
+          'Please turn on Wi-Fi or mobile data to continue',
+      'backOnline': 'Back Online',
       'clear': 'Clear',
       'apply': 'Apply',
       'viewAll': 'View All',
@@ -354,6 +413,43 @@ class AppStrings {
       'activeOnHome': 'Active on Home',
       'editProfile': 'Edit Profile',
       'changePassword': 'Change Password',
+      'notifications': 'Notifications',
+      'notificationCenter': 'Notification Center',
+      'notificationSettings': 'Notification Preferences',
+      'goldDropAlerts': 'Gold Price Drop Alerts',
+      'goldDropAlertsDesc': 'Instant alerts whenever gold or silver market rates decrease',
+      'newCollectionAlerts': 'New Collection Launches',
+      'newCollectionAlertsDesc': 'Be first to explore fresh bridal and daily wear arrivals',
+      'festiveOffersAlerts': 'Festive & Seasonal Deals',
+      'festiveOffersAlertsDesc': 'Exclusive discounts, making charge waivers & festive gifts',
+      'broadcastPushNotification': 'Broadcast Push Notification',
+      'sendPushNotification': 'Send Notification',
+      'pushNotificationSent': 'Push notification broadcasted successfully!',
+      'fcmServerKey': 'FCM Server Key (Optional)',
+      'fcmServerKeyDesc': 'Firebase Cloud Messaging key for remote Android & iOS push delivery',
+      'targetAudience': 'Target Audience / Topic',
+      'allUsers': 'All Customers (General)',
+      'markAllAsRead': 'Mark All as Read',
+      'noNotificationsYet': 'No notifications yet',
+      'notificationTitle': 'Notification Title',
+      'notificationMessage': 'Message Body',
+      'presets': 'Quick Presets',
+      'arVirtualTryOn': 'AR Virtual Try-On',
+      'arTryOnSubtitle': 'Try earrings & necklaces live with camera face mirror',
+      'tryLiveFaceMirror': '✨ Try on in AR (Live Face Mirror)',
+      'tryEarringsAndNecklaces': 'Real-Time Camera Jewellery Mirror',
+      'earrings': 'Earrings',
+      'necklaces': 'Necklaces',
+      'alignFaceGuide': 'Align your face & neck with the gold guidelines',
+      'dragToAdjust': 'Drag to position • Pinch to scale • Tap to swap',
+      'snapLook': 'Snap Look',
+      'shareLook': 'Share Look',
+      'switchCamera': 'Switch Camera',
+      'uploadPhoto': 'Upload Photo',
+      'resetPosition': 'Reset Position',
+      'toggleGuide': 'Toggle Guide',
+      'mirrorMode': 'Mirror Flip',
+      'howDoesThisLook': 'How does this look on me? ✨',
       'somethingWentWrong': 'Something went wrong. Please try again.',
       'noData': 'Nothing to show yet',
       'loading': 'Loading...',
@@ -442,6 +538,14 @@ class AppStrings {
       'storeInfoSubtitle': 'Directions, store timings, and calling info',
       'ringSizeGuideSubtitle': 'Find your perfect ring or bangle size',
       'jewelleryCareSubtitle': 'Maintain brilliance, storage, and cleaning advice',
+      'careGoldTitle': 'Gold & Platinum Care',
+      'careGoldDesc': 'Clean gently using lukewarm water and mild baby shampoo with a soft-bristled brush. Avoid chlorine from swimming pools, bleach, and harsh detergents that can erode prongs.',
+      'careDiamondsTitle': 'Diamonds & Gemstones',
+      'careDiamondsDesc': 'Diamonds attract body oils and lotion. Soak for 15 minutes in mild soapy water once a month, then pat dry with a lint-free microfiber cloth. Avoid ultrasonic cleaners for emeralds and pearls.',
+      'careSilverTitle': '925 Sterling Silver',
+      'careSilverDesc': 'Silver naturally oxidizes when exposed to sulfur in ambient air. Store pieces in airtight zip pouches with anti-tarnish strips. Never spray perfume directly onto silver jewellery.',
+      'careDailyWearTitle': 'Daily Wear & Safe Storage',
+      'careDailyWearDesc': 'Remember the golden rule: Jewellery should be the last thing you put on when dressing, and the first thing you take off. Store each piece separately in velvet-lined slots to prevent scratches.',
       'oldGoldCalculator': 'Old Gold Calculator',
       'oldGoldCalculatorSubtitle': 'Calculate instant trade-in value for old jewellery',
       'giftFinder': 'Gift Finder & Stylist',
@@ -581,6 +685,11 @@ class AppStrings {
       'edit': 'संपादित करें',
       'add': 'जोड़ें',
       'retry': 'पुनः प्रयास करें',
+      'pleaseCheckInternetConnection': 'कृपया अपना इंटरनेट कनेक्शन जांचें',
+      'noInternetConnection': 'कोई इंटरनेट कनेक्शन नहीं है',
+      'checkInternetSubtitle':
+          'कृपया जारी रखने के लिए वाई-फ़ाई या मोबाइल डेटा चालू करें',
+      'backOnline': 'इंटरनेट वापस आ गया',
       'clear': 'साफ़ करें',
       'apply': 'लागू करें',
       'viewAll': 'सभी देखें',
@@ -614,6 +723,43 @@ class AppStrings {
       'activeOnHome': 'होम पर सक्रिय',
       'editProfile': 'प्रोफ़ाइल संपादित करें',
       'changePassword': 'पासवर्ड बदलें',
+      'notifications': 'सूचनाएं',
+      'notificationCenter': 'अधिसूचना केंद्र',
+      'notificationSettings': 'अधिसूचना प्राथमिकताएं',
+      'goldDropAlerts': 'सोने के भाव में गिरावट के अलर्ट',
+      'goldDropAlertsDesc': 'सोने या चांदी के दाम घटने पर तुरंत अलर्ट पाएं',
+      'newCollectionAlerts': 'नए कलेक्शन लॉन्च',
+      'newCollectionAlertsDesc': 'नए ब्राइडल और दैनिक आभूषण सबसे पहले देखें',
+      'festiveOffersAlerts': 'त्योहारी और विशेष ऑफर्स',
+      'festiveOffersAlertsDesc': 'छूट, जीरो मेकिंग चार्ज और विशेष उपहार',
+      'broadcastPushNotification': 'पुश नोटिफिकेशन भेजें',
+      'sendPushNotification': 'अधिसूचना भेजें',
+      'pushNotificationSent': 'पुश नोटिफिकेशन सफलतापूर्वक भेजा गया!',
+      'fcmServerKey': 'FCM सर्वर कुंजी (वैकल्पिक)',
+      'fcmServerKeyDesc': 'रिमोट पुश नोटिफिकेशन के लिए फायरबेस क्लाउड मैसेजिंग कुंजी',
+      'targetAudience': 'लक्षित दर्शक / विषय',
+      'allUsers': 'सभी ग्राहक (सामान्य)',
+      'markAllAsRead': 'सभी को पढ़ा हुआ मार्क करें',
+      'noNotificationsYet': 'अभी कोई सूचना नहीं है',
+      'notificationTitle': 'अधिसूचना शीर्षक',
+      'notificationMessage': 'संदेश विवरण',
+      'presets': 'त्वरित टेम्पलेट',
+      'arVirtualTryOn': 'AR वर्चुअल ट्राई-ऑन',
+      'arTryOnSubtitle': 'कैमरा फेस मिरर के साथ इयररिंग्स और हार पहनकर देखें',
+      'tryLiveFaceMirror': '✨ AR में पहनकर देखें (लाइव फेस मिरर)',
+      'tryEarringsAndNecklaces': 'रियल-टाइम कैमरा ज्वेलरी मिरर',
+      'earrings': 'इयररिंग्स',
+      'necklaces': 'हार / नेकलेस',
+      'alignFaceGuide': 'दिशानिर्देशों के साथ चेहरा और गर्दन संरेखित करें',
+      'dragToAdjust': 'पोजीशन के लिए ड्रैग करें • साइज के लिए पिंच करें',
+      'snapLook': 'फोटो खींचें',
+      'shareLook': 'शेयर करें',
+      'switchCamera': 'कैमरा बदलें',
+      'uploadPhoto': 'फोटो अपलोड करें',
+      'resetPosition': 'स्थिति रीसेट करें',
+      'toggleGuide': 'गाइड टॉगल करें',
+      'mirrorMode': 'मिरर फ्लिप',
+      'howDoesThisLook': 'यह मुझ पर कैसा लग रहा है? ✨',
       'somethingWentWrong': 'कुछ गलत हो गया। कृपया पुन: प्रयास करें।',
       'noData': 'अभी कुछ नहीं है',
       'loading': 'लोड हो रहा है...',
@@ -702,6 +848,14 @@ class AppStrings {
       'storeInfoSubtitle': 'दिशा-निर्देश, स्टोर समय और कॉलिंग विवरण',
       'ringSizeGuideSubtitle': 'अपनी सटीक रिंग या कंगन का साइज जानें',
       'jewelleryCareSubtitle': 'चमक बनाए रखने और साफ-सफाई की सलाह',
+      'careGoldTitle': 'सोना और प्लेटिनम की देखभाल',
+      'careGoldDesc': 'हल्के गुनगुने पानी और सौम्य बेबी शैम्पू से मुलायम ब्रश के साथ धीरे से साफ करें। क्लोरीन, ब्लीच और कठोर डिटर्जेंट से बचाएं।',
+      'careDiamondsTitle': 'हीरे और रत्न',
+      'careDiamondsDesc': 'महीने में एक बार हल्के साबुन के पानी में 15 मिनट भिगोएं, फिर माइक्रोफाइबर कपड़े से सुखाएं। पन्ना और मोतियों के लिए अल्ट्रासोनिक क्लीनर से बचें।',
+      'careSilverTitle': '925 स्टर्लिंग चांदी',
+      'careSilverDesc': 'चांदी को एयरटाइट पाउच में एंटी-टार्निश स्ट्रिप्स के साथ रखें। चांदी के गहनों पर कभी भी सीधे इत्र न छिड़कें।',
+      'careDailyWearTitle': 'दैनिक उपयोग और सुरक्षित भंडारण',
+      'careDailyWearDesc': 'स्वर्ण नियम: तैयार होते समय गहने सबसे आखिर में पहनें और उतारते समय सबसे पहले। खरोंच से बचाने के लिए अलग-अलग मखमली बॉक्स में रखें।',
       'oldGoldCalculator': 'पुराने गोल्ड का कैलकुलेटर',
       'oldGoldCalculatorSubtitle': 'अपने पुराने आभूषणों का तत्काल विनिमय मूल्य जानें',
       'giftFinder': 'गिफ्ट खोजें (Gift Finder)',
@@ -841,6 +995,11 @@ class AppStrings {
       'edit': 'ફેરફાર કરો',
       'add': 'ઉમેરો',
       'retry': 'ફરી પ્રયાસ કરો',
+      'pleaseCheckInternetConnection': 'કૃપા કરીને તમારું ઇન્ટરનેટ કનેક્શન તપાસો',
+      'noInternetConnection': 'ઇન્ટરનેટ કનેક્શન નથી',
+      'checkInternetSubtitle':
+          'ચાલુ રાખવા માટે કૃપા કરીને વાઇ-ફાઇ અથવા મોબાઇલ ડેટા ચાલુ કરો',
+      'backOnline': 'ફરી ઓનલાઇન',
       'clear': 'સાફ કરો',
       'apply': 'લાગુ કરો',
       'viewAll': 'બધા જુઓ',
@@ -874,6 +1033,43 @@ class AppStrings {
       'activeOnHome': 'હોમ પર સક્રિય',
       'editProfile': 'પ્રોફાઇલ સંપાદિત કરો',
       'changePassword': 'પાસવર્ડ બદલો',
+      'notifications': 'સૂચનાઓ',
+      'notificationCenter': 'સૂચના કેન્દ્ર',
+      'notificationSettings': 'સૂચના પસંદગીઓ',
+      'goldDropAlerts': 'સોનાના ભાવ ઘટાડાના એલર્ટ',
+      'goldDropAlertsDesc': 'સોના કે ચાંદીના ભાવ ઘટતાં જ તરત જ એલર્ટ મેળવો',
+      'newCollectionAlerts': 'નવા કલેક્શન લોન્ચ',
+      'newCollectionAlertsDesc': 'નવા બ્રાઇડલ અને દૈનિક ઘરેણાં સૌથી પહેલાં જુઓ',
+      'festiveOffersAlerts': 'તહેવાર અને વિશેષ ઓફર્સ',
+      'festiveOffersAlertsDesc': 'ડિસ્કાઉન્ટ, ઝીરો મેકિંગ ચાર્જ અને વિશેષ ભેટ',
+      'broadcastPushNotification': 'પુશ નોટિફિકેશન મોકલો',
+      'sendPushNotification': 'સૂચના મોકલો',
+      'pushNotificationSent': 'પુશ નોટિફિકેશન સફળતાપૂર્વક મોકલાયું!',
+      'fcmServerKey': 'FCM સર્વર કી (વૈકલ્પિક)',
+      'fcmServerKeyDesc': 'રિમોટ પુશ નોટિફિકેશન માટે ફાયરબેઝ ક્લાઉડ મેસેજિંગ કી',
+      'targetAudience': 'લક્ષિત દર્શક / વિષય',
+      'allUsers': 'બધા ગ્રાહકો (સામાન્ય)',
+      'markAllAsRead': 'બધા વાંચેલા તરીકે માર્ક કરો',
+      'noNotificationsYet': 'હજી સુધી કોઈ સૂચના નથી',
+      'notificationTitle': 'સૂચના શીર્ષક',
+      'notificationMessage': 'સંદેશ વિગત',
+      'presets': 'ઝડપી પ્રીસેટ્સ',
+      'arVirtualTryOn': 'AR વર્ચ્યુઅલ ટ્રાય-ઓન',
+      'arTryOnSubtitle': 'કેમેરા ફેસ મિરર સાથે ઇયરિંગ્સ અને હાર પહેરી જુઓ',
+      'tryLiveFaceMirror': '✨ AR માં પહેરીને જુઓ (લાઇવ ફેસ મિરર)',
+      'tryEarringsAndNecklaces': 'રિયલ-ટાઇમ કેમેરા જ્વેલરી મિરર',
+      'earrings': 'ઇયરિંગ્સ',
+      'necklaces': 'હાર / નેકલેસ',
+      'alignFaceGuide': 'ગાઇડલાઇન્સ સાથે ચહેરો અને ગળું ગોઠવો',
+      'dragToAdjust': 'પોઝિશન માટે ડ્રેગ કરો • સાઇઝ બદલવા પિંચ કરો',
+      'snapLook': 'ફોટો પાડો',
+      'shareLook': 'શેર કરો',
+      'switchCamera': 'કેમેરો બદલો',
+      'uploadPhoto': 'ફોટો અપલોડ કરો',
+      'resetPosition': 'સ્થિતિ રીસેટ કરો',
+      'toggleGuide': 'ગાઇડ ટૉગલ કરો',
+      'mirrorMode': 'મિરર ફ્લિપ',
+      'howDoesThisLook': 'આ મારા પર કેવું લાગે છે? ✨',
       'somethingWentWrong': 'કંઈક ખોટું થયું. કૃપા કરી ફરી પ્રયાસ કરો.',
       'noData': 'હજુ કશું નથી',
       'loading': 'લોડ થઈ રહ્યું છે...',
@@ -962,6 +1158,14 @@ class AppStrings {
       'storeInfoSubtitle': 'સરનામું, સ્ટોર સમય અને કૉલિંગ વિગત',
       'ringSizeGuideSubtitle': 'તમારી ચોક્કસ વીંટી અથવા બંગડીનું માપ જાણો',
       'jewelleryCareSubtitle': 'ચમક જાળવી રાખવા અને સાફ-સફાઈની સલાહ',
+      'careGoldTitle': 'સોનું અને પ્લેટિનમ સંભાળ',
+      'careGoldDesc': 'હળવા નવશેકા પાણી અને બેબી શેમ્પૂથી સોફ્ટ બ્રશ વડે હળવેથી સાફ કરો. ક્લોરિન, બ્લીચ અને હાર્શ ડિટર્જન્ટથી બચાવો.',
+      'careDiamondsTitle': 'હીરા અને રત્નો',
+      'careDiamondsDesc': 'મહિનામાં એક વાર સાબુવાળા પાણીમાં 15 મિનિટ પલાળી રાખો, પછી માઇક્રોફાઇબર કપડાથી લૂછો. પાના અને મોતી માટે અલ્ટ્રાસોનિક ક્લીનર ટાળો.',
+      'careSilverTitle': '925 સ્ટર્લિંગ ચાંદી',
+      'careSilverDesc': 'ચાંદીને એરટાઈટ પાઉચમાં એન્ટી-ટાર્નિશ સ્ટ્રિપ સાથે સાચવો. ચાંદીના ઘરેણાં પર ક્યારેય સીધો પરફ્યુમ ન છાંટો.',
+      'careDailyWearTitle': 'રોજિંદો પહેરવેશ અને સાચવણી',
+      'careDailyWearDesc': 'સુવર્ણ નિયમ: તૈયાર થતી વખતે ઘરેણાં છેલ્લે પહેરો અને કાઢતી વખતે સૌથી પહેલાં. સ્ક્રેચથી બચવા માટે મખમલી બોક્સમાં અલગ રાખો.',
       'oldGoldCalculator': 'જૂના સોનાનું કેલ્ક્યુલેટર',
       'oldGoldCalculatorSubtitle': 'જૂના દાગીનાની તાત્કાલિક એક્સચેન્જ કિંમત જાણો',
       'giftFinder': 'ગિફ્ટ ફાઇન્ડર (Gift Finder)',

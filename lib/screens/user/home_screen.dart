@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jewel_ora/core/constants/app_colors.dart';
 import 'package:jewel_ora/core/constants/app_strings.dart';
-import 'package:jewel_ora/core/widgets/app_button.dart';
 import 'package:jewel_ora/core/widgets/app_loader.dart';
 import 'package:jewel_ora/core/widgets/brand_logo.dart';
 import 'package:jewel_ora/core/widgets/empty_state.dart';
@@ -12,6 +11,7 @@ import 'package:jewel_ora/providers/occasion_reminder_provider.dart';
 import 'package:jewel_ora/providers/product_provider.dart';
 import 'package:jewel_ora/providers/settings_provider.dart';
 import 'package:jewel_ora/screens/user/product_detail_screen.dart';
+import 'package:jewel_ora/screens/user/ar_try_on_screen.dart';
 import 'package:jewel_ora/screens/user/store_info_screen.dart';
 import 'package:jewel_ora/screens/user/widgets/gift_finder_sheet.dart';
 import 'package:jewel_ora/screens/user/widgets/home_banner_carousel.dart';
@@ -26,6 +26,7 @@ import 'package:jewel_ora/providers/video_appointment_provider.dart';
 import 'package:jewel_ora/screens/user/widgets/bridal_planner_sheet.dart';
 import 'package:provider/provider.dart';
 
+import 'package:jewel_ora/screens/user/widgets/notification_center_sheet.dart';
 import '../../providers/shop_filter_provider.dart';
 import '../../providers/user_nav_provider.dart';
 
@@ -33,12 +34,7 @@ class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   void _openAnnouncements(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => const _AnnouncementsSheet(),
-    );
+    NotificationCenterSheet.show(context);
   }
 
   @override
@@ -397,6 +393,108 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
 
+            // ---------- AR Virtual Try-On Banner ----------
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () => ArTryOnScreen.open(context),
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.accentGold.withValues(alpha: 0.15),
+                            AppColors.primary.withValues(alpha: 0.08),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: AppColors.accentGold.withValues(alpha: 0.4),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: AppColors.accentGold.withValues(alpha: 0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Center(
+                              child: Icon(
+                                Icons.face_retouching_natural_rounded,
+                                color: AppColors.primary,
+                                size: 26,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      AppStrings.arVirtualTryOn,
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.textDark,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: const Text(
+                                        'LIVE AR',
+                                        style: TextStyle(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w800,
+                                          color: Colors.white,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  AppStrings.arTryOnSubtitle,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.textGrey,
+                                    height: 1.2,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            size: 16,
+                            color: AppColors.primary,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
             // ---------- Categories ----------
             if (categories.activeCategories.isNotEmpty) ...[
               SliverToBoxAdapter(
@@ -648,149 +746,4 @@ class _StoreExperienceBanner extends StatelessWidget {
       ),
     );
   }
-}
-
-class _AnnouncementsSheet extends StatelessWidget {
-  const _AnnouncementsSheet();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Handle bar
-              Center(
-                child: Container(
-                  width: 38,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AppColors.border,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Offers & Highlights',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textDark,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close_rounded),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              _AnnouncementTile(
-                icon: Icons.local_fire_department_outlined,
-                iconColor: AppColors.accent,
-                title: 'Diwali Festive Sale Live!',
-                subtitle: 'Flat 20% off on Diamond jewellery and special making charges.',
-              ),
-              const SizedBox(height: 10),
-              _AnnouncementTile(
-                icon: Icons.price_change_outlined,
-                iconColor: AppColors.primary,
-                title: 'Live Gold & Silver Rates',
-                subtitle: 'Daily rates are updated automatically. Track trends on Home.',
-              ),
-              const SizedBox(height: 10),
-              _AnnouncementTile(
-                icon: Icons.cleaning_services_outlined,
-                iconColor: const Color(0xFF0D9488),
-                title: 'Complimentary Jewellery Spa',
-                subtitle: 'Free ultrasonic cleaning available at our Experience Boutique.',
-              ),
-              const SizedBox(height: 16),
-              AppButton(
-                title: 'Close',
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AnnouncementTile extends StatelessWidget {
-  final IconData icon;
-  final Color iconColor;
-  final String title;
-  final String subtitle;
-
-  const _AnnouncementTile({
-    required this.icon,
-    required this.iconColor,
-    required this.title,
-    required this.subtitle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: iconColor, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textDark,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textGrey,
-                    height: 1.3,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+}

@@ -14,7 +14,9 @@ import 'package:jewel_ora/screens/user/custom_order_screen.dart';
 import 'package:jewel_ora/screens/user/edit_profile_screen.dart';
 import 'package:jewel_ora/screens/user/enquiry_history_screen.dart';
 import 'package:jewel_ora/screens/user/store_info_screen.dart';
+import 'package:jewel_ora/screens/user/ar_try_on_screen.dart';
 import 'package:jewel_ora/screens/user/widgets/bridal_planner_sheet.dart';
+import 'package:jewel_ora/screens/user/widgets/notification_center_sheet.dart';
 import 'package:jewel_ora/screens/user/widgets/diamond_guide_sheet.dart';
 import 'package:jewel_ora/screens/user/widgets/gift_finder_sheet.dart';
 import 'package:jewel_ora/screens/user/widgets/gold_savings_scheme_sheet.dart';
@@ -189,6 +191,17 @@ class ProfileScreen extends StatelessWidget {
             child: Column(
               children: [
                 ListTile(
+                  leading: const Icon(Icons.notifications_active_outlined, color: AppColors.primary),
+                  title: Text(AppStrings.notificationCenter, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                  subtitle: Text(
+                    AppStrings.notificationSettings,
+                    style: const TextStyle(fontSize: 12, color: AppColors.textGrey),
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textGrey),
+                  onTap: () => NotificationCenterSheet.show(context),
+                ),
+                const Divider(height: 1),
+                ListTile(
                   leading: const Icon(Icons.chat_bubble_outline_rounded, color: AppColors.primary),
                   title: Text(AppStrings.enquiryHistory, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                   subtitle: Text(
@@ -229,6 +242,17 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textGrey),
                   onTap: () => VideoShoppingSheet.show(context),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.face_retouching_natural_rounded, color: AppColors.primary),
+                  title: Text(AppStrings.arVirtualTryOn, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                  subtitle: Text(
+                    AppStrings.arTryOnSubtitle,
+                    style: const TextStyle(fontSize: 12, color: AppColors.textGrey),
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textGrey),
+                  onTap: () => ArTryOnScreen.open(context),
                 ),
                 const Divider(height: 1),
                 ListTile(

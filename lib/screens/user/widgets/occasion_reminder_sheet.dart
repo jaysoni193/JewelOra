@@ -648,7 +648,9 @@ class _AddMilestoneDialogState extends State<_AddMilestoneDialog> {
         color: AppColors.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppSizes.radiusLarge)),
       ),
-      child: SingleChildScrollView(
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -749,6 +751,7 @@ class _AddMilestoneDialogState extends State<_AddMilestoneDialog> {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 }

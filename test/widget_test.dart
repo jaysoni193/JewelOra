@@ -17,6 +17,8 @@ import 'package:jewel_ora/providers/wishlist_provider.dart';
 import 'package:jewel_ora/screens/user/widgets/jewellery_care_dialog.dart';
 import 'package:jewel_ora/screens/user/widgets/ring_size_guide_dialog.dart';
 import 'package:jewel_ora/screens/user/widgets/today_rates_strip.dart';
+import 'package:jewel_ora/core/widgets/connectivity_banner.dart';
+import 'package:jewel_ora/providers/connectivity_provider.dart';
 import 'package:jewel_ora/services/metal_rate_service.dart';
 import 'package:jewel_ora/services/wishlist_service.dart';
 
@@ -240,4 +242,76 @@ void main() {
     expect(find.byType(ProductCard), findsOneWidget);
     expect(find.text('BRIDAL NECKLACES'), findsOneWidget);
   });
+
+  testWidgets('ConnectivityBannerWrapper displays Please Check Internet Connection when offline and Back Online on restore', (tester) async {
+    final connectivityProvider = ConnectivityProvider();
+
+    await tester.pumpWidget(
+      ChangeNotifierProvider.value(
+        value: connectivityProvider,
+        child: const MaterialApp(
+          home: ConnectivityBannerWrapper(
+            child: Scaffold(
+              body: Center(child: Text('Main App Content')),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    // Initially online: Banner is hidden off-screen with opacity 0.0
+    expect(find.text('Main App Content'), findsOneWidget);
+    final initialOpacity = tester.widget<AnimatedOpacity>(find.byType(AnimatedOpacity));
+    expect(initialOpacity.opacity, 0.0);
+    final initialSlide = tester.widget<AnimatedSlide>(find.byType(AnimatedSlide));
+    expect(initialSlide.offset, const Offset(0, -1.3));
+
+    // Simulate going offline
+    connectivityProvider.setMockStatus(false);
+    await tester.pumpAndSettle();
+
+    final offlineOpacity = tester.widget<AnimatedOpacity>(find.byType(AnimatedOpacity));
+    expect(offlineOpacity.opacity, 1.0);
+    final offlineSlide = tester.widget<AnimatedSlide>(find.byType(AnimatedSlide));
+    expect(offlineSlide.offset, Offset.zero);
+    expect(find.text(AppStrings.pleaseCheckInternetConnection), findsOneWidget);
+    expect(find.text(AppStrings.checkInternetSubtitle), findsOneWidget);
+    expect(find.text(AppStrings.retry), findsOneWidget);
+
+    // Simulate reconnecting
+    connectivityProvider.setMockStatus(true);
+    await tester.pump();
+
+    expect(find.text(AppStrings.backOnline), findsOneWidget);
+
+    // After 3 seconds, the "Back Online" pill should dismiss automatically
+    await tester.pump(const Duration(seconds: 4));
+    final finalOpacity = tester.widget<AnimatedOpacity>(find.byType(AnimatedOpacity));
+    expect(finalOpacity.opacity, 0.0);
+  });
+
+  testWidgets('EmptyState.offline renders offline icon, localized title, and retry button', (tester) async {
+    var retried = false;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: EmptyState.offline(
+            onRetry: () => retried = true,
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text(AppStrings.noInternetConnection), findsOneWidget);
+    expect(find.text(AppStrings.pleaseCheckInternetConnection), findsOneWidget);
+    expect(find.text(AppStrings.retry), findsOneWidget);
+
+    await tester.tap(find.text(AppStrings.retry));
+    await tester.pump();
+    expect(retried, isTrue);
+  });
 }
+

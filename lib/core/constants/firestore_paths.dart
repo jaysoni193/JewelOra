@@ -16,4 +16,6 @@ class FirestorePaths {
   static const String settingsDocId = 'config';
   static const String metalRatesDocId = 'today';
   static const String productStats = 'product_stats';
+  static const String notifications = 'notifications';
+  static const String fcmConfigDocId = 'fcm_config';
 }

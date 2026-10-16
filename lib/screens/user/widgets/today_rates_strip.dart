@@ -445,7 +445,8 @@ class _RateCalculatorSheetState extends State<RateCalculatorSheet> {
       ),
       child: SafeArea(
         top: false,
-        child: Padding(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
           padding: EdgeInsets.fromLTRB(
             20,
             12,

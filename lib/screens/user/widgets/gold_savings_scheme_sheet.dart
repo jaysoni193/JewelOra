@@ -78,7 +78,9 @@ class _GoldSavingsSchemeSheetState extends State<GoldSavingsSchemeSheet>
         color: AppColors.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppSizes.radiusLarge)),
       ),
-      child: Column(
+      child: SafeArea(
+        top: false,
+        child: Column(
         children: [
           // Drag Handle
           Center(
@@ -196,7 +198,8 @@ class _GoldSavingsSchemeSheetState extends State<GoldSavingsSchemeSheet>
           ),
         ],
       ),
-    );
+    ),
+  );
   }
 
   // ==========================================

@@ -17,7 +17,10 @@ import 'package:jewel_ora/providers/ring_size_provider.dart';
 import 'package:jewel_ora/providers/video_appointment_provider.dart';
 import 'package:jewel_ora/screens/user/widgets/gift_finder_sheet.dart';
 import 'package:jewel_ora/screens/user/widgets/product_customizer_widget.dart';
+import 'package:jewel_ora/models/app_notification_model.dart';
+import 'package:jewel_ora/models/ar_try_on_model.dart';
 import 'package:jewel_ora/services/certificate_verifier.dart';
+import 'package:jewel_ora/services/notification_service.dart';
 import 'package:jewel_ora/services/whatsapp_service.dart';
 
 void main() {
@@ -1206,6 +1209,115 @@ void main() {
       await provider.resetCalibration();
       expect(provider.pixelsPerMm, ScreenCalibrationConstants.defaultPixelsPerMm);
       expect(provider.isCalibrated, isFalse);
+    });
+  });
+
+  group('Feature 13: Push Notifications (FCM) & Automated Drop Triggers', () {
+    test('AppNotificationModel serializes and deserializes accurately', () {
+      final now = DateTime(2026, 10, 16, 12, 0);
+      final notification = AppNotificationModel(
+        id: 'notif_123',
+        title: '⚡ Gold Rate Dropped! ₹45/g Down Today',
+        body: 'Today\'s 22K Gold rate dropped to ₹6850/g. Lock your jewellery now before rates rise!',
+        topic: NotificationService.topicGoldDrop,
+        type: 'rate_drop',
+        timestamp: now,
+        isRead: false,
+        payload: const {'route': '/metal_rates', 'newRate': 6850.0},
+      );
+
+      final map = notification.toMap();
+      expect(map['id'], 'notif_123');
+      expect(map['title'], contains('Gold Rate Dropped'));
+      expect(map['topic'], 'gold_price_drops');
+      expect(map['type'], 'rate_drop');
+      expect(map['isRead'], false);
+
+      final reconstructed = AppNotificationModel.fromMap(map, 'notif_123');
+      expect(reconstructed.id, 'notif_123');
+      expect(reconstructed.title, notification.title);
+      expect(reconstructed.body, notification.body);
+      expect(reconstructed.topic, NotificationService.topicGoldDrop);
+      expect(reconstructed.type, 'rate_drop');
+    });
+
+    test('Topic constants and payload structure validate cleanly', () {
+      expect(NotificationService.topicGoldDrop, 'gold_price_drops');
+      expect(NotificationService.topicNewCollection, 'new_collections');
+      expect(NotificationService.topicFestiveOffers, 'festive_offers');
+      expect(NotificationService.topicGeneral, 'general');
+    });
+  });
+
+  group('Feature 14: AR Virtual Try-On for Earrings & Necklaces', () {
+    test('ArTryOnItem curated items contains comprehensive earrings and necklaces', () {
+      final items = ArTryOnItem.curatedItems;
+      expect(items.isNotEmpty, isTrue);
+
+      final earrings = items.where((i) => i.type == ArItemType.earrings).toList();
+      final necklaces = items.where((i) => i.type == ArItemType.necklace).toList();
+
+      expect(earrings.length, greaterThanOrEqualTo(4));
+      expect(necklaces.length, greaterThanOrEqualTo(4));
+
+      for (final e in earrings) {
+        expect(e.imageUrl, isNotEmpty);
+        expect(e.earringSpacing, inInclusiveRange(140.0, 190.0));
+        expect(e.defaultScale, inInclusiveRange(0.5, 2.0));
+      }
+
+      for (final n in necklaces) {
+        expect(n.imageUrl, isNotEmpty);
+        expect(n.defaultOffsetY, greaterThan(0.0)); // Necklaces drape below chin
+        expect(n.defaultScale, inInclusiveRange(0.5, 2.0));
+      }
+    });
+
+    test('ArTryOnItem.fromProduct converts jewellery correctly and rejects non-earring/necklace items', () {
+      const earringProduct = ProductModel(
+        id: 'p_earring_1',
+        name: 'Heritage Chandbali Jhumka',
+        categoryId: 'cat_earrings',
+        categoryName: 'Earrings & Jhumkas',
+        price: 45000,
+        images: ['https://example.com/earring.png'],
+      );
+      final earringTryOn = ArTryOnItem.fromProduct(earringProduct);
+      expect(earringTryOn, isNotNull);
+      expect(earringTryOn!.type, ArItemType.earrings);
+      expect(earringTryOn.name, 'Heritage Chandbali Jhumka');
+
+      const necklaceProduct = ProductModel(
+        id: 'p_necklace_1',
+        name: 'Royal Polki Choker Necklace',
+        categoryId: 'cat_necklaces',
+        categoryName: 'Necklaces & Sets',
+        price: 125000,
+        images: ['https://example.com/necklace.png'],
+      );
+      final necklaceTryOn = ArTryOnItem.fromProduct(necklaceProduct);
+      expect(necklaceTryOn, isNotNull);
+      expect(necklaceTryOn!.type, ArItemType.necklace);
+      expect(necklaceTryOn.name, 'Royal Polki Choker Necklace');
+
+      // A ring or gold coin is NOT an earring or necklace
+      const ringProduct = ProductModel(
+        id: 'p_ring_1',
+        name: 'Solitaire Diamond Band',
+        categoryId: 'cat_rings',
+        categoryName: 'Rings',
+        price: 28000,
+      );
+      expect(ArTryOnItem.fromProduct(ringProduct), isNull);
+
+      const coinProduct = ProductModel(
+        id: 'p_coin_1',
+        name: '10g 24K Laxmi Gold Coin',
+        categoryId: 'cat_coins',
+        categoryName: 'Gold Coins & Bars',
+        price: 76000,
+      );
+      expect(ArTryOnItem.fromProduct(coinProduct), isNull);
     });
   });
 }

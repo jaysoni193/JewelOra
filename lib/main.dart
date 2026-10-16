@@ -2,8 +2,10 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:jewel_ora/core/constants/app_strings.dart';
 import 'package:jewel_ora/core/theme/app_theme.dart';
+import 'package:jewel_ora/core/widgets/connectivity_banner.dart';
 import 'package:jewel_ora/providers/auth_provider.dart';
 import 'package:jewel_ora/providers/banner_provider.dart';
+import 'package:jewel_ora/providers/connectivity_provider.dart';
 import 'package:jewel_ora/providers/cart_provider.dart';
 import 'package:jewel_ora/providers/category_provider.dart';
 import 'package:jewel_ora/providers/enquiry_provider.dart';
@@ -62,6 +64,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => LocaleProvider()),
+        ChangeNotifierProvider(create: (_) => ConnectivityProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider(AuthService())),
         ChangeNotifierProvider(create: (_) => UserNavProvider()),
         ChangeNotifierProvider(create: (_) => ShopFilterProvider()),
@@ -120,8 +123,11 @@ class MyApp extends StatelessWidget {
             theme: AppTheme.light,
             darkTheme: AppTheme.dark,
             themeMode: ThemeMode.light,
-            builder: (context, child) =>
-                GlobalLoaderOverlay(child: child ?? const SizedBox.shrink()),
+            builder: (context, child) => GlobalLoaderOverlay(
+              child: ConnectivityBannerWrapper(
+                child: child ?? const SizedBox.shrink(),
+              ),
+            ),
             home: const SplashScreen(),
           );
         },

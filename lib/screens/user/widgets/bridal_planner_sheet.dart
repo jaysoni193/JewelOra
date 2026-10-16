@@ -57,7 +57,9 @@ class _BridalPlannerSheetState extends State<BridalPlannerSheet> {
         color: AppColors.background,
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppSizes.radiusLarge)),
       ),
-      child: Column(
+      child: SafeArea(
+        top: false,
+        child: Column(
         children: [
           // Drag Handle
           Center(
@@ -136,7 +138,8 @@ class _BridalPlannerSheetState extends State<BridalPlannerSheet> {
           ),
         ],
       ),
-    );
+    ),
+  );
   }
 
   // -------------------------------------------------------------

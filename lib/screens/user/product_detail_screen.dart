@@ -21,6 +21,8 @@ import 'package:jewel_ora/providers/metal_rate_provider.dart';
 import 'package:jewel_ora/providers/product_provider.dart';
 import 'package:jewel_ora/providers/ring_size_provider.dart';
 import 'package:jewel_ora/providers/settings_provider.dart';
+import 'package:jewel_ora/models/ar_try_on_model.dart';
+import 'package:jewel_ora/screens/user/ar_try_on_screen.dart';
 import 'package:jewel_ora/screens/user/widgets/diamond_guide_sheet.dart';
 import 'package:jewel_ora/screens/user/widgets/drop_hint_dialog.dart';
 import 'package:jewel_ora/screens/user/widgets/jewellery_care_dialog.dart';
@@ -250,6 +252,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       appBar: AppBar(
         title: Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis),
         actions: [
+          if (ArTryOnItem.fromProduct(p) != null)
+            IconButton(
+              tooltip: AppStrings.arVirtualTryOn,
+              icon: const Icon(Icons.face_retouching_natural_rounded, color: AppColors.accentGold),
+              onPressed: () => ArTryOnScreen.open(context, product: p),
+            ),
           IconButton(
             tooltip: AppStrings.dropAHint,
             icon: const Icon(Icons.card_giftcard_rounded, color: AppColors.accent),
@@ -420,6 +428,80 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       ],
                     ],
                   ),
+                  if (ArTryOnItem.fromProduct(p) != null) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.accentGold.withValues(alpha: 0.15),
+                            AppColors.primary.withValues(alpha: 0.08),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+                        border: Border.all(
+                          color: AppColors.accentGold.withValues(alpha: 0.4),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.accentGold.withValues(alpha: 0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.face_retouching_natural_rounded,
+                              color: AppColors.primary,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'AR Virtual Try-On',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 13,
+                                    color: AppColors.textDark,
+                                  ),
+                                ),
+                                SizedBox(height: 2),
+                                Text(
+                                  'Try this piece live on your face & neck using camera mirror',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.textGrey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(AppSizes.radiusPill),
+                              ),
+                            ),
+                            icon: const Icon(Icons.videocam_rounded, size: 16),
+                            label: const Text('Try Live', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                            onPressed: () => ArTryOnScreen.open(context, product: p),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 12),
 
                   // Drop a Hint Banner

@@ -967,7 +967,9 @@ class _AddVaultItemSheetState extends State<_AddVaultItemSheet> {
         color: AppColors.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppSizes.radiusLarge)),
       ),
-      child: SingleChildScrollView(
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -1090,6 +1092,7 @@ class _AddVaultItemSheetState extends State<_AddVaultItemSheet> {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 }

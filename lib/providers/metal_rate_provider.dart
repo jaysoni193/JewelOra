@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:jewel_ora/core/constants/app_strings.dart';
 import 'package:jewel_ora/models/metal_rate_model.dart';
 import 'package:jewel_ora/services/metal_rate_service.dart';
+import 'package:jewel_ora/services/notification_service.dart';
 
 class MetalRateProvider extends ChangeNotifier {
   final MetalRateService _service;
@@ -45,10 +46,27 @@ class MetalRateProvider extends ChangeNotifier {
     _isSaving = true;
     notifyListeners();
     try {
+      final old24k = _rates.gold24k;
+      final old22k = _rates.gold22k;
       await _service.save(updated);
       _rates = updated;
       _isSaving = false;
       notifyListeners();
+
+      // Automated push notification trigger on price drop
+      if (updated.gold24k < old24k) {
+        unawaited(NotificationService.instance.notifyGoldPriceDrop(
+          oldRate: old24k,
+          newRate: updated.gold24k,
+          metalType: '24K Gold',
+        ));
+      } else if (updated.gold22k < old22k) {
+        unawaited(NotificationService.instance.notifyGoldPriceDrop(
+          oldRate: old22k,
+          newRate: updated.gold22k,
+          metalType: '22K Gold',
+        ));
+      }
       return true;
     } catch (_) {
       _errorMessage = AppStrings.somethingWentWrong;

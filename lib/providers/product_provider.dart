@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:jewel_ora/core/constants/app_strings.dart';
 import 'package:jewel_ora/models/product_model.dart';
+import 'package:jewel_ora/services/notification_service.dart';
 import 'package:jewel_ora/services/product_service.dart';
 
 class ProductProvider extends ChangeNotifier {
@@ -96,6 +97,12 @@ class ProductProvider extends ChangeNotifier {
 
       if (existing == null) {
         await _service.add(product);
+        unawaited(NotificationService.instance.notifyNewCollection(
+          productName: name,
+          categoryName: categoryName,
+          price: price,
+          imageUrl: images.isNotEmpty ? images.first : null,
+        ));
       } else {
         await _service.update(product);
       }

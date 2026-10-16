@@ -87,20 +87,10 @@ class _RingSizeGuideSheetState extends State<RingSizeGuideSheet>
   Widget build(BuildContext context) {
     final sizer = _getSizer(context);
 
-    return Material(
-      color: AppColors.surface,
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      clipBehavior: Clip.antiAlias,
-      child: SafeArea(
-        top: false,
-        child: Container(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.90,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
               // Handle bar
               Center(
                 child: Container(
@@ -195,11 +185,8 @@ class _RingSizeGuideSheetState extends State<RingSizeGuideSheet>
                   child: _buildActiveTabContent(sizer),
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
-    );
+              ],
+            );
   }
 
   Widget _buildActiveTabContent(RingSizeProvider sizer) {

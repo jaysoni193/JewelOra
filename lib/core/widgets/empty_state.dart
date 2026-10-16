@@ -24,6 +24,16 @@ class EmptyState extends StatelessWidget {
         actionLabel = actionLabel ?? buttonTitle,
         onAction = onAction ?? onButtonPressed;
 
+  factory EmptyState.offline({VoidCallback? onRetry}) {
+    return EmptyState(
+      icon: Icons.wifi_off_rounded,
+      title: AppStrings.noInternetConnection,
+      subtitle: AppStrings.pleaseCheckInternetConnection,
+      actionLabel: AppStrings.retry,
+      onAction: onRetry,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final effectiveTitle = title ?? AppStrings.noData;
