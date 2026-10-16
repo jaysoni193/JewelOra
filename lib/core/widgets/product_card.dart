@@ -43,7 +43,7 @@ class ProductCard extends StatelessWidget {
             children: [
               // Product Image Container
               AspectRatio(
-                aspectRatio: 1.05,
+                aspectRatio: 1.15,
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
@@ -210,95 +210,97 @@ class ProductCard extends StatelessWidget {
               // Product Info
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
+                  padding: const EdgeInsets.fromLTRB(9, 6, 9, 6),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isCompact = constraints.maxHeight < 84;
+                      return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          if (p.categoryName.isNotEmpty)
-                            Text(
-                              p.categoryName.toUpperCase(),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 0.8,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                          const SizedBox(height: 2),
-                          Text(
-                            p.name,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textDark,
-                              height: 1.25,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.baseline,
-                            textBaseline: TextBaseline.alphabetic,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
-                                Formatters.price(effectivePrice),
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.primary,
-                                  letterSpacing: -0.2,
-                                ),
-                              ),
-                              if (p.hasDiscount) ...[
-                                const SizedBox(width: 5),
+                              if (p.categoryName.isNotEmpty)
                                 Text(
-                                  Formatters.price(p.mrp!),
+                                  p.categoryName.toUpperCase(),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
-                                    fontSize: 11,
-                                    color: AppColors.textLight,
-                                    decoration: TextDecoration.lineThrough,
-                                    fontWeight: FontWeight.w500,
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.7,
+                                    color: AppColors.primary,
                                   ),
                                 ),
-                                const SizedBox(width: 4),
+                              const SizedBox(height: 2),
+                              Text(
+                                p.name,
+                                maxLines: isCompact ? 1 : 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: isCompact ? 12 : 12.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textDark,
+                                  height: 1.2,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.baseline,
+                                textBaseline: TextBaseline.alphabetic,
+                                children: [
+                                  Text(
+                                    Formatters.price(effectivePrice),
+                                    style: const TextStyle(
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppColors.primary,
+                                      letterSpacing: -0.2,
+                                    ),
+                                  ),
+                                  if (p.hasDiscount) ...[
+                                    const SizedBox(width: 4),
+                                    Flexible(
+                                      child: Text(
+                                        Formatters.price(p.mrp!),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontSize: 10,
+                                          color: AppColors.textLight,
+                                          decoration: TextDecoration.lineThrough,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              if (p.material.isNotEmpty && constraints.maxHeight >= 68) ...[
+                                const SizedBox(height: 2),
                                 Text(
-                                  '${p.discountPercent}% off',
+                                  p.material,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.success,
+                                    fontSize: 9.5,
+                                    color: AppColors.textGrey,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               ],
                             ],
                           ),
-                          if (p.material.isNotEmpty) ...[
-                            const SizedBox(height: 2),
-                            Text(
-                              p.material,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 10,
-                                color: AppColors.textGrey,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
                         ],
-                      ),
-                    ],
+                      );
+                    },
                   ),
                 ),
               ),

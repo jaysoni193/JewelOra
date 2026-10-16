@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:jewel_ora/core/constants/app_colors.dart';
 import 'package:jewel_ora/core/constants/app_strings.dart';
+import 'package:jewel_ora/core/widgets/app_bottom_sheet.dart';
 import 'package:jewel_ora/core/widgets/app_button.dart';
 import 'package:jewel_ora/core/widgets/app_card.dart';
 import 'package:jewel_ora/core/widgets/app_dialog.dart';
@@ -13,8 +14,17 @@ import 'package:jewel_ora/screens/user/custom_order_screen.dart';
 import 'package:jewel_ora/screens/user/edit_profile_screen.dart';
 import 'package:jewel_ora/screens/user/enquiry_history_screen.dart';
 import 'package:jewel_ora/screens/user/store_info_screen.dart';
+import 'package:jewel_ora/screens/user/widgets/bridal_planner_sheet.dart';
+import 'package:jewel_ora/screens/user/widgets/diamond_guide_sheet.dart';
+import 'package:jewel_ora/screens/user/widgets/gift_finder_sheet.dart';
+import 'package:jewel_ora/screens/user/widgets/gold_savings_scheme_sheet.dart';
 import 'package:jewel_ora/screens/user/widgets/jewellery_care_dialog.dart';
+import 'package:jewel_ora/screens/user/widgets/jewellery_vault_sheet.dart';
+import 'package:jewel_ora/screens/user/widgets/occasion_reminder_sheet.dart';
+import 'package:jewel_ora/screens/user/widgets/old_gold_calculator_dialog.dart';
+import 'package:jewel_ora/screens/user/widgets/price_alert_dialog.dart';
 import 'package:jewel_ora/screens/user/widgets/ring_size_guide_dialog.dart';
+import 'package:jewel_ora/screens/user/widgets/video_shopping_sheet.dart';
 import 'package:jewel_ora/screens/user/wishlist_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -34,74 +44,49 @@ class ProfileScreen extends StatelessWidget {
 
   void _showLanguageDialog(BuildContext context) {
     final localeP = context.read<LocaleProvider>();
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        return Dialog(
-          backgroundColor: AppColors.surface,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Expanded(
-                      child: Text(
-                        'Select Language / भाषा / ભાષા',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textDark,
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close_rounded),
-                      onPressed: () => Navigator.pop(ctx),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                const Divider(height: 1),
-                ListTile(
-                  title: const Text('English (Default)'),
-                  trailing: localeP.locale == 'en'
-                      ? const Icon(Icons.check_circle_rounded, color: AppColors.primary)
-                      : null,
-                  onTap: () {
-                    localeP.setLocale('en');
-                    Navigator.pop(ctx);
-                  },
-                ),
-                ListTile(
-                  title: const Text('हिंदी (Hindi)'),
-                  trailing: localeP.locale == 'hi'
-                      ? const Icon(Icons.check_circle_rounded, color: AppColors.primary)
-                      : null,
-                  onTap: () {
-                    localeP.setLocale('hi');
-                    Navigator.pop(ctx);
-                  },
-                ),
-                ListTile(
-                  title: const Text('ગુજરાતી (Gujarati)'),
-                  trailing: localeP.locale == 'gu'
-                      ? const Icon(Icons.check_circle_rounded, color: AppColors.primary)
-                      : null,
-                  onTap: () {
-                    localeP.setLocale('gu');
-                    Navigator.pop(ctx);
-                  },
-                ),
-              ],
+    AppBottomSheet.show(
+      context,
+      child: CommonBottomSheetContainer(
+        title: AppStrings.changeLanguage,
+        subtitle: AppStrings.changeLanguageSubtitle,
+        icon: Icons.language_rounded,
+        child: Column(
+          children: [
+            ListTile(
+              title: const Text('English (Default)'),
+              trailing: localeP.locale == 'en'
+                  ? const Icon(Icons.check_circle_rounded, color: AppColors.primary)
+                  : null,
+              onTap: () {
+                localeP.setLocale('en');
+                Navigator.pop(context);
+              },
             ),
-          ),
-        );
-      },
+            const Divider(height: 1),
+            ListTile(
+              title: const Text('हिंदी (Hindi)'),
+              trailing: localeP.locale == 'hi'
+                  ? const Icon(Icons.check_circle_rounded, color: AppColors.primary)
+                  : null,
+              onTap: () {
+                localeP.setLocale('hi');
+                Navigator.pop(context);
+              },
+            ),
+            const Divider(height: 1),
+            ListTile(
+              title: const Text('ગુજરાતી (Gujarati)'),
+              trailing: localeP.locale == 'gu'
+                  ? const Icon(Icons.check_circle_rounded, color: AppColors.primary)
+                  : null,
+              onTap: () {
+                localeP.setLocale('gu');
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -236,6 +221,105 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const Divider(height: 1),
                 ListTile(
+                  leading: const Icon(Icons.video_call_outlined, color: AppColors.primary),
+                  title: Text(AppStrings.videoShopping, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                  subtitle: Text(
+                    AppStrings.videoShoppingSubtitle,
+                    style: const TextStyle(fontSize: 12, color: AppColors.textGrey),
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textGrey),
+                  onTap: () => VideoShoppingSheet.show(context),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.scale_rounded, color: AppColors.primary),
+                  title: Text(AppStrings.oldGoldCalculator, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                  subtitle: Text(
+                    AppStrings.oldGoldCalculatorSubtitle,
+                    style: const TextStyle(fontSize: 12, color: AppColors.textGrey),
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textGrey),
+                  onTap: () => OldGoldCalculatorSheet.show(context),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.card_giftcard_rounded, color: AppColors.primary),
+                  title: Text(AppStrings.giftFinder, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                  subtitle: Text(
+                    AppStrings.giftFinderSubtitle,
+                    style: const TextStyle(fontSize: 12, color: AppColors.textGrey),
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textGrey),
+                  onTap: () => GiftFinderSheet.show(context),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.notifications_active_outlined, color: AppColors.primary),
+                  title: Text(AppStrings.priceAlerts, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                  subtitle: Text(
+                    AppStrings.priceAlertsSubtitle,
+                    style: const TextStyle(fontSize: 12, color: AppColors.textGrey),
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textGrey),
+                  onTap: () => PriceAlertDialog.show(context),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.shield_outlined, color: AppColors.primary),
+                  title: Text(AppStrings.jewelleryVault, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                  subtitle: Text(
+                    AppStrings.jewelleryVaultSubtitle,
+                    style: const TextStyle(fontSize: 12, color: AppColors.textGrey),
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textGrey),
+                  onTap: () => JewelleryVaultSheet.show(context),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.event_note_rounded, color: AppColors.primary),
+                  title: Text(AppStrings.occasionReminders, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                  subtitle: Text(
+                    AppStrings.occasionRemindersSubtitle,
+                    style: const TextStyle(fontSize: 12, color: AppColors.textGrey),
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textGrey),
+                  onTap: () => OccasionReminderSheet.show(context),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.savings_outlined, color: AppColors.primary),
+                  title: Text(AppStrings.goldSavingsScheme, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                  subtitle: Text(
+                    AppStrings.goldSavingsSubtitle,
+                    style: const TextStyle(fontSize: 12, color: AppColors.textGrey),
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textGrey),
+                  onTap: () => GoldSavingsSchemeSheet.show(context),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.diamond_outlined, color: AppColors.primary),
+                  title: Text(AppStrings.diamondGuide, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                  subtitle: Text(
+                    AppStrings.diamondGuideSubtitle,
+                    style: const TextStyle(fontSize: 12, color: AppColors.textGrey),
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textGrey),
+                  onTap: () => DiamondGuideSheet.show(context),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.favorite_rounded, color: AppColors.primary),
+                  title: Text(AppStrings.bridalPlanner, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                  subtitle: Text(
+                    AppStrings.bridalPlannerSubtitle,
+                    style: const TextStyle(fontSize: 12, color: AppColors.textGrey),
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textGrey),
+                  onTap: () => BridalPlannerSheet.show(context),
+                ),
+                const Divider(height: 1),
+                ListTile(
                   leading: const Icon(Icons.storefront_outlined, color: AppColors.primary),
                   title: Text(AppStrings.storeInfo, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                   subtitle: Text(
@@ -301,14 +385,14 @@ class ProfileScreen extends StatelessWidget {
                 const Divider(height: 1),
                 ListTile(
                   leading: const Icon(Icons.person_outline_rounded, color: AppColors.primary),
-                  title: const Text('Edit Profile', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                  title: Text(AppStrings.editProfile, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                   trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textGrey),
                   onTap: () => _open(context, const EditProfileScreen()),
                 ),
                 const Divider(height: 1),
                 ListTile(
                   leading: const Icon(Icons.lock_outline_rounded, color: AppColors.primary),
-                  title: const Text('Change Password', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                  title: Text(AppStrings.changePassword, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                   trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textGrey),
                   onTap: () => _open(context, const ChangePasswordScreen()),
                 ),

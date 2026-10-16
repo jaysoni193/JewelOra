@@ -1,6 +1,7 @@
 package com.example.jewel_ora;
 
 import android.content.ComponentName;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.WindowManager;
@@ -71,6 +72,10 @@ public class MainActivity extends FlutterActivity {
 
     /** Enables [active] and disables every other alias in [all]. */
     private void setIcon(String active, List<String> all) {
+        boolean isDebug = (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+        if (isDebug) {
+            return;
+        }
         String pkg = MainActivity.class.getPackage().getName();
         PackageManager pm = getPackageManager();
 
@@ -79,10 +84,6 @@ public class MainActivity extends FlutterActivity {
         for (String name : all) {
             if (!name.equals(active)) setState(pm, pkg + "." + name, false);
         }
-        // In debug builds, disable DebugLauncherActivity so only the active alias appears
-        try {
-            setState(pm, pkg + ".DebugLauncherActivity", false);
-        } catch (Exception ignored) {}
     }
 
     private void setState(PackageManager pm, String className, boolean enable) {

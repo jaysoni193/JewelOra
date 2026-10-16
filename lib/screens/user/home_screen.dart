@@ -8,13 +8,22 @@ import 'package:jewel_ora/core/widgets/empty_state.dart';
 import 'package:jewel_ora/core/widgets/product_card.dart';
 import 'package:jewel_ora/providers/banner_provider.dart';
 import 'package:jewel_ora/providers/category_provider.dart';
+import 'package:jewel_ora/providers/occasion_reminder_provider.dart';
 import 'package:jewel_ora/providers/product_provider.dart';
 import 'package:jewel_ora/providers/settings_provider.dart';
 import 'package:jewel_ora/screens/user/product_detail_screen.dart';
 import 'package:jewel_ora/screens/user/store_info_screen.dart';
+import 'package:jewel_ora/screens/user/widgets/gift_finder_sheet.dart';
 import 'package:jewel_ora/screens/user/widgets/home_banner_carousel.dart';
 import 'package:jewel_ora/screens/user/widgets/home_category_list.dart';
+import 'package:jewel_ora/screens/user/widgets/occasion_reminder_sheet.dart';
 import 'package:jewel_ora/screens/user/widgets/today_rates_strip.dart';
+import 'package:jewel_ora/screens/user/widgets/video_shopping_sheet.dart';
+import 'package:jewel_ora/core/utils/formatters.dart';
+import 'package:jewel_ora/core/utils/responsive.dart';
+import 'package:jewel_ora/providers/bridal_planner_provider.dart';
+import 'package:jewel_ora/providers/video_appointment_provider.dart';
+import 'package:jewel_ora/screens/user/widgets/bridal_planner_sheet.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/shop_filter_provider.dart';
@@ -38,6 +47,9 @@ class HomeScreen extends StatelessWidget {
     final banners = context.watch<BannerProvider>();
     final categories = context.watch<CategoryProvider>();
     final products = context.watch<ProductProvider>();
+    final upcomingMilestones = context.watch<OccasionReminderProvider>().getUpcomingReminders();
+    final nextVideoAppt = context.watch<VideoAppointmentProvider>().nextUpcomingAppointment;
+    final bridalProfile = context.watch<BridalPlannerProvider>().profile;
 
     final activeIds = categories.activeCategories.map((c) => c.id).toSet();
     final featured = products.products
@@ -100,6 +112,12 @@ class HomeScreen extends StatelessWidget {
                         context.read<UserNavProvider>().setIndex(UserNavProvider.shopTab);
                       },
                     ),
+                    // Action Live Video Shopping icon
+                    IconButton(
+                      icon: const Icon(Icons.video_call_outlined, color: AppColors.primary),
+                      tooltip: 'Live Video Shopping',
+                      onPressed: () => VideoShoppingSheet.show(context),
+                    ),
                     // Action announcements / notifications icon
                     IconButton(
                       icon: const Icon(Icons.notifications_none_rounded, color: AppColors.textDark),
@@ -123,6 +141,260 @@ class HomeScreen extends StatelessWidget {
             // ---------- Live Metal Rates Strip (CaratLane & GIVA style) ----------
             const SliverToBoxAdapter(
               child: TodayRatesStrip(),
+            ),
+
+            // ---------- Upcoming Milestone Alert Banner (if any within 14 days) ----------
+            if (upcomingMilestones.isNotEmpty) ...[
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    onTap: () => OccasionReminderSheet.show(context),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: AppColors.accent.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppColors.accent.withValues(alpha: 0.35)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Text('💖', style: TextStyle(fontSize: 20)),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${upcomingMilestones.first.title} in ${upcomingMilestones.first.daysUntilNext(DateTime.now())} days!',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.textDark,
+                                  ),
+                                ),
+                                Text(
+                                  'Explore curated gifts for ${upcomingMilestones.first.recipient} →',
+                                  style: const TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w600),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: AppColors.primary),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+
+            // ---------- Upcoming Video Consultation Alert Banner ----------
+            if (nextVideoAppt != null) ...[
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    onTap: () => VideoShoppingSheet.show(context),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryLight,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Text('📹', style: TextStyle(fontSize: 20)),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Live Video Call: ${nextVideoAppt.categoryInterest}',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.textDark,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  '${nextVideoAppt.appointmentDate.day}/${nextVideoAppt.appointmentDate.month} at ${nextVideoAppt.timeSlot} • ${nextVideoAppt.platform} →',
+                                  style: const TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w600),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: AppColors.primary),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+
+            // ---------- Active Bridal Trousseau Alert Banner ----------
+            if (bridalProfile != null) ...[
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    onTap: () => BridalPlannerSheet.show(context),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.primary.withValues(alpha: 0.12),
+                            AppColors.accent.withValues(alpha: 0.08),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Text('👰', style: TextStyle(fontSize: 20)),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "${bridalProfile.brideName}'s Bridal Trousseau",
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.textDark,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  '${bridalProfile.purchasedCount}/${bridalProfile.totalItemsCount} pieces acquired • ${Formatters.price(bridalProfile.remainingBudget)} balance →',
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: AppColors.primary),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+
+            // ---------- Curated Gift Finder Prompt Banner ----------
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () => GiftFinderSheet.show(context),
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.primary.withValues(alpha: 0.08),
+                            AppColors.accent.withValues(alpha: 0.15),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: AppColors.primary.withValues(alpha: 0.2),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: 0.12),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Center(
+                              child: Text('🎁', style: TextStyle(fontSize: 24)),
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      AppStrings.giftFinder,
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.textDark,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.accent,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: const Text(
+                                        'QUIZ',
+                                        style: TextStyle(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w800,
+                                          color: Colors.white,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  AppStrings.giftFinderSubtitle,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.textGrey,
+                                    height: 1.2,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            size: 16,
+                            color: AppColors.primary,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
 
             // ---------- Categories ----------
@@ -180,11 +452,11 @@ class HomeScreen extends StatelessWidget {
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
                 sliver: SliverGrid(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: Responsive.gridColumns(context),
                     crossAxisSpacing: 14,
                     mainAxisSpacing: 14,
-                    childAspectRatio: 0.65,
+                    childAspectRatio: Responsive.productCardAspectRatio(context),
                   ),
                   delegate: SliverChildBuilderDelegate(
                         (context, i) => ProductCard(

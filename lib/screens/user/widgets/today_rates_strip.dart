@@ -6,6 +6,10 @@ import 'package:jewel_ora/core/utils/formatters.dart';
 import 'package:jewel_ora/core/widgets/app_button.dart';
 import 'package:jewel_ora/models/metal_rate_model.dart';
 import 'package:jewel_ora/providers/metal_rate_provider.dart';
+import 'package:jewel_ora/providers/price_alert_provider.dart';
+import 'package:jewel_ora/screens/user/widgets/gold_savings_scheme_sheet.dart';
+import 'package:jewel_ora/screens/user/widgets/old_gold_calculator_dialog.dart';
+import 'package:jewel_ora/screens/user/widgets/price_alert_dialog.dart';
 import 'package:provider/provider.dart';
 
 class TodayRatesStrip extends StatelessWidget {
@@ -24,6 +28,8 @@ class TodayRatesStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<MetalRateProvider>();
     final rates = provider.rates;
+    final alertProvider = context.watch<PriceAlertProvider>();
+    final triggeredAlerts = alertProvider.getActiveTriggeredAlerts();
 
     if (!rates.isEnabled) return const SizedBox.shrink();
 
@@ -33,7 +39,12 @@ class TodayRatesStrip extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(
+          color: triggeredAlerts.isNotEmpty
+              ? AppColors.accent.withValues(alpha: 0.5)
+              : AppColors.border,
+          width: triggeredAlerts.isNotEmpty ? 1.5 : 1,
+        ),
         boxShadow: [
           BoxShadow(
             color: AppColors.primary.withValues(alpha: 0.04),
@@ -57,39 +68,81 @@ class TodayRatesStrip extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 6),
-              Text(
-                AppStrings.todayRates.toUpperCase(),
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.8,
-                  color: AppColors.primary,
+              Expanded(
+                child: Text(
+                  AppStrings.todayRates.toUpperCase(),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
+                    color: AppColors.primary,
+                  ),
                 ),
               ),
-              const Spacer(),
-              InkWell(
-                onTap: () => _openCalculator(context, rates),
-                borderRadius: BorderRadius.circular(4),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.calculate_outlined, size: 14, color: AppColors.primary),
-                      const SizedBox(width: 4),
-                      Text(
-                        AppStrings.calculate,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.primary,
-                        ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.bolt_rounded, size: 11, color: AppColors.success),
+                    SizedBox(width: 2),
+                    Text(
+                      'LIVE',
+                      style: TextStyle(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
+                        color: AppColors.success,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
+
+          // Celebratory Triggered Alert Pill (if any alert target reached)
+          if (triggeredAlerts.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: () => PriceAlertDialog.show(context),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  children: [
+                    const Text('🎉', style: TextStyle(fontSize: 14)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Target Reached! ${triggeredAlerts.first.metalLabel} is now ${Formatters.currency(triggeredAlerts.first.getCurrentRate(rates))}/g',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textDark,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const Icon(Icons.arrow_forward_ios_rounded, size: 10, color: AppColors.accent),
+                  ],
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 10),
 
           // Rates Cards Row
@@ -126,6 +179,76 @@ class TodayRatesStrip extends StatelessWidget {
                   isGold: false,
                 ),
               ],
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // Quick Action Tools: Exchange | Price Alert | Calculator
+          Row(
+            children: [
+              Expanded(
+                child: _RatesActionButton(
+                  icon: Icons.scale_rounded,
+                  label: 'Exchange ⚖️',
+                  color: AppColors.accent,
+                  onTap: () => OldGoldCalculatorSheet.show(context),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: _RatesActionButton(
+                  icon: triggeredAlerts.isNotEmpty
+                      ? Icons.notifications_active_rounded
+                      : Icons.notifications_none_rounded,
+                  label: triggeredAlerts.isNotEmpty
+                      ? 'Target Hit (${triggeredAlerts.length}) 🎉'
+                      : 'Price Alert 🔔',
+                  color: triggeredAlerts.isNotEmpty ? AppColors.accent : AppColors.primary,
+                  onTap: () => PriceAlertDialog.show(context),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: _RatesActionButton(
+                  icon: Icons.calculate_outlined,
+                  label: AppStrings.calculate,
+                  color: AppColors.primary,
+                  onTap: () => _openCalculator(context, rates),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          InkWell(
+            onTap: () => GoldSavingsSchemeSheet.show(context),
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                children: [
+                  const Text('🪙', style: TextStyle(fontSize: 14)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${AppStrings.goldSavingsScheme} (11+1 Plan) • 1 Month FREE!',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  const Icon(Icons.arrow_forward_ios_rounded, size: 11, color: AppColors.primary),
+                ],
+              ),
             ),
           ),
         ],
@@ -218,6 +341,58 @@ class _RateChip extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _RatesActionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _RatesActionButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(6),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(
+            color: color.withValues(alpha: 0.22),
+            width: 0.8,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 13, color: color),
+            const SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w600,
+                  color: color,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

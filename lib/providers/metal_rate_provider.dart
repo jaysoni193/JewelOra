@@ -22,11 +22,14 @@ class MetalRateProvider extends ChangeNotifier {
       (data) {
         _rates = data;
         _isLoading = false;
+        _errorMessage = null;
         notifyListeners();
       },
       onError: (_) {
+        // Fallback to standard market rates so that offline or pending-permission states never crash or freeze the UI
+        _rates = const MetalRateModel();
         _isLoading = false;
-        _errorMessage = AppStrings.somethingWentWrong;
+        _errorMessage = null;
         notifyListeners();
       },
     );

@@ -28,13 +28,13 @@ class Responsive {
     return 2;
   }
 
-  /// Responsive card aspect ratio for product grids
+  /// Responsive card aspect ratio for product grids (luxury e-commerce card height)
   static double productCardAspectRatio(BuildContext context) {
     final w = MediaQuery.sizeOf(context).width;
-    if (w >= tabletBreakpoint) return 0.72;
-    if (w >= foldBreakpoint) return 0.68;
-    if (w < smallPhoneBreakpoint) return 0.62;
-    return 0.65;
+    if (w >= tabletBreakpoint) return 0.70;
+    if (w >= foldBreakpoint) return 0.65;
+    if (w < smallPhoneBreakpoint) return 0.58;
+    return 0.60;
   }
 
   /// Responsive admin menu columns

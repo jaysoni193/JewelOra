@@ -20,7 +20,7 @@ class AppIconService with WidgetsBindingObserver {
   bool _started = false;
 
   bool get _supported =>
-      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+      !kIsWeb && !kDebugMode && defaultTargetPlatform == TargetPlatform.android;
 
   /// Call every time the settings change. Starts listening on first call.
   void update(String key) {

@@ -41,8 +41,33 @@ class AppStrings {
   static String get all => tr('all');
   static String get close => tr('close');
   static String get confirm => tr('confirm');
+  static String get ok => tr('ok');
   static String get signOut => tr('signOut');
   static String get confirmLogout => tr('confirmLogout');
+  static String get confirmResetData => tr('confirmResetData');
+  static String get resetDataDesc => tr('resetDataDesc');
+  static String get seedData => tr('seedData');
+  static String get bulkPriceAdjustment => tr('bulkPriceAdjustment');
+  static String get bulkPriceSubtitle => tr('bulkPriceSubtitle');
+  static String get increase => tr('increase');
+  static String get discount => tr('discount');
+  static String get adjustmentPercentage => tr('adjustmentPercentage');
+  static String get targetCategory => tr('targetCategory');
+  static String get applyBulkPrice => tr('applyBulkPrice');
+  static String get allCategories => tr('allCategories');
+  static String get cardOutlineHint => tr('cardOutlineHint');
+  static String get coinOutlineHint => tr('coinOutlineHint');
+  static String get placeCardHere => tr('placeCardHere');
+  static String get placeCoinHere => tr('placeCoinHere');
+  static String get creditOrDebitCard => tr('creditOrDebitCard');
+  static String get fiveRupeeCoin => tr('fiveRupeeCoin');
+  static String get lockAndSaveCalibration => tr('lockAndSaveCalibration');
+  static String get resetCalibration => tr('resetCalibration');
+  static String get visibleToCustomers => tr('visibleToCustomers');
+  static String get hidden => tr('hidden');
+  static String get activeOnHome => tr('activeOnHome');
+  static String get editProfile => tr('editProfile');
+  static String get changePassword => tr('changePassword');
 
   // Messages & Statuses
   static String get somethingWentWrong => tr('somethingWentWrong');
@@ -100,6 +125,12 @@ class AppStrings {
   static String get enquireWhatsApp => tr('enquireWhatsApp');
   static String get selectSize => tr('selectSize');
   static String get ringSizeGuide => tr('ringSizeGuide');
+  static String get dropAHint => tr('dropAHint');
+  static String get dropAHintSubtitle => tr('dropAHintSubtitle');
+  static String get customisePiece => tr('customisePiece');
+  static String get metalColor => tr('metalColor');
+  static String get purityKarat => tr('purityKarat');
+  static String get diamondOption => tr('diamondOption');
   static String get jewelleryCare => tr('jewelleryCare');
   static String get careAndCleaningTips => tr('careAndCleaningTips');
   static String get similarPieces => tr('similarPieces');
@@ -138,6 +169,87 @@ class AppStrings {
   static String get storeInfoSubtitle => tr('storeInfoSubtitle');
   static String get ringSizeGuideSubtitle => tr('ringSizeGuideSubtitle');
   static String get jewelleryCareSubtitle => tr('jewelleryCareSubtitle');
+  static String get oldGoldCalculator => tr('oldGoldCalculator');
+  static String get oldGoldCalculatorSubtitle => tr('oldGoldCalculatorSubtitle');
+  static String get giftFinder => tr('giftFinder');
+  static String get giftFinderSubtitle => tr('giftFinderSubtitle');
+  static String get findGifts => tr('findGifts');
+  static String get priceAlerts => tr('priceAlerts');
+  static String get priceAlertsSubtitle => tr('priceAlertsSubtitle');
+  static String get setRateAlert => tr('setRateAlert');
+  static String get targetRate => tr('targetRate');
+  static String get currentRate => tr('currentRate');
+  static String get alertWhenBelow => tr('alertWhenBelow');
+  static String get activeAlerts => tr('activeAlerts');
+  static String get noActiveAlerts => tr('noActiveAlerts');
+  static String get noAlertsSubtitle => tr('noAlertsSubtitle');
+  static String get targetReached => tr('targetReached');
+  static String get alertCreated => tr('alertCreated');
+  static String get alertDeleted => tr('alertDeleted');
+  static String get jewelleryVault => tr('jewelleryVault');
+  static String get jewelleryVaultSubtitle => tr('jewelleryVaultSubtitle');
+  static String get myVault => tr('myVault');
+  static String get verifyHallmark => tr('verifyHallmark');
+  static String get addToVault => tr('addToVault');
+  static String get vaultEmpty => tr('vaultEmpty');
+  static String get vaultEmptySubtitle => tr('vaultEmptySubtitle');
+  static String get huidNumber => tr('huidNumber');
+  static String get certVerified => tr('certVerified');
+  static String get portfolioValue => tr('portfolioValue');
+  static String get occasionReminders => tr('occasionReminders');
+  static String get occasionRemindersSubtitle => tr('occasionRemindersSubtitle');
+  static String get addMilestone => tr('addMilestone');
+  static String get upcomingMilestones => tr('upcomingMilestones');
+  static String get noReminders => tr('noReminders');
+  static String get noRemindersSubtitle => tr('noRemindersSubtitle');
+  static String get daysLeft => tr('daysLeft');
+  static String get festiveDates => tr('festiveDates');
+  static String get goldSavingsScheme => tr('goldSavingsScheme');
+  static String get goldSavingsSubtitle => tr('goldSavingsSubtitle');
+  static String get schemeCalculator => tr('schemeCalculator');
+  static String get myActivePlan => tr('myActivePlan');
+  static String get monthlyDeposit => tr('monthlyDeposit');
+  static String get customerPays => tr('customerPays');
+  static String get storeBonus => tr('storeBonus');
+  static String get totalMaturity => tr('totalMaturity');
+  static String get enrollScheme => tr('enrollScheme');
+  static String get accumulatedGold => tr('accumulatedGold');
+  static String get installmentProgress => tr('installmentProgress');
+  static String get payInstallment => tr('payInstallment');
+  static String get noActivePlan => tr('noActivePlan');
+  static String get noActivePlanSubtitle => tr('noActivePlanSubtitle');
+  static String get savingsBenefitBadge => tr('savingsBenefitBadge');
+  static String get videoShopping => tr('videoShopping');
+  static String get videoShoppingSubtitle => tr('videoShoppingSubtitle');
+  static String get bookVideoCall => tr('bookVideoCall');
+  static String get selectStylistTopic => tr('selectStylistTopic');
+  static String get consultationLanguage => tr('consultationLanguage');
+  static String get videoPlatform => tr('videoPlatform');
+  static String get myAppointments => tr('myAppointments');
+  static String get noAppointments => tr('noAppointments');
+  static String get diamondGuide => tr('diamondGuide');
+  static String get diamondGuideSubtitle => tr('diamondGuideSubtitle');
+  static String get cut => tr('cut');
+  static String get color => tr('color');
+  static String get clarity => tr('clarity');
+  static String get caratWeight => tr('caratWeight');
+  static String get estDiamondValue => tr('estDiamondValue');
+  static String get diamondMillimeter => tr('diamondMillimeter');
+  static String get exploreSolitaires => tr('exploreSolitaires');
+  static String get bridalPlanner => tr('bridalPlanner');
+  static String get bridalPlannerSubtitle => tr('bridalPlannerSubtitle');
+  static String get weddingCeremonies => tr('weddingCeremonies');
+  static String get totalWeddingBudget => tr('totalWeddingBudget');
+  static String get budgetSpent => tr('budgetSpent');
+  static String get budgetRemaining => tr('budgetRemaining');
+  static String get bridalChecklist => tr('bridalChecklist');
+  static String get addBridalPiece => tr('addBridalPiece');
+  static String get exportTrousseauWhatsApp => tr('exportTrousseauWhatsApp');
+  static String get ringBangleSizer => tr('ringBangleSizer');
+  static String get calibrateScreen => tr('calibrateScreen');
+  static String get saveSizeToProfile => tr('saveSizeToProfile');
+  static String get savedSizeSuccess => tr('savedSizeSuccess');
+  static String get calibratedSuccess => tr('calibratedSuccess');
   static String get changeLanguage => tr('changeLanguage');
   static String get changeLanguageSubtitle => tr('changeLanguageSubtitle');
   static String get followUpWhatsApp => tr('followUpWhatsApp');
@@ -215,8 +327,33 @@ class AppStrings {
       'all': 'All',
       'close': 'Close',
       'confirm': 'Confirm',
+      'ok': 'OK',
       'signOut': 'Sign Out',
       'confirmLogout': 'Are you sure you want to log out?',
+      'confirmResetData': 'Reset & Seed Demo Data?',
+      'resetDataDesc': 'This will reset all catalogue products, categories, and banners with 18 authentic jewellery pieces.',
+      'seedData': 'Reset & Seed Data',
+      'bulkPriceAdjustment': 'Bulk Price Adjustment',
+      'bulkPriceSubtitle': 'Batch update catalogue pricing across collection',
+      'increase': 'Increase (+)',
+      'discount': 'Discount (-)',
+      'adjustmentPercentage': 'Adjustment Percentage (%)',
+      'targetCategory': 'Target Category (Optional)',
+      'applyBulkPrice': 'Apply Bulk Price Change',
+      'allCategories': 'All Categories',
+      'cardOutlineHint': 'Place any standard credit or debit card against the outline below. Drag the slider until the outline matches the width of your card (85.6 mm).',
+      'coinOutlineHint': 'Place an Indian ₹5 coin on the circular outline below. Drag the slider until the circle matches the exact coin diameter (23.0 mm).',
+      'placeCardHere': 'Place Card Here\n(Standard 85.6 mm)',
+      'placeCoinHere': 'Place ₹5 Coin\n(23.0 mm)',
+      'creditOrDebitCard': 'Credit / Debit Card',
+      'fiveRupeeCoin': '₹5 Coin',
+      'lockAndSaveCalibration': 'Lock & Save Screen Calibration ✓',
+      'resetCalibration': 'Reset Calibration to Default',
+      'visibleToCustomers': 'Visible to customers',
+      'hidden': 'Hidden',
+      'activeOnHome': 'Active on Home',
+      'editProfile': 'Edit Profile',
+      'changePassword': 'Change Password',
       'somethingWentWrong': 'Something went wrong. Please try again.',
       'noData': 'Nothing to show yet',
       'loading': 'Loading...',
@@ -265,6 +402,12 @@ class AppStrings {
       'enquireWhatsApp': 'Enquire on WhatsApp',
       'selectSize': 'Select Size / Dimension',
       'ringSizeGuide': 'Ring Size Guide',
+      'dropAHint': 'Drop a Hint',
+      'dropAHintSubtitle': 'Let someone special know what you love',
+      'customisePiece': 'Customise Your Piece',
+      'metalColor': 'Metal Color Tone',
+      'purityKarat': 'Gold Purity (Karat)',
+      'diamondOption': 'Diamond Quality',
       'jewelleryCare': 'Jewellery Care Tips',
       'careAndCleaningTips': 'View Jewellery Care & Cleaning Tips',
       'similarPieces': 'Similar Pieces You May Love',
@@ -299,6 +442,87 @@ class AppStrings {
       'storeInfoSubtitle': 'Directions, store timings, and calling info',
       'ringSizeGuideSubtitle': 'Find your perfect ring or bangle size',
       'jewelleryCareSubtitle': 'Maintain brilliance, storage, and cleaning advice',
+      'oldGoldCalculator': 'Old Gold Calculator',
+      'oldGoldCalculatorSubtitle': 'Calculate instant trade-in value for old jewellery',
+      'giftFinder': 'Gift Finder & Stylist',
+      'giftFinderSubtitle': 'Find the perfect jewellery gift in 30 seconds',
+      'findGifts': 'Find Gifts',
+      'priceAlerts': 'Gold Rate Alerts',
+      'priceAlertsSubtitle': 'Get notified when gold or silver rate drops',
+      'setRateAlert': 'Set Price Drop Alert',
+      'targetRate': 'Target Rate',
+      'currentRate': 'Current Live Rate',
+      'alertWhenBelow': 'Alert me when rate drops to or below',
+      'activeAlerts': 'My Active Alerts',
+      'noActiveAlerts': 'No price drop alerts set yet',
+      'noAlertsSubtitle': 'Set a target rate to track price drops for your favourite metal.',
+      'targetReached': 'Target Rate Reached! 🎉',
+      'alertCreated': 'Price drop alert created successfully!',
+      'alertDeleted': 'Price alert deleted',
+      'jewelleryVault': 'Jewellery Vault & Hallmark',
+      'jewelleryVaultSubtitle': 'Track portfolio valuation & verify BIS Hallmark / IGI cert',
+      'myVault': 'My Vault',
+      'verifyHallmark': 'Verify Hallmark / Cert',
+      'addToVault': 'Add Piece to Vault',
+      'vaultEmpty': 'Your Jewellery Vault is empty',
+      'vaultEmptySubtitle': 'Add your gold & diamond pieces to track real-time portfolio valuation based on daily rates.',
+      'huidNumber': '6-character BIS HUID',
+      'certVerified': 'Certificate Authenticity Verified ✓',
+      'portfolioValue': 'Total Portfolio Value',
+      'occasionReminders': 'Occasion & Anniversary Reminders',
+      'occasionRemindersSubtitle': 'Never miss an anniversary, birthday, or festive date',
+      'addMilestone': 'Add Occasion / Milestone',
+      'upcomingMilestones': 'Upcoming Milestones',
+      'noReminders': 'No milestone dates saved yet',
+      'noRemindersSubtitle': 'Save upcoming anniversaries and birthdays to get advance gifting recommendations.',
+      'daysLeft': 'days to go',
+      'festiveDates': 'Auspicious Gold Dates',
+      'goldSavingsScheme': 'Monthly Gold Savings Scheme',
+      'goldSavingsSubtitle': '11+1 Plan: Pay 11 months & get the 12th month free from Jewel Ora',
+      'schemeCalculator': 'Scheme Calculator',
+      'myActivePlan': 'My Active Plan',
+      'monthlyDeposit': 'Monthly Deposit Amount',
+      'customerPays': 'You Pay (11 Months)',
+      'storeBonus': 'Jewel Ora Bonus (1 Month FREE)',
+      'totalMaturity': 'Total Jewellery Value at Maturity',
+      'enrollScheme': 'Enroll in Gold Savings Plan',
+      'accumulatedGold': 'Est. Gold Accumulated',
+      'installmentProgress': 'Installment Progress',
+      'payInstallment': 'Record Monthly Installment',
+      'noActivePlan': 'No Active Savings Plan',
+      'noActivePlanSubtitle': 'Start a monthly gold savings scheme today to get 1 month installment free!',
+      'savingsBenefitBadge': '100% 12th Month Bonus',
+      'videoShopping': 'Live Video Shopping',
+      'videoShoppingSubtitle': 'Book 1-on-1 virtual consultation with a jewellery stylist',
+      'bookVideoCall': 'Book Live Video Call',
+      'selectStylistTopic': 'Select Jewellery Interest',
+      'consultationLanguage': 'Consultation Language',
+      'videoPlatform': 'Video Platform',
+      'myAppointments': 'My Video Consultations',
+      'noAppointments': 'No upcoming video consultations',
+      'diamondGuide': 'Diamond 4Cs Guide',
+      'diamondGuideSubtitle': 'Learn Cut, Color, Clarity & Carat with interactive simulator',
+      'cut': 'Cut',
+      'color': 'Color',
+      'clarity': 'Clarity',
+      'caratWeight': 'Carat Weight',
+      'estDiamondValue': 'Est. Diamond Value',
+      'diamondMillimeter': 'Diameter on Hand',
+      'exploreSolitaires': 'Explore Solitaire Collection',
+      'bridalPlanner': 'Bridal Trousseau & Budget Planner',
+      'bridalPlannerSubtitle': 'Plan wedding jewellery ceremonies, allocate budget & track trousseau pieces',
+      'weddingCeremonies': 'Ceremonies',
+      'totalWeddingBudget': 'Total Jewellery Budget',
+      'budgetSpent': 'Purchased / Spent',
+      'budgetRemaining': 'Remaining Budget',
+      'bridalChecklist': 'Bridal Checklist',
+      'addBridalPiece': 'Add Jewellery Piece',
+      'exportTrousseauWhatsApp': 'Share Trousseau on WhatsApp',
+      'ringBangleSizer': 'Physical Ring & Bangle Sizer',
+      'calibrateScreen': 'Calibrate Screen Accuracy',
+      'saveSizeToProfile': 'Save My Size',
+      'savedSizeSuccess': 'Size saved to your profile!',
+      'calibratedSuccess': 'Screen calibrated with physical accuracy!',
       'changeLanguage': 'Change Language / भाषा बदलें',
       'changeLanguageSubtitle': 'Select English, Hindi, or Gujarati',
       'followUpWhatsApp': 'Follow Up on WhatsApp',
@@ -363,8 +587,33 @@ class AppStrings {
       'all': 'सभी',
       'close': 'बंद करें',
       'confirm': 'पुष्टि करें',
+      'ok': 'ठीक है',
       'signOut': 'साइन आउट',
       'confirmLogout': 'क्या आप निश्चित रूप से लॉग आउट करना चाहते हैं?',
+      'confirmResetData': 'डेमो डेटा रीसेट करें?',
+      'resetDataDesc': 'यह 18 असली आभूषणों के साथ सभी कैटलॉग उत्पाद, श्रेणियां और बैनर रीसेट कर देगा।',
+      'seedData': 'डेटा रीसेट और सीड करें',
+      'bulkPriceAdjustment': 'थोक भाव समायोजन',
+      'bulkPriceSubtitle': 'कलेक्शन में एक साथ कीमतों को अपडेट करें',
+      'increase': 'बढ़ाएं (+)',
+      'discount': 'छूट (-)',
+      'adjustmentPercentage': 'समायोजन प्रतिशत (%)',
+      'targetCategory': 'लक्षित श्रेणी (वैकल्पिक)',
+      'applyBulkPrice': 'थोक भाव लागू करें',
+      'allCategories': 'सभी श्रेणियां',
+      'cardOutlineHint': 'नीचे दी गई रूपरेखा पर कोई भी मानक क्रेडिट या डेबिट कार्ड रखें। कार्ड की चौड़ाई (85.6 मिमी) से मेल खाने तक स्लाइडर खींचें।',
+      'coinOutlineHint': 'नीचे दिए गए वृत्त पर ₹५ का भारतीय सिक्का रखें। सिक्के के व्यास (23.0 मिमी) से मेल खाने तक स्लाइडर खींचें।',
+      'placeCardHere': 'यहाँ कार्ड रखें\n(मानक 85.6 मिमी)',
+      'placeCoinHere': 'यहाँ ₹५ सिक्का रखें\n(23.0 मिमी)',
+      'creditOrDebitCard': 'क्रेडिट / डेबिट कार्ड',
+      'fiveRupeeCoin': '₹५ सिक्का',
+      'lockAndSaveCalibration': 'स्क्रीन कैलिब्रेशन सुरक्षित करें ✓',
+      'resetCalibration': 'डिफ़ॉल्ट कैलिब्रेशन रीसेट करें',
+      'visibleToCustomers': 'ग्राहकों को दृश्य',
+      'hidden': 'छिपा हुआ',
+      'activeOnHome': 'होम पर सक्रिय',
+      'editProfile': 'प्रोफ़ाइल संपादित करें',
+      'changePassword': 'पासवर्ड बदलें',
       'somethingWentWrong': 'कुछ गलत हो गया। कृपया पुन: प्रयास करें।',
       'noData': 'अभी कुछ नहीं है',
       'loading': 'लोड हो रहा है...',
@@ -413,6 +662,12 @@ class AppStrings {
       'enquireWhatsApp': 'व्हाट्सएप पर पूछताछ करें',
       'selectSize': 'साइज / माप चुनें',
       'ringSizeGuide': 'रिंग साइज गाइड',
+      'dropAHint': 'इशारा करें (Drop a Hint)',
+      'dropAHintSubtitle': 'किसी खास को बताएं कि आपको क्या पसंद है',
+      'customisePiece': 'आभूषण कस्टमाइज़ करें',
+      'metalColor': 'धातु का रंग',
+      'purityKarat': 'सोने की शुद्धता (कैરેટ)',
+      'diamondOption': 'हीरे की गुणवत्ता',
       'jewelleryCare': 'ज्वेलरी देखभाल टिप्स',
       'careAndCleaningTips': 'ज्वेलरी देखभाल और सफाई टिप्स देखें',
       'similarPieces': 'मिलते-जुलते आभूषण',
@@ -447,6 +702,87 @@ class AppStrings {
       'storeInfoSubtitle': 'दिशा-निर्देश, स्टोर समय और कॉलिंग विवरण',
       'ringSizeGuideSubtitle': 'अपनी सटीक रिंग या कंगन का साइज जानें',
       'jewelleryCareSubtitle': 'चमक बनाए रखने और साफ-सफाई की सलाह',
+      'oldGoldCalculator': 'पुराने गोल्ड का कैलकुलेटर',
+      'oldGoldCalculatorSubtitle': 'अपने पुराने आभूषणों का तत्काल विनिमय मूल्य जानें',
+      'giftFinder': 'गिफ्ट खोजें (Gift Finder)',
+      'giftFinderSubtitle': '३० सेकंड में सही उपहार खोजें',
+      'findGifts': 'गिफ्ट ढूंढें',
+      'priceAlerts': 'सोने के भाव का अलर्ट',
+      'priceAlertsSubtitle': 'सोने या चांदी का भाव गिरने पर अलर्ट पाएं',
+      'setRateAlert': 'भाव गिरने का अलर्ट सेट करें',
+      'targetRate': 'लक्षित भाव',
+      'currentRate': 'वर्तमान लाइव भाव',
+      'alertWhenBelow': 'इस भाव पर या इससे नीचे गिरने पर अलर्ट करें',
+      'activeAlerts': 'मेरे सक्रिय अलर्ट',
+      'noActiveAlerts': 'अभी कोई अलर्ट सेट नहीं है',
+      'noAlertsSubtitle': 'अपनी पसंदीदा धातु के भाव गिरने पर नज़र रखने के लिए लक्षित भाव सेट करें।',
+      'targetReached': 'लक्षित भाव प्राप्त हुआ! 🎉',
+      'alertCreated': 'भाव अलर्ट सफलतापूर्वक सेट किया गया!',
+      'alertDeleted': 'अलर्ट हटा दिया गया',
+      'jewelleryVault': 'ज्वेलरी वॉल्ट और हॉलमार्क',
+      'jewelleryVaultSubtitle': 'पोर्टफोलियो मूल्यांकन ट्रैक करें और हॉलमार्क सत्यापित करें',
+      'myVault': 'मेरी वॉल्ट',
+      'verifyHallmark': 'हॉलमार्क / सर्टिफिकेट जांचें',
+      'addToVault': 'वॉल्ट में आभूषण जोड़ें',
+      'vaultEmpty': 'आपकी ज्वेलरी वॉल्ट खाली है',
+      'vaultEmptySubtitle': 'लाइव भावों के आधार पर वास्तविक समय में मूल्यांकन जानने के लिए अपने आभूषण जोड़ें।',
+      'huidNumber': '६-अंकों का बीआईएस HUID',
+      'certVerified': 'सर्टिफिकेट प्रामाणिकता सत्यापित ✓',
+      'portfolioValue': 'कुल पोर्टफोलियो मूल्यांकन',
+      'occasionReminders': 'अवसर और वर्षगांठ रिमाइंडर',
+      'occasionRemindersSubtitle': 'वर्षगांठ, जन्मदिन या शुभ मुहूर्त कभी न भूलें',
+      'addMilestone': 'अवसर / तारीख जोड़ें',
+      'upcomingMilestones': 'आगामी अवसर',
+      'noReminders': 'अभी कोई तारीख सहेजी नहीं गई है',
+      'noRemindersSubtitle': 'समय पर ज्वेलरी उपहार की सिफारिशें पाने के लिए वर्षगांठ और जन्मदिन सहेजें।',
+      'daysLeft': 'दिन शेष',
+      'festiveDates': 'सोना खरीदने के शुभ मुहूर्त',
+      'goldSavingsScheme': 'मासिक स्वर्ण बचत योजना',
+      'goldSavingsSubtitle': '11+1 योजना: 11 महीने जमा करें और 12वां महीना ज्वेल ओरा से मुफ़्त पाएं',
+      'schemeCalculator': 'योजना कैलकुलेटर',
+      'myActivePlan': 'मेरी सक्रिय योजना',
+      'monthlyDeposit': 'मासिक जमा राशि',
+      'customerPays': 'आपका कुल भुगतान (11 माह)',
+      'storeBonus': 'ज्वेल ओरा बोनस (1 माह मुफ़्त)',
+      'totalMaturity': 'परिपक्वता पर कुल आभूषण मूल्य',
+      'enrollScheme': 'स्वर्ण बचत योजना में शामिल हों',
+      'accumulatedGold': 'अनुमानित संचित सोना',
+      'installmentProgress': 'किस्त की प्रगति',
+      'payInstallment': 'मासिक किस्त दर्ज करें',
+      'noActivePlan': 'कोई सक्रिय बचत योजना नहीं है',
+      'noActivePlanSubtitle': '1 महीने की किस्त मुफ़्त पाने के लिए आज ही मासिक स्वर्ण बचत योजना शुरू करें!',
+      'savingsBenefitBadge': '100% 12वें महीने का बोनस',
+      'videoShopping': 'लाइव वीडियो शॉपिंग',
+      'videoShoppingSubtitle': 'ज्वेलरी स्टाइलिस्ट के साथ 1-ऑन-1 वर्चुअल परामर्श बुक करें',
+      'bookVideoCall': 'लाइव वीडियो कॉल बुक करें',
+      'selectStylistTopic': 'आभूषण श्रेणी चुनें',
+      'consultationLanguage': 'परामर्श की भाषा',
+      'videoPlatform': 'वीडियो कॉलिंग माध्यम',
+      'myAppointments': 'मेरी वीडियो परामर्श',
+      'noAppointments': 'कोई आगामी वीडियो परामर्श नहीं है',
+      'diamondGuide': 'डायमंड 4Cs गाइड',
+      'diamondGuideSubtitle': 'इंटरैक्टिव सिम्युलेटर के साथ कट, कलर, क्लैरिटी और कैरेट सीखें',
+      'cut': 'कट (तराश)',
+      'color': 'कलर (रंग)',
+      'clarity': 'क्लैरिटी (शुद्धता)',
+      'caratWeight': 'कैरेट वज़न',
+      'estDiamondValue': 'अनुमानित डायमंड मूल्य',
+      'diamondMillimeter': 'व्यास (हाथ पर आकार)',
+      'exploreSolitaires': 'सॉलिटेयर कलेक्शन देखें',
+      'bridalPlanner': 'विवाह आभूषण व बजट प्लानर',
+      'bridalPlannerSubtitle': 'विवाह समारोह अनुसार आभूषण और बजट की योजना बनाएं',
+      'weddingCeremonies': 'विवाह समारोह',
+      'totalWeddingBudget': 'कुल आभूषण बजट',
+      'budgetSpent': 'खरीदा गया / खर्च',
+      'budgetRemaining': 'शेष बजट',
+      'bridalChecklist': 'दुल्हन आभूषण सूची',
+      'addBridalPiece': 'नया आभूषण जोड़ें',
+      'exportTrousseauWhatsApp': 'व्हाट्सएप पर शेयर करें',
+      'ringBangleSizer': 'स्क्रीन रिंग व कंगन साइज़र',
+      'calibrateScreen': 'स्क्रीन कैलिब्रेशन (सटीक माप)',
+      'saveSizeToProfile': 'माप प्रोफ़ाइल में सहेजें',
+      'savedSizeSuccess': 'आकार आपकी प्रोफ़ाइल में सहेज लिया गया!',
+      'calibratedSuccess': 'स्क्रीन भौतिक सटीकता के साथ कैलिब्रेट हो गई!',
       'changeLanguage': 'भाषा बदलें / Change Language',
       'changeLanguageSubtitle': 'English, हिंदी या ગુજરાતી चुनें',
       'followUpWhatsApp': 'व्हाट्सएप पर संपर्क करें',
@@ -511,8 +847,33 @@ class AppStrings {
       'all': 'બધા',
       'close': 'બંધ કરો',
       'confirm': 'ખાતરી કરો',
+      'ok': 'બરાબર',
       'signOut': 'સાઇન આઉટ',
       'confirmLogout': 'શું તમે ખરેખર લૉગ આઉટ કરવા માંગો છો?',
+      'confirmResetData': 'ડેમો ડેટા ફરી સેટ કરવો છે?',
+      'resetDataDesc': 'આનાથી ૧૮ અસલી દાગીના સાથે તમામ ઉત્પાદનો, કેટેગરીઝ અને બેનર્સ ફરીથી સેટ થઈ જશે.',
+      'seedData': 'ડેટા ફરી સેટ કરો',
+      'bulkPriceAdjustment': 'જથ્થાબંધ ભાવ ફેરફાર',
+      'bulkPriceSubtitle': 'સંગ્રહમાં ભાવ એકસાથે અપડેટ કરો',
+      'increase': 'વધારો (+)',
+      'discount': 'વળતર (-)',
+      'adjustmentPercentage': 'ફેરફાર ટકાવારી (%)',
+      'targetCategory': 'કેટેગરી (વૈકલ્પિક)',
+      'applyBulkPrice': 'ભાવ ફેરફાર લાગુ કરો',
+      'allCategories': 'બધી કેટેગરીઝ',
+      'cardOutlineHint': 'નીચે આપેલી રૂપરેખા પર કોઈપણ સામાન્ય કાર્ડ મૂકો. કાર્ડની પહોળાઈ (૮૫.૬ મીમી) મેળવવા સ્લાઇડર ખસેડો.',
+      'coinOutlineHint': 'નીચે આપેલા વર્તુળ પર ₹૫ નો સિક્કો મૂકો. સિક્કાના વ્યાસ (૨૩.૦ મીમી) મુજબ સ્લાઇડર ખસેડો.',
+      'placeCardHere': 'અહીં કાર્ડ મૂકો\n(૮૫.૬ મીમી)',
+      'placeCoinHere': 'અહીં ₹૫ નો સિક્કો મૂકો\n(૨૩.૦ મીમી)',
+      'creditOrDebitCard': 'ક્રેડિટ / ડેબિટ કાર્ડ',
+      'fiveRupeeCoin': '₹૫ નો સિક્કો',
+      'lockAndSaveCalibration': 'સ્ક્રીન કેલિબ્રેશન સાચવો ✓',
+      'resetCalibration': 'ડિફોલ્ટ કેલિબ્રેશન ફરી સેટ કરો',
+      'visibleToCustomers': 'ગ્રાહકોને દેખાશે',
+      'hidden': 'છુપાયેલ',
+      'activeOnHome': 'હોમ પર સક્રિય',
+      'editProfile': 'પ્રોફાઇલ સંપાદિત કરો',
+      'changePassword': 'પાસવર્ડ બદલો',
       'somethingWentWrong': 'કંઈક ખોટું થયું. કૃપા કરી ફરી પ્રયાસ કરો.',
       'noData': 'હજુ કશું નથી',
       'loading': 'લોડ થઈ રહ્યું છે...',
@@ -561,6 +922,12 @@ class AppStrings {
       'enquireWhatsApp': 'વોટ્સએપ પર પૂછપરછ કરો',
       'selectSize': 'સાઇઝ / માપ પસંદ કરો',
       'ringSizeGuide': 'વીંટી સાઇઝ ગાઇડ',
+      'dropAHint': 'હિન્ટ આપો (Drop a Hint)',
+      'dropAHintSubtitle': 'કોઈ ખાસ વ્યક્તિને જણાવો કે તમને આ દાગીનો ગમ્યો છે',
+      'customisePiece': 'તમારા દાગીનાને કસ્ટમાઇઝ કરો',
+      'metalColor': 'ધાતુનો કલર / શેડ',
+      'purityKarat': 'સોનાની શુદ્ધતા (કેરેટ)',
+      'diamondOption': 'હીરાની ગુણવત્તા',
       'jewelleryCare': 'દાગીનાની કાળજી માટે ટિપ્સ',
       'careAndCleaningTips': 'દાગીનાની સંભાળ અને સફાઈ માટેની ટિપ્સ જુઓ',
       'similarPieces': 'મળતા આવતા દાગીના',
@@ -595,6 +962,87 @@ class AppStrings {
       'storeInfoSubtitle': 'સરનામું, સ્ટોર સમય અને કૉલિંગ વિગત',
       'ringSizeGuideSubtitle': 'તમારી ચોક્કસ વીંટી અથવા બંગડીનું માપ જાણો',
       'jewelleryCareSubtitle': 'ચમક જાળવી રાખવા અને સાફ-સફાઈની સલાહ',
+      'oldGoldCalculator': 'જૂના સોનાનું કેલ્ક્યુલેટર',
+      'oldGoldCalculatorSubtitle': 'જૂના દાગીનાની તાત્કાલિક એક્સચેન્જ કિંમત જાણો',
+      'giftFinder': 'ગિફ્ટ ફાઇન્ડર (Gift Finder)',
+      'giftFinderSubtitle': '૩૦ સેકન્ડમાં મેળવો યોગ્ય ગિફ્ટ',
+      'findGifts': 'ગિફ્ટ શોધો',
+      'priceAlerts': 'સોનાના ભાવનું એલર્ટ',
+      'priceAlertsSubtitle': 'સોના કે ચાંદીના ભાવ ઘટે ત્યારે એલર્ટ મેળવો',
+      'setRateAlert': 'ભાવ ઘટવાનું એલર્ટ સેટ કરો',
+      'targetRate': 'ટાર્ગેટ ભાવ',
+      'currentRate': 'હાલનો લાઈવ ભાવ',
+      'alertWhenBelow': 'આ ભાવે અથવા તેનાથી નીચે જાય ત્યારે એલર્ટ કરો',
+      'activeAlerts': 'મારા સક્રિય એલર્ટ',
+      'noActiveAlerts': 'હજુ કોઈ ભાવ એલર્ટ સેટ નથી',
+      'noAlertsSubtitle': 'તમારી મનપસંદ ધાતુના ભાવ ઘટવાની જાણ મેળવવા ટાર્ગેટ ભાવ સેટ કરો.',
+      'targetReached': 'ટાર્ગેટ ભાવ પહોંચી ગયો! 🎉',
+      'alertCreated': 'ભાવ એલર્ટ સફળતાપૂર્વક સેટ થઈ ગયું!',
+      'alertDeleted': 'એલર્ટ કાઢી નાખવામાં આવ્યું',
+      'jewelleryVault': 'દાગીના વોલ્ટ અને હોલમાર્ક',
+      'jewelleryVaultSubtitle': 'પોર્ટફોલિયો મૂલ્યાંકન ટ્રેક કરો અને હોલમાર્ક ચકાસો',
+      'myVault': 'મારી વોલ્ટ',
+      'verifyHallmark': 'હોલમાર્ક / સર્ટિફિકેટ ચકાસો',
+      'addToVault': 'વોલ્ટમાં દાગીનો ઉમેરો',
+      'vaultEmpty': 'તમારી દાગીના વોલ્ટ ખાલી છે',
+      'vaultEmptySubtitle': 'લાઇવ સોના-ચાંદીના ભાવ મુજબ સાચું મૂલ્ય જાણવા તમારા દાગીના ઉમેરો.',
+      'huidNumber': '૬-અક્ષરનો બીઆઈએસ HUID',
+      'certVerified': 'સર્ટિફિકેટ પ્રમાણિત છે ✓',
+      'portfolioValue': 'કુલ પોર્ટફોલિયો મૂલ્ય',
+      'occasionReminders': 'અવસર અને એનિવર્સરી રિમાઇન્ડર',
+      'occasionRemindersSubtitle': 'એનિવર્સરી, જન્મદિવસ કે શુભ મુહૂર્ત ક્યારેય ન ભૂલો',
+      'addMilestone': 'અવસર / તારીખ ઉમેરો',
+      'upcomingMilestones': 'આગામી અવસરો',
+      'noReminders': 'હજુ કોઈ તારીખ સેટ નથી',
+      'noRemindersSubtitle': 'સમયસર દાગીના ગિફ્ટ કરવા માટે એનિવર્સરી અને જન્મદિવસ સાચવો.',
+      'daysLeft': 'દિવસ બાકી',
+      'festiveDates': 'સોનું ખરીદવાના શુભ મુહૂર્ત',
+      'goldSavingsScheme': 'માસિક સુવર્ણ બચત યોજના',
+      'goldSavingsSubtitle': '11+1 યોજના: 11 મહિના જમા કરો અને 12મો મહિનો જ્વેલ ઓરા તરફથી મફત મેળવો',
+      'schemeCalculator': 'યોજના કેલ્ક્યુલેટર',
+      'myActivePlan': 'મારી સક્રિય યોજના',
+      'monthlyDeposit': 'માસિક બચત રકમ',
+      'customerPays': 'તમે ચૂકવશો (11 મહિના)',
+      'storeBonus': 'જ્વેલ ઓરા બોનસ (1 મહિનો મફત)',
+      'totalMaturity': 'પાકતી મુદતે કુલ દાગીના ખરીદી મૂલ્ય',
+      'enrollScheme': 'સુવર્ણ બચત યોજના શરૂ કરો',
+      'accumulatedGold': 'અંદાજિત જમા સોનું',
+      'installmentProgress': 'હપ્તાની પ્રગતિ',
+      'payInstallment': 'માસિક હપ્તો નોંધો',
+      'noActivePlan': 'કોઈ સક્રિય બચત યોજના નથી',
+      'noActivePlanSubtitle': '1 મહિનો મફત હપ્તો મેળવવા આજે જ માસિક સુવર્ણ બચત યોજના શરૂ કરો!',
+      'savingsBenefitBadge': '100% 12મા મહિનાનું બોનસ',
+      'videoShopping': 'લાઇવ વિડીયો શોપિંગ',
+      'videoShoppingSubtitle': 'જ્વેલરી સ્ટાઈલિસ્ટ સાથે 1-ઓન-1 વર્ચ્યુઅલ પરામર્શ બુક કરો',
+      'bookVideoCall': 'લાઇવ વિડીયો કોલ બુક કરો',
+      'selectStylistTopic': 'દાગીના કેટેગરી પસંદ કરો',
+      'consultationLanguage': 'પરામર્શની ભાષા',
+      'videoPlatform': 'વિડીયો કોલિંગ માધ્યમ',
+      'myAppointments': 'મારી વિડીયો મુલાકાતો',
+      'noAppointments': 'કોઈ આગામી વિડીયો મુલાકાત નથી',
+      'diamondGuide': 'હીરા 4Cs ગાઈડ',
+      'diamondGuideSubtitle': 'ઇન્ટરેક્ટિવ સિમ્યુલેટર સાથે કટ, કલર, ક્લેરિટી અને કેરેટ શીખો',
+      'cut': 'કટ (ઘાટ)',
+      'color': 'કલર (રંગ)',
+      'clarity': 'ક્લેરિટી (શુદ્ધતા)',
+      'caratWeight': 'કેરેટ વજન',
+      'estDiamondValue': 'અંદાજિત હીરા મૂલ્ય',
+      'diamondMillimeter': 'વ્યાસ (હાથ પર માપ)',
+      'exploreSolitaires': 'સોલિટેર કલેક્શન જુઓ',
+      'bridalPlanner': 'લગ્ન દાગીના અને બજેટ આયોજક',
+      'bridalPlannerSubtitle': 'લગ્ન પ્રસંગો અનુસાર દાગીના અને બજેટનું આયોજન કરો',
+      'weddingCeremonies': 'લગ્ન પ્રસંગો',
+      'totalWeddingBudget': 'કુલ દાગીના બજેટ',
+      'budgetSpent': 'ખરીદાયેલ / ખર્ચ',
+      'budgetRemaining': 'બાકી બજેટ',
+      'bridalChecklist': 'દુલ્હન દાગીના યાદી',
+      'addBridalPiece': 'નવો દાગીનો ઉમેરો',
+      'exportTrousseauWhatsApp': 'વોટ્સએપ પર શેર કરો',
+      'ringBangleSizer': 'સ્ક્રીન રિંગ અને બંગડી માપક',
+      'calibrateScreen': 'સ્ક્રીન કેલિબ્રેશન (ચોક્કસ માપ)',
+      'saveSizeToProfile': 'માપ પ્રોફાઇલમાં સાચવો',
+      'savedSizeSuccess': 'માપ તમારી પ્રોફાઇલમાં સાચવવામાં આવ્યું!',
+      'calibratedSuccess': 'સ્ક્રીન ભૌતિક ચોકસાઈ સાથે કેલિબ્રેટ થઈ ગઈ!',
       'changeLanguage': 'ભાષા બદલો / Change Language',
       'changeLanguageSubtitle': 'English, हिंदी અથવા ગુજરાતી પસંદ કરો',
       'followUpWhatsApp': 'વોટ્સએપ પર સંપર્ક કરો',

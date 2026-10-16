@@ -5,6 +5,8 @@ import 'package:jewel_ora/core/constants/app_sizes.dart';
 import 'package:jewel_ora/core/constants/app_strings.dart';
 import 'package:jewel_ora/core/theme/app_decoration.dart';
 import 'package:jewel_ora/core/utils/ui_helpers.dart';
+import 'package:jewel_ora/core/widgets/app_bottom_sheet.dart';
+import 'package:jewel_ora/core/widgets/app_button.dart';
 import 'package:jewel_ora/core/widgets/app_card.dart';
 import 'package:jewel_ora/core/widgets/brand_logo.dart';
 import 'package:jewel_ora/core/widgets/app_dialog.dart';
@@ -67,63 +69,70 @@ class AdminDashboard extends StatelessWidget {
   }
 
   Future<void> _confirmSeed(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
-        ),
-        title: const Row(
+    final confirmed = await AppBottomSheet.show<bool>(
+      context,
+      child: CommonBottomSheetContainer(
+        title: AppStrings.confirmResetData,
+        subtitle: AppStrings.resetDataDesc,
+        icon: Icons.auto_awesome_rounded,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Icon(Icons.auto_awesome_rounded, color: AppColors.primary),
-            SizedBox(width: 8),
-            Text(
-              'Load Sample Catalogue?',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.borderAccent),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Features covered in sample catalogue:',
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.primaryDark),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text('• Live Metal Rates (24K Gold, 22K Gold, Silver)', style: TextStyle(fontSize: 12.5)),
+                  const Text('• MRP strikethrough & discounts (up to 30%)', style: TextStyle(fontSize: 12.5)),
+                  const Text('• Festive offer tags & sizing chips', style: TextStyle(fontSize: 12.5)),
+                  const Text('• Multi-image galleries & specifications', style: TextStyle(fontSize: 12.5)),
+                  const Text('• 8 Categories & 3 Promotional Banners', style: TextStyle(fontSize: 12.5)),
+                  const Text('• Both In-Stock & Out-of-Stock items', style: TextStyle(fontSize: 12.5)),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Cost: 29 Firestore writes (100% free under Spark tier).',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.primaryDark.withValues(alpha: 0.9),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 22),
+            Row(
+              children: [
+                Expanded(
+                  child: AppButton.outlined(
+                    title: AppStrings.cancel,
+                    height: 46,
+                    onPressed: () => Navigator.pop(context, false),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: AppButton(
+                    title: AppStrings.seedData,
+                    height: 46,
+                    onPressed: () => Navigator.pop(context, true),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'This will populate 18 luxury jewellery items covering all features:\n',
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
-            ),
-            Text('• Live Metal Rates (24K Gold, 22K Gold, Silver)'),
-            Text('• MRP strikethrough & discounts (up to 30%)'),
-            Text('• Festive offer tags & sizing chips'),
-            Text('• Multi-image galleries & specifications'),
-            Text('• 8 Categories & 3 Promotional Banners'),
-            Text('• Both In-Stock & Out-of-Stock items\n'),
-            Text(
-              'Cost: 29 Firestore writes (100% free under Spark tier).',
-              style: TextStyle(
-                fontSize: 12,
-                color: AppColors.primaryDark,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
-              ),
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Seed Catalogue'),
-          ),
-        ],
       ),
     );
 

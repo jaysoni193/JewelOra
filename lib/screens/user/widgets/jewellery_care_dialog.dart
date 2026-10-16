@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:jewel_ora/core/constants/app_colors.dart';
 import 'package:jewel_ora/core/constants/app_strings.dart';
+import 'package:jewel_ora/core/widgets/app_bottom_sheet.dart';
 
 class JewelleryCareSheet extends StatelessWidget {
   const JewelleryCareSheet({super.key});
 
   static Future<void> show(BuildContext context) {
-    return showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => const JewelleryCareSheet(),
+    return AppBottomSheet.show(
+      context,
+      child: const JewelleryCareSheet(),
     );
   }
 

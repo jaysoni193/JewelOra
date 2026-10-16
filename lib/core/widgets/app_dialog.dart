@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:jewel_ora/core/constants/app_colors.dart';
-import 'package:jewel_ora/core/constants/app_sizes.dart';
-import 'package:jewel_ora/core/constants/app_strings.dart';
-import 'package:jewel_ora/core/widgets/app_button.dart';
+import 'package:jewel_ora/core/widgets/app_bottom_sheet.dart';
 
+/// AppDialog delegates all calls to [AppBottomSheet] so that all modal dialogs
+/// are presented as clean, responsive common bottom sheets across the application.
 class AppDialog {
   AppDialog._();
 
@@ -14,56 +13,17 @@ class AppDialog {
     String? confirmText,
     String? cancelText,
     bool isDestructive = false,
-  }) async {
-    final effectiveConfirm = confirmText ?? AppStrings.confirm;
-    final effectiveCancel = cancelText ?? AppStrings.cancel;
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusExtraLarge),
-          side: const BorderSide(color: AppColors.border),
-        ),
-        titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-        actionsPadding: const EdgeInsets.all(20),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textDark,
-          ),
-        ),
-        content: Text(
-          message,
-          style: const TextStyle(fontSize: 15, color: AppColors.textGrey, height: 1.4),
-        ),
-        actions: [
-          Row(
-            children: [
-              Expanded(
-                child: AppButton.outlined(
-                  title: effectiveCancel,
-                  height: 44,
-                  onPressed: () => Navigator.pop(ctx, false),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: AppButton(
-                  title: effectiveConfirm,
-                  height: 44,
-                  backgroundColor: isDestructive ? AppColors.error : AppColors.primary,
-                  onPressed: () => Navigator.pop(ctx, true),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+    IconData? icon,
+  }) {
+    return AppBottomSheet.confirm(
+      context,
+      title: title,
+      message: message,
+      confirmText: confirmText,
+      cancelText: cancelText,
+      isDestructive: isDestructive,
+      icon: icon,
     );
-    return result ?? false;
   }
 
   static Future<bool> delete(
@@ -73,75 +33,30 @@ class AppDialog {
     String? deleteText,
     String? confirmText,
   }) {
-    return confirm(
+    return AppBottomSheet.delete(
       context,
       title: title,
       message: message,
-      confirmText: deleteText ?? confirmText ?? AppStrings.delete,
-      isDestructive: true,
+      deleteText: deleteText,
+      confirmText: confirmText,
     );
   }
 
   static Future<bool> logout(BuildContext context) {
-    return confirm(
-      context,
-      title: AppStrings.logout,
-      message: 'Are you sure you want to sign out?',
-      confirmText: AppStrings.logout,
-      isDestructive: true,
-    );
+    return AppBottomSheet.logout(context);
   }
 
   static Future<void> success(
     BuildContext context, {
     required String title,
     required String message,
-    String buttonText = 'OK',
+    String? buttonText,
   }) {
-    return showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusExtraLarge),
-        ),
-        contentPadding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                color: AppColors.successLight,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.check_circle_rounded,
-                  color: AppColors.success, size: 40),
-            ),
-            const SizedBox(height: 18),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 19,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textDark,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 14, color: AppColors.textGrey),
-            ),
-            const SizedBox(height: 24),
-            AppButton(
-              title: buttonText,
-              height: 44,
-              onPressed: () => Navigator.pop(ctx),
-            ),
-          ],
-        ),
-      ),
+    return AppBottomSheet.success(
+      context,
+      title: title,
+      message: message,
+      buttonText: buttonText,
     );
   }
 
@@ -149,53 +64,13 @@ class AppDialog {
     BuildContext context, {
     required String title,
     required String message,
-    String buttonText = 'Close',
+    String? buttonText,
   }) {
-    return showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusExtraLarge),
-        ),
-        contentPadding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                color: AppColors.errorLight,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.error_outline_rounded,
-                  color: AppColors.error, size: 40),
-            ),
-            const SizedBox(height: 18),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 19,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textDark,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 14, color: AppColors.textGrey),
-            ),
-            const SizedBox(height: 24),
-            AppButton(
-              title: buttonText,
-              height: 44,
-              backgroundColor: AppColors.error,
-              onPressed: () => Navigator.pop(ctx),
-            ),
-          ],
-        ),
-      ),
+    return AppBottomSheet.error(
+      context,
+      title: title,
+      message: message,
+      buttonText: buttonText,
     );
   }
 }

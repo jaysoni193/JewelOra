@@ -5,11 +5,14 @@ import 'package:jewel_ora/core/constants/app_strings.dart';
 import 'package:jewel_ora/core/widgets/app_loader.dart';
 import 'package:jewel_ora/core/widgets/brand_logo.dart';
 import 'package:jewel_ora/providers/auth_provider.dart';
+import 'package:jewel_ora/providers/settings_provider.dart';
 import 'package:jewel_ora/screens/auth/auth_gate.dart';
 import 'package:provider/provider.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  final bool isInitialLaunch;
+
+  const SplashScreen({super.key, this.isInitialLaunch = true});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -27,7 +30,7 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
 
-    // 1. Entrance animation (Logo scale, fade, and slide up)
+    // 1. Entrance animation (Logo scale, fade, and gentle slide up)
     _entranceController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1400),
@@ -38,7 +41,7 @@ class _SplashScreenState extends State<SplashScreen>
       curve: const Interval(0.0, 0.75, curve: Curves.easeOut),
     );
 
-    _scaleAnimation = Tween<double>(begin: 0.82, end: 1.0).animate(
+    _scaleAnimation = Tween<double>(begin: 0.84, end: 1.0).animate(
       CurvedAnimation(
         parent: _entranceController,
         curve: const Interval(0.0, 0.85, curve: Curves.easeOutBack),
@@ -46,7 +49,7 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     _slideAnimation = Tween<Offset>(
-      begin: const Offset(0.0, 0.12),
+      begin: const Offset(0.0, 0.10),
       end: Offset.zero,
     ).animate(
       CurvedAnimation(
@@ -66,10 +69,17 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _handleNavigation() async {
-    final startTime = DateTime.now();
-    const minSplashDuration = Duration(milliseconds: 2400);
+    // 1. Guaranteed minimum splash duration of 2.8 seconds so every device (including moto e13)
+    // displays the full luxury animation and branding
+    await Future.delayed(const Duration(milliseconds: 2800));
+    if (!mounted) return;
 
-    // Wait until AuthProvider has resolved its initial auth state from Firebase
+    if (!widget.isInitialLaunch) {
+      Navigator.of(context).maybePop();
+      return;
+    }
+
+    // 2. Ensure AuthProvider has finished resolving initial Firebase auth status
     try {
       final auth = context.read<AuthProvider>();
       while (auth.status == AuthStatus.initial) {
@@ -77,12 +87,7 @@ class _SplashScreenState extends State<SplashScreen>
         if (!mounted) return;
       }
     } catch (_) {
-      // In case provider lookup is delayed, continue smoothly
-    }
-
-    final elapsed = DateTime.now().difference(startTime);
-    if (elapsed < minSplashDuration) {
-      await Future.delayed(minSplashDuration - elapsed);
+      // In case provider lookup is delayed, proceed smoothly
     }
 
     if (!mounted) return;
@@ -116,49 +121,73 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Read dynamic app title from settings if customized by admin
+    String appName = AppStrings.appName;
+    try {
+      final settings = context.watch<SettingsProvider>().settings;
+      if (settings.appName.trim().isNotEmpty) {
+        appName = settings.appName;
+      }
+    } catch (_) {}
+
+    // Theme-aligned Colors
+    final bgColorTop = isDark ? AppColors.surfaceDark : Colors.white;
+    final bgColorMid = isDark ? AppColors.darkBackground : AppColors.background;
+    final bgColorBottom = isDark
+        ? const Color(0xFF100917)
+        : AppColors.primaryLight.withValues(alpha: 0.40);
+
+    final titleColor = isDark ? Colors.white : AppColors.textDark;
+    final taglineColor = isDark ? AppColors.primaryLight : AppColors.primary;
+    final badgeTextColor = isDark
+        ? Colors.white.withValues(alpha: 0.55)
+        : AppColors.textGrey;
 
     return Scaffold(
+      backgroundColor: bgColorMid,
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF2E173E), // Royal Imperial Plum
-              Color(0xFF20102B), // Deep Velvet Plum
-              Color(0xFF14081E), // Midnight Obsidian Plum
-            ],
+            colors: [bgColorTop, bgColorMid, bgColorBottom],
           ),
         ),
         child: Stack(
           alignment: Alignment.center,
           children: [
-            // Ambient Radial Glow
+            // Soft Ambient Central Bloom
             Center(
               child: Container(
-                width: size.width * 0.75,
-                height: size.width * 0.75,
+                width: size.width * 0.72,
+                height: size.width * 0.72,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.accent.withValues(alpha: 0.16),
+                      color: isDark
+                          ? AppColors.primary.withValues(alpha: 0.28)
+                          : AppColors.primaryLight.withValues(alpha: 0.85),
                       blurRadius: 110,
                       spreadRadius: 35,
                     ),
                     BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.28),
-                      blurRadius: 150,
-                      spreadRadius: 60,
+                      color: isDark
+                          ? AppColors.accent.withValues(alpha: 0.16)
+                          : AppColors.accentLight.withValues(alpha: 0.65),
+                      blurRadius: 140,
+                      spreadRadius: 45,
                     ),
                   ],
                 ),
               ),
             ),
 
-            // Floating Diamond Dust / Sparkles Layer
+            // Floating Delicate Diamond Sparkles Layer (Theme-tinted)
             Positioned.fill(
               child: AnimatedBuilder(
                 animation: _sparkleController,
@@ -166,6 +195,7 @@ class _SplashScreenState extends State<SplashScreen>
                   return CustomPaint(
                     painter: _SplashParticlesPainter(
                       progress: _sparkleController.value,
+                      isDark: isDark,
                     ),
                   );
                 },
@@ -183,55 +213,61 @@ class _SplashScreenState extends State<SplashScreen>
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Luxury Brand Emblem with Golden Halo Ring
+                        // Luxury Brand Emblem with Theme-aligned Halo Ring
                         Container(
-                          padding: const EdgeInsets.all(4),
+                          padding: const EdgeInsets.all(3.5),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             gradient: LinearGradient(
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                               colors: [
-                                AppColors.accent.withValues(alpha: 0.85),
-                                AppColors.primaryLight.withValues(alpha: 0.4),
-                                AppColors.accentDark.withValues(alpha: 0.65),
+                                AppColors.accent,
+                                AppColors.primary,
+                                AppColors.borderAccent,
                               ],
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.accent.withValues(alpha: 0.32),
-                                blurRadius: 32,
-                                offset: const Offset(0, 8),
+                                color: AppColors.primary.withValues(
+                                  alpha: isDark ? 0.40 : 0.16,
+                                ),
+                                blurRadius: 30,
+                                offset: const Offset(0, 10),
                               ),
                               BoxShadow(
-                                color: AppColors.primaryDark
-                                    .withValues(alpha: 0.45),
-                                blurRadius: 20,
+                                color: AppColors.accent.withValues(
+                                  alpha: isDark ? 0.25 : 0.10,
+                                ),
+                                blurRadius: 16,
+                                offset: const Offset(0, 3),
                               ),
                             ],
                           ),
                           child: Container(
                             padding: const EdgeInsets.all(18),
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Color(0xFF261233),
+                              color: isDark
+                                  ? const Color(0xFF261233)
+                                  : Colors.white,
                             ),
                             child: const BrandLogo(
-                              size: 78,
+                              size: 80,
                               showShadow: false,
                             ),
                           ),
                         ),
                         const SizedBox(height: 24),
 
-                        // Brand Title
-                        const Text(
-                          'JEWEL ORA',
+                        // App Brand Title (Aliged with App Theme Typography)
+                        Text(
+                          appName.toUpperCase(),
                           style: TextStyle(
                             fontSize: 27,
                             fontWeight: FontWeight.w800,
-                            letterSpacing: 5.5,
-                            color: Colors.white,
+                            letterSpacing: 5.0,
+                            color: titleColor,
                             decoration: TextDecoration.none,
                           ),
                         ),
@@ -242,8 +278,8 @@ class _SplashScreenState extends State<SplashScreen>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Container(
-                              width: 34,
-                              height: 1,
+                              width: 36,
+                              height: 1.2,
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   colors: [
@@ -262,8 +298,8 @@ class _SplashScreenState extends State<SplashScreen>
                               ),
                             ),
                             Container(
-                              width: 34,
-                              height: 1,
+                              width: 36,
+                              height: 1.2,
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   colors: [
@@ -277,17 +313,17 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                         const SizedBox(height: 10),
 
-                        // Subtitle / Tagline
+                        // Localized Tagline
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 32),
                           child: Text(
                             AppStrings.appTagline.toUpperCase(),
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
-                              letterSpacing: 2.4,
-                              color: Colors.white.withValues(alpha: 0.74),
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 2.2,
+                              color: taglineColor,
                               decoration: TextDecoration.none,
                             ),
                           ),
@@ -299,7 +335,7 @@ class _SplashScreenState extends State<SplashScreen>
               ),
             ),
 
-            // Bottom Loader & Hallmark Trust Badge
+            // Bottom Modern Jewellery Loader & Hallmark Trust Badge
             Positioned(
               left: 0,
               right: 0,
@@ -309,29 +345,30 @@ class _SplashScreenState extends State<SplashScreen>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Mini modern jewel loader
+                    // Solitaire & Orbit Rings Loader in App Primary Color
                     const AppLoader(
                       size: 38,
-                      color: AppColors.accentLight,
+                      color: AppColors.primary,
                     ),
                     const SizedBox(height: 18),
-                    // Hallmark certification badge
+
+                    // Hallmark certification badge matching App Theme
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.verified_rounded,
-                          size: 13,
-                          color: AppColors.accent.withValues(alpha: 0.85),
+                          size: 14,
+                          color: AppColors.primary,
                         ),
                         const SizedBox(width: 6),
                         Text(
                           '100% CERTIFIED • BIS 916 HALLMARKED',
                           style: TextStyle(
-                            fontSize: 10,
+                            fontSize: 10.5,
                             fontWeight: FontWeight.w600,
                             letterSpacing: 1.8,
-                            color: Colors.white.withValues(alpha: 0.52),
+                            color: badgeTextColor,
                             decoration: TextDecoration.none,
                           ),
                         ),
@@ -348,19 +385,20 @@ class _SplashScreenState extends State<SplashScreen>
   }
 }
 
-/// Floating subtle diamond sparkles painter for the splash screen background
+/// Floating subtle diamond sparkles painter that harmonizes with the theme
 class _SplashParticlesPainter extends CustomPainter {
   final double progress;
+  final bool isDark;
 
-  _SplashParticlesPainter({required this.progress});
+  _SplashParticlesPainter({required this.progress, required this.isDark});
 
   static final List<({double x, double y, double size, double speed})> _stars =
-      List.generate(16, (i) {
+      List.generate(18, (i) {
     final rand = math.Random(i * 997 + 13);
     return (
       x: rand.nextDouble(),
       y: rand.nextDouble(),
-      size: 2.0 + rand.nextDouble() * 3.5,
+      size: 2.2 + rand.nextDouble() * 3.5,
       speed: 0.5 + rand.nextDouble() * 1.0,
     );
   });
@@ -378,8 +416,17 @@ class _SplashParticlesPainter extends CustomPainter {
       final blink = (math.sin((progress * s.speed * 2 * math.pi) + i)).abs();
       if (blink <= 0.08) continue;
 
-      paint.color = (i % 3 == 0 ? AppColors.accent : Colors.white)
-          .withValues(alpha: 0.45 * blink);
+      // Theme-aligned subtle rose-gold and royal plum sparkle glints
+      final Color baseColor;
+      if (isDark) {
+        baseColor = (i % 3 == 0) ? AppColors.accent : Colors.white;
+      } else {
+        baseColor = (i % 2 == 0) ? AppColors.accent : AppColors.primary;
+      }
+
+      paint.color = baseColor.withValues(
+        alpha: (isDark ? 0.40 : 0.30) * blink,
+      );
 
       // Draw subtle 4-pointed glint
       final r = s.size * (0.6 + 0.4 * blink);
@@ -397,6 +444,6 @@ class _SplashParticlesPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _SplashParticlesPainter oldDelegate) {
-    return oldDelegate.progress != progress;
+    return oldDelegate.progress != progress || oldDelegate.isDark != isDark;
   }
 }

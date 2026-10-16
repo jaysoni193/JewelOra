@@ -4,7 +4,11 @@ import 'package:jewel_ora/core/firebase/firebase_logger.dart';
 import 'package:jewel_ora/models/metal_rate_model.dart';
 
 class MetalRateService {
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final FirebaseFirestore? _dbInstance;
+
+  MetalRateService([FirebaseFirestore? db]) : _dbInstance = db;
+
+  FirebaseFirestore get _db => _dbInstance ?? FirebaseFirestore.instance;
 
   DocumentReference<Map<String, dynamic>> get _doc => _db
       .collection(FirestorePaths.metalRates)

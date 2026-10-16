@@ -160,4 +160,83 @@ class WhatsAppService {
     ];
     return lines.join('\n');
   }
+
+  /// Opens WhatsApp with [message] pre-filled.
+  /// If [phone] is given and non-empty, opens direct chat with that number.
+  /// Otherwise opens WhatsApp's contact picker so user can pick any friend/partner.
+  static Future<void> shareMessage({
+    String? phone,
+    required String message,
+  }) async {
+    final number = phone != null ? cleanNumber(phone) : '';
+    final Uri uri = number.isNotEmpty
+        ? Uri.parse('https://wa.me/$number?text=${Uri.encodeComponent(message)}')
+        : Uri.parse('https://api.whatsapp.com/send?text=${Uri.encodeComponent(message)}');
+
+    try {
+      final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!opened) throw const AppException('Could not open WhatsApp.');
+    } on AppException {
+      rethrow;
+    } catch (_) {
+      throw const AppException('Could not open WhatsApp.');
+    }
+  }
+
+  /// Builds an enchanting gift hint message for WhatsApp or social sharing
+  static String buildHintMessage({
+    required ProductModel product,
+    required double price,
+    String? size,
+    required String occasion,
+    required String senderName,
+    required String recipientName,
+    required bool isAnonymous,
+    String? customNote,
+  }) {
+    final sender = isAnonymous
+        ? 'Someone who loves you 🤫'
+        : (senderName.trim().isNotEmpty ? senderName.trim() : 'Someone special');
+    final recipient =
+        recipientName.trim().isNotEmpty ? recipientName.trim() : 'Hey';
+
+    final occ = occasion.toLowerCase();
+    final String intro;
+    if (occ.contains('birthday')) {
+      intro = '🎂 *Psst... It is hint time!*';
+    } else if (occ.contains('anniversary')) {
+      intro = '💍 *A Little Anniversary Whispering...*';
+    } else if (occ.contains('valentine') || occ.contains('love')) {
+      intro = '❤️ *A Heartfelt Hint Just for You...*';
+    } else if (occ.contains('festive') || occ.contains('diwali')) {
+      intro = '🪔 *Festive Sparkle Wishlist!*';
+    } else {
+      intro = '✨ *Psst... A Special Hint for You!*';
+    }
+
+    final lines = <String>[
+      intro,
+      '',
+      '$recipient, $sender has their heart set on this gorgeous jewellery piece from *Jewel Ora*:',
+      '',
+      '💎 *${product.name}*',
+      'Price: ${Formatters.price(price)}',
+      if (size != null && size.isNotEmpty) 'Preferred Size: $size',
+      if (product.categoryName.isNotEmpty) 'Category: ${product.categoryName}',
+      if (product.material.isNotEmpty) 'Material: ${product.material}',
+      if (product.weight.isNotEmpty) 'Weight: ${product.weight}',
+      if (customNote != null && customNote.trim().isNotEmpty) ...[
+        '',
+        '💌 *Personal Note:* "${customNote.trim()}"',
+      ],
+      if (product.firstImage.isNotEmpty) ...[
+        '',
+        'Take a look here: ${ImageUrl.shareable(product.firstImage)}',
+      ],
+      '',
+      "Wouldn't this make the most unforgettable gift? ✨",
+    ];
+
+    return lines.join('\n');
+  }
 }

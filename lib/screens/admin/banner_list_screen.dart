@@ -217,12 +217,16 @@ class _BannerTile extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 5),
-                          Text(
-                            banner.isActive ? 'Active on Home' : 'Hidden',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color: banner.isActive ? AppColors.success : AppColors.textGrey,
+                          Expanded(
+                            child: Text(
+                              banner.isActive ? AppStrings.activeOnHome : AppStrings.hidden,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: banner.isActive ? AppColors.success : AppColors.textGrey,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
@@ -239,14 +243,14 @@ class _BannerTile extends StatelessWidget {
                 PopupMenuButton<String>(
                   icon: const Icon(Icons.more_vert, color: AppColors.textGrey),
                   onSelected: (v) => v == 'edit' ? onEdit() : onDelete(),
-                  itemBuilder: (context) => const [
+                  itemBuilder: (context) => [
                     PopupMenuItem(
                       value: 'edit',
                       child: Row(
                         children: [
-                          Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
-                          SizedBox(width: 8),
-                          Text('Edit'),
+                          const Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
+                          const SizedBox(width: 8),
+                          Text(AppStrings.edit),
                         ],
                       ),
                     ),
@@ -254,9 +258,9 @@ class _BannerTile extends StatelessWidget {
                       value: 'delete',
                       child: Row(
                         children: [
-                          Icon(Icons.delete_outline, size: 18, color: AppColors.error),
-                          SizedBox(width: 8),
-                          Text('Delete', style: TextStyle(color: AppColors.error)),
+                          const Icon(Icons.delete_outline, size: 18, color: AppColors.error),
+                          const SizedBox(width: 8),
+                          Text(AppStrings.delete, style: const TextStyle(color: AppColors.error)),
                         ],
                       ),
                     ),

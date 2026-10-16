@@ -3,6 +3,7 @@ import 'package:jewel_ora/core/constants/app_colors.dart';
 import 'package:jewel_ora/core/constants/app_sizes.dart';
 import 'package:jewel_ora/core/constants/app_strings.dart';
 import 'package:jewel_ora/core/utils/ui_helpers.dart';
+import 'package:jewel_ora/core/widgets/app_bottom_sheet.dart';
 import 'package:jewel_ora/core/widgets/app_button.dart';
 import 'package:jewel_ora/core/widgets/app_dropdown.dart';
 import 'package:jewel_ora/core/widgets/app_text_field.dart';
@@ -12,14 +13,26 @@ import 'package:jewel_ora/services/whatsapp_service.dart';
 import 'package:provider/provider.dart';
 
 class BookVisitSheet extends StatefulWidget {
-  const BookVisitSheet({super.key});
+  final String? initialCategory;
+  final String? initialNotes;
 
-  static Future<void> show(BuildContext context) {
-    return showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => const BookVisitSheet(),
+  const BookVisitSheet({
+    super.key,
+    this.initialCategory,
+    this.initialNotes,
+  });
+
+  static Future<void> show(
+    BuildContext context, {
+    String? initialCategory,
+    String? initialNotes,
+  }) {
+    return AppBottomSheet.show(
+      context,
+      child: BookVisitSheet(
+        initialCategory: initialCategory,
+        initialNotes: initialNotes,
+      ),
     );
   }
 
@@ -32,7 +45,7 @@ class _BookVisitSheetState extends State<BookVisitSheet> {
   String _selectedSlot = '11:30 AM';
   String _selectedCategory = 'Bridal & Wedding Sets';
   int _guests = 2;
-  final _notesCtrl = TextEditingController();
+  late final TextEditingController _notesCtrl;
 
   static const _slots = [
     '11:30 AM',
@@ -50,7 +63,18 @@ class _BookVisitSheetState extends State<BookVisitSheet> {
     'Antique & Temple Jewellery',
     '925 Sterling Silver Gifts',
     'Custom Design Consultation',
+    'Old Gold Exchange & Valuation',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _notesCtrl = TextEditingController(text: widget.initialNotes ?? '');
+    if (widget.initialCategory != null &&
+        _categories.contains(widget.initialCategory)) {
+      _selectedCategory = widget.initialCategory!;
+    }
+  }
 
   @override
   void dispose() {

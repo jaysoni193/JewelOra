@@ -8,6 +8,7 @@ import 'package:jewel_ora/core/widgets/product_card.dart';
 import 'package:jewel_ora/providers/category_provider.dart';
 import 'package:jewel_ora/providers/product_provider.dart';
 import 'package:jewel_ora/providers/shop_filter_provider.dart';
+import 'package:jewel_ora/core/utils/responsive.dart';
 import 'package:jewel_ora/screens/user/product_detail_screen.dart';
 import 'package:jewel_ora/screens/user/widgets/shop_filter_sheet.dart';
 import 'package:provider/provider.dart';
@@ -261,11 +262,12 @@ class _ShopScreenState extends State<ShopScreen> {
                       padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
                       sliver: SliverGrid(
                         gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
+                            SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: Responsive.gridColumns(context),
                           crossAxisSpacing: 14,
                           mainAxisSpacing: 14,
-                          childAspectRatio: 0.65,
+                          childAspectRatio:
+                              Responsive.productCardAspectRatio(context),
                         ),
                         delegate: SliverChildBuilderDelegate(
                           (context, i) => ProductCard(

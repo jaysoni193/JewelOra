@@ -8,6 +8,7 @@ import 'package:jewel_ora/models/product_model.dart';
 import 'package:jewel_ora/providers/category_provider.dart';
 import 'package:jewel_ora/providers/product_provider.dart';
 import 'package:jewel_ora/providers/wishlist_provider.dart';
+import 'package:jewel_ora/core/utils/responsive.dart';
 import 'package:jewel_ora/screens/user/product_detail_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -53,11 +54,11 @@ class WishlistScreen extends StatelessWidget {
             physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
             itemCount: products.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: Responsive.gridColumns(context),
               crossAxisSpacing: 14,
               mainAxisSpacing: 14,
-              childAspectRatio: 0.65,
+              childAspectRatio: Responsive.productCardAspectRatio(context),
             ),
             itemBuilder: (context, i) => ProductCard(
               product: products[i],

@@ -19,8 +19,14 @@ import 'package:jewel_ora/providers/cart_provider.dart';
 import 'package:jewel_ora/providers/enquiry_provider.dart';
 import 'package:jewel_ora/providers/metal_rate_provider.dart';
 import 'package:jewel_ora/providers/product_provider.dart';
+import 'package:jewel_ora/providers/ring_size_provider.dart';
 import 'package:jewel_ora/providers/settings_provider.dart';
+import 'package:jewel_ora/screens/user/widgets/diamond_guide_sheet.dart';
+import 'package:jewel_ora/screens/user/widgets/drop_hint_dialog.dart';
 import 'package:jewel_ora/screens/user/widgets/jewellery_care_dialog.dart';
+import 'package:jewel_ora/screens/user/widgets/jewellery_vault_sheet.dart';
+import 'package:jewel_ora/screens/user/widgets/old_gold_calculator_dialog.dart';
+import 'package:jewel_ora/screens/user/widgets/product_customizer_widget.dart';
 import 'package:jewel_ora/screens/user/widgets/product_image_slider.dart';
 import 'package:jewel_ora/screens/user/widgets/ring_size_guide_dialog.dart';
 import 'package:jewel_ora/services/share_service.dart';
@@ -39,12 +45,58 @@ class ProductDetailScreen extends StatefulWidget {
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   String? _selectedSize;
+  String _selectedMetalTone = 'Yellow Gold';
+  String _selectedPurity = '18K';
+  String _selectedDiamondType = 'Natural (SI-IJ)';
+  bool _customizerInitialized = false;
 
   @override
   void initState() {
     super.initState();
     // Record recently viewed (0 Firestore read cost)
     LocalStorage.instance.addRecentlyViewed(widget.productId);
+  }
+
+  void _initCustomizer(ProductModel p) {
+    if (_customizerInitialized) return;
+    _customizerInitialized = true;
+
+    // Default metal tone based on material
+    final lowerMat = '${p.material} ${p.name}'.toLowerCase();
+    if (lowerMat.contains('rose')) {
+      _selectedMetalTone = 'Rose Gold';
+    } else if (lowerMat.contains('white')) {
+      _selectedMetalTone = 'White Gold';
+    } else if (ProductCustomizerHelper.isSilver(p)) {
+      _selectedMetalTone = 'Sterling Silver';
+    } else {
+      _selectedMetalTone = 'Yellow Gold';
+    }
+
+    // Default purity based on metalType
+    if (ProductCustomizerHelper.isSilver(p)) {
+      _selectedPurity = '925 Silver';
+    } else if (p.metalType == 'gold_22k' || lowerMat.contains('22k') || lowerMat.contains('22 karat')) {
+      _selectedPurity = '22K';
+    } else if (p.metalType == 'gold_14k' || lowerMat.contains('14k') || lowerMat.contains('14 karat')) {
+      _selectedPurity = '14K';
+    } else if (p.metalType == 'gold_24k' || lowerMat.contains('24k')) {
+      _selectedPurity = '24K';
+    } else {
+      _selectedPurity = '18K';
+    }
+  }
+
+  String _buildCustomizationSummary(ProductModel p) {
+    final parts = <String>[];
+    if (_selectedSize != null && _selectedSize!.isNotEmpty) {
+      parts.add('Size: $_selectedSize');
+    }
+    parts.add('$_selectedPurity $_selectedMetalTone');
+    if (ProductCustomizerHelper.hasDiamonds(p)) {
+      parts.add(_selectedDiamondType);
+    }
+    return parts.join(' • ');
   }
 
   Future<void> _chatOnWhatsApp(
@@ -55,6 +107,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final phone = context.read<SettingsProvider>().settings.whatsappNumber;
     final user = context.read<AuthProvider>().user;
     final name = user?.name ?? '';
+    final customSpec = _buildCustomizationSummary(p);
     StatsService.recordEnquiry(p.id);
 
     // Record in Enquiry History
@@ -73,11 +126,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               productPrice: effectivePrice,
               productImage: p.firstImage,
               quantity: 1,
-              size: _selectedSize,
+              size: customSpec,
             ),
           ],
           totalAmount: effectivePrice,
-          message: 'Enquired about ${p.name} (${_selectedSize ?? 'Standard'})',
+          message: 'Enquired about ${p.name} ($customSpec)',
           status: 'submitted',
           createdAt: DateTime.now(),
         ),
@@ -90,7 +143,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         message: WhatsAppService.buildProductMessage(
           p,
           customerName: name,
-          selectedSize: _selectedSize,
+          selectedSize: customSpec,
         ),
       );
     } on AppException catch (e) {
@@ -114,7 +167,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   Future<void> _addToCart(BuildContext context, ProductModel p) async {
     final cart = context.read<CartProvider>();
-    final quantity = await cart.add(p.id, size: _selectedSize);
+    final customSpec = _buildCustomizationSummary(p);
+    final quantity = await cart.add(p.id, size: customSpec);
     if (!context.mounted) return;
 
     if (quantity == null) {
@@ -127,7 +181,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       showAppSnackBar(
         context,
         quantity == 1
-            ? 'Added to your bag'
+            ? 'Added ($customSpec) to your bag'
             : 'Updated quantity to $quantity in your bag',
       );
     }
@@ -158,15 +212,33 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       );
     }
 
-    final effectivePrice = p.getEffectivePrice(ratesP.rates);
+    _initCustomizer(p);
+    final effectivePrice = ProductCustomizerHelper.calculateCustomPrice(
+      product: p,
+      rates: ratesP.rates,
+      selectedPurity: _selectedPurity,
+      selectedDiamondType: _selectedDiamondType,
+    );
+    final ringSizer = context.watch<RingSizeProvider>();
     final sizes = p.effectiveSizes;
-    _selectedSize ??= sizes.isNotEmpty ? sizes.first : null;
+    if (_selectedSize == null && sizes.isNotEmpty) {
+      if (ringSizer.savedRingSize != null) {
+        final match = sizes.firstWhere(
+          (s) => s == ringSizer.savedRingSize || s.contains(ringSizer.savedRingSize!),
+          orElse: () => sizes.first,
+        );
+        _selectedSize = match;
+      } else {
+        _selectedSize = sizes.first;
+      }
+    }
 
     final specs = <(String, String)>[
       if (p.categoryName.isNotEmpty) ('Category', p.categoryName),
-      if (p.material.isNotEmpty) ('Material', p.material),
-      if (p.metalType != null && p.metalType!.isNotEmpty)
-        ('Purity', p.metalType!.replaceAll('_', ' ').toUpperCase()),
+      ('Customized Color', _selectedMetalTone),
+      ('Purity (Karat)', _selectedPurity),
+      if (ProductCustomizerHelper.hasDiamonds(p)) ('Diamond Quality', _selectedDiamondType),
+      if (p.material.isNotEmpty) ('Base Material', p.material),
       if (p.weight.isNotEmpty) ('Gross Weight', p.weight),
       if (p.metalWeight != null) ('Net Metal Weight', '${p.metalWeight} g'),
       if (p.makingCharges != null)
@@ -178,6 +250,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       appBar: AppBar(
         title: Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis),
         actions: [
+          IconButton(
+            tooltip: AppStrings.dropAHint,
+            icon: const Icon(Icons.card_giftcard_rounded, color: AppColors.accent),
+            onPressed: () => DropHintSheet.show(
+              context,
+              product: p,
+              effectivePrice: effectivePrice,
+              selectedSize: _buildCustomizationSummary(p),
+            ),
+          ),
           FavoriteButton(productId: p.id),
           IconButton(
             icon: const Icon(Icons.share_outlined),
@@ -338,6 +420,94 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       ],
                     ],
                   ),
+                  const SizedBox(height: 12),
+
+                  // Drop a Hint Banner
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.accent.withValues(alpha: 0.08),
+                          AppColors.primary.withValues(alpha: 0.04),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+                      border: Border.all(
+                        color: AppColors.accent.withValues(alpha: 0.22),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppColors.accent.withValues(alpha: 0.14),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.card_giftcard_rounded,
+                            color: AppColors.accent,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                AppStrings.dropAHint,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 13,
+                                  color: AppColors.textDark,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                AppStrings.dropAHintSubtitle,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.textGrey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        TextButton.icon(
+                          style: TextButton.styleFrom(
+                            backgroundColor: AppColors.accent,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          icon: const Icon(Icons.send_rounded, size: 13),
+                          label: const Text(
+                            'Hint ✨',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          onPressed: () => DropHintSheet.show(
+                            context,
+                            product: p,
+                            effectivePrice: effectivePrice,
+                            selectedSize: _buildCustomizationSummary(p),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 16),
 
                   // Size Selection Chips
@@ -357,7 +527,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           onPressed: () => RingSizeGuideSheet.show(context),
                           icon: const Icon(Icons.straighten_rounded, size: 15),
                           label: Text(
-                            AppStrings.ringSizeGuide,
+                            ringSizer.savedRingSize != null
+                                ? '${AppStrings.ringSizeGuide} (My Size: ${ringSizer.savedRingSize})'
+                                : AppStrings.ringSizeGuide,
                             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                           ),
                         ),
@@ -387,8 +559,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         );
                       }).toList(),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 18),
                   ],
+
+                  // Interactive Customizer (Metal Tone, Purity & Diamonds)
+                  ProductCustomizerWidget(
+                    product: p,
+                    rates: ratesP.rates,
+                    selectedMetalTone: _selectedMetalTone,
+                    selectedPurity: _selectedPurity,
+                    selectedDiamondType: _selectedDiamondType,
+                    onMetalToneChanged: (val) => setState(() => _selectedMetalTone = val),
+                    onPurityChanged: (val) => setState(() => _selectedPurity = val),
+                    onDiamondTypeChanged: (val) => setState(() => _selectedDiamondType = val),
+                  ),
+                  const SizedBox(height: 20),
 
                   // Specifications Card
                   if (specs.isNotEmpty) ...[
@@ -447,7 +632,29 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             _TrustBadge(icon: Icons.local_shipping_outlined, title: AppStrings.insuredDelivery),
                           ],
                         ),
-                        const Divider(height: 20),
+                        const Divider(height: 16),
+                        InkWell(
+                          onTap: () => JewelleryVaultSheet.show(context, initialTab: 1),
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.shield_outlined, size: 16, color: AppColors.primary),
+                                SizedBox(width: 6),
+                                Text(
+                                  'Verify Hallmark & Certificate Authenticity 🛡️',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const Divider(height: 14),
                         InkWell(
                           onTap: () => JewelleryCareSheet.show(context),
                           child: Padding(
@@ -469,6 +676,52 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ),
                           ),
                         ),
+                        const Divider(height: 14),
+                        InkWell(
+                          onTap: () => OldGoldCalculatorSheet.show(context),
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.scale_rounded, size: 16, color: AppColors.accent),
+                                SizedBox(width: 6),
+                                Text(
+                                  'Exchange Old Gold Against This Piece ⚖️',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.accent,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        if (ProductCustomizerHelper.hasDiamonds(p)) ...[
+                          const Divider(height: 14),
+                          InkWell(
+                            onTap: () => DiamondGuideSheet.show(context),
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 4),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.diamond_outlined, size: 16, color: AppColors.accent),
+                                  SizedBox(width: 6),
+                                  Text(
+                                    'Diamond 4Cs & Solitaire Grading Guide 💎',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.accent,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),

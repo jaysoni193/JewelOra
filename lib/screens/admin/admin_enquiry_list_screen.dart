@@ -5,6 +5,7 @@ import 'package:jewel_ora/core/constants/app_strings.dart';
 import 'package:jewel_ora/core/utils/formatters.dart';
 import 'package:jewel_ora/core/utils/responsive.dart';
 import 'package:jewel_ora/core/utils/ui_helpers.dart';
+import 'package:jewel_ora/core/widgets/app_bottom_sheet.dart';
 import 'package:jewel_ora/core/widgets/app_card.dart';
 import 'package:jewel_ora/core/widgets/app_image.dart';
 import 'package:jewel_ora/core/widgets/app_loader.dart';
@@ -269,52 +270,37 @@ class _AdminEnquiryCard extends StatelessWidget {
   }
 
   Future<void> _changeStatus(BuildContext context) async {
-    final newStatus = await showDialog<String>(
-      context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Update Enquiry Status',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close_rounded),
-                    onPressed: () => Navigator.of(ctx).pop(),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              ListTile(
-                title: const Text('Enquiry Sent / New'),
-                leading: const Icon(Icons.mark_email_unread_outlined),
-                onTap: () => Navigator.of(ctx).pop('submitted'),
-              ),
-              ListTile(
-                title: const Text('In Discussion'),
-                leading: const Icon(Icons.question_answer_outlined),
-                onTap: () => Navigator.of(ctx).pop('in_discussion'),
-              ),
-              ListTile(
-                title: const Text('Quote Shared'),
-                leading: const Icon(Icons.request_quote_outlined),
-                onTap: () => Navigator.of(ctx).pop('quote_shared'),
-              ),
-              ListTile(
-                title: const Text('Order Confirmed / Completed'),
-                leading: const Icon(Icons.check_circle_outline_rounded),
-                onTap: () => Navigator.of(ctx).pop('completed'),
-              ),
-            ],
-          ),
+    final newStatus = await AppBottomSheet.show<String>(
+      context,
+      child: CommonBottomSheetContainer(
+        title: 'Update Enquiry Status',
+        icon: Icons.edit_note_rounded,
+        child: Column(
+          children: [
+            ListTile(
+              title: const Text('Enquiry Sent / New'),
+              leading: const Icon(Icons.mark_email_unread_outlined, color: AppColors.primary),
+              onTap: () => Navigator.of(context).pop('submitted'),
+            ),
+            const Divider(height: 1),
+            ListTile(
+              title: const Text('In Discussion'),
+              leading: const Icon(Icons.question_answer_outlined, color: AppColors.accent),
+              onTap: () => Navigator.of(context).pop('in_discussion'),
+            ),
+            const Divider(height: 1),
+            ListTile(
+              title: const Text('Quote Shared'),
+              leading: const Icon(Icons.request_quote_outlined, color: AppColors.skyBlue),
+              onTap: () => Navigator.of(context).pop('quote_shared'),
+            ),
+            const Divider(height: 1),
+            ListTile(
+              title: const Text('Order Confirmed / Completed'),
+              leading: const Icon(Icons.check_circle_outline_rounded, color: AppColors.teal),
+              onTap: () => Navigator.of(context).pop('completed'),
+            ),
+          ],
         ),
       ),
     );

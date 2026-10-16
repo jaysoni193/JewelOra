@@ -145,11 +145,15 @@ class _CategoryTile extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 6),
-                    Text(
-                      category.isActive ? 'Visible to customers' : 'Hidden',
-                      style: AppTextStyles.caption.copyWith(
-                        color: category.isActive ? AppColors.success : AppColors.textGrey,
-                        fontWeight: FontWeight.w500,
+                    Expanded(
+                      child: Text(
+                        category.isActive ? AppStrings.visibleToCustomers : AppStrings.hidden,
+                        style: AppTextStyles.caption.copyWith(
+                          color: category.isActive ? AppColors.success : AppColors.textGrey,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -166,14 +170,14 @@ class _CategoryTile extends StatelessWidget {
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert, color: AppColors.textGrey),
             onSelected: (v) => v == 'edit' ? onEdit() : onDelete(),
-            itemBuilder: (context) => const [
+            itemBuilder: (context) => [
               PopupMenuItem(
                 value: 'edit',
                 child: Row(
                   children: [
-                    Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
-                    SizedBox(width: 8),
-                    Text('Edit'),
+                    const Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
+                    const SizedBox(width: 8),
+                    Text(AppStrings.edit),
                   ],
                 ),
               ),
@@ -181,9 +185,9 @@ class _CategoryTile extends StatelessWidget {
                 value: 'delete',
                 child: Row(
                   children: [
-                    Icon(Icons.delete_outline, size: 18, color: AppColors.error),
-                    SizedBox(width: 8),
-                    Text('Delete', style: TextStyle(color: AppColors.error)),
+                    const Icon(Icons.delete_outline, size: 18, color: AppColors.error),
+                    const SizedBox(width: 8),
+                    Text(AppStrings.delete, style: const TextStyle(color: AppColors.error)),
                   ],
                 ),
               ),

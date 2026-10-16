@@ -7,13 +7,20 @@ import 'package:jewel_ora/providers/banner_provider.dart';
 import 'package:jewel_ora/providers/cart_provider.dart';
 import 'package:jewel_ora/providers/category_provider.dart';
 import 'package:jewel_ora/providers/enquiry_provider.dart';
+import 'package:jewel_ora/providers/gold_savings_provider.dart';
+import 'package:jewel_ora/providers/jewellery_vault_provider.dart';
 import 'package:jewel_ora/providers/locale_provider.dart';
+import 'package:jewel_ora/providers/occasion_reminder_provider.dart';
 import 'package:jewel_ora/providers/metal_rate_provider.dart';
+import 'package:jewel_ora/providers/price_alert_provider.dart';
 import 'package:jewel_ora/providers/product_provider.dart';
 import 'package:jewel_ora/providers/settings_provider.dart';
 import 'package:jewel_ora/providers/shop_filter_provider.dart';
 import 'package:jewel_ora/providers/stats_provider.dart';
 import 'package:jewel_ora/providers/user_nav_provider.dart';
+import 'package:jewel_ora/providers/bridal_planner_provider.dart';
+import 'package:jewel_ora/providers/ring_size_provider.dart';
+import 'package:jewel_ora/providers/video_appointment_provider.dart';
 import 'package:jewel_ora/providers/wishlist_provider.dart';
 import 'package:jewel_ora/screens/splash/splash_screen.dart';
 import 'package:jewel_ora/services/auth_service.dart';
@@ -59,7 +66,21 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => UserNavProvider()),
         ChangeNotifierProvider(create: (_) => ShopFilterProvider()),
         ChangeNotifierProvider(create: (_) => MetalRateProvider(MetalRateService())),
+        ChangeNotifierProxyProvider<MetalRateProvider, PriceAlertProvider>(
+          create: (_) => PriceAlertProvider(),
+          update: (_, metalRates, alertProvider) {
+            final p = alertProvider ?? PriceAlertProvider();
+            p.checkRates(metalRates.rates);
+            return p;
+          },
+        ),
         ChangeNotifierProvider(create: (_) => CategoryProvider(CategoryService())),
+        ChangeNotifierProvider(create: (_) => JewelleryVaultProvider()),
+        ChangeNotifierProvider(create: (_) => OccasionReminderProvider()),
+        ChangeNotifierProvider(create: (_) => GoldSavingsProvider()),
+        ChangeNotifierProvider(create: (_) => VideoAppointmentProvider()),
+        ChangeNotifierProvider(create: (_) => BridalPlannerProvider()),
+        ChangeNotifierProvider(create: (_) => RingSizeProvider()),
         ChangeNotifierProvider(create: (_) => ProductProvider(ProductService())),
         ChangeNotifierProvider(create: (_) => BannerProvider(BannerService())),
         ChangeNotifierProvider(
